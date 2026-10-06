@@ -1,0 +1,6 @@
+{
+  "name": "DairyOS Enterprise Dairy ERP",
+  "description": "Enterprise Dairy Operating System covering cattle, feed, farmer procurement, milk collection, chilling, processing, packaging, inventory, distribution, sales, and profitability intelligence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
