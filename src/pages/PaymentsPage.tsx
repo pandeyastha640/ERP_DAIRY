@@ -5,6 +5,7 @@ import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
 import { CreditCard, Plus, CheckCircle2, Clock, ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react';
+import { api } from '../services/api';
 
 interface PaymentsPageProps {
   payments?: PaymentTransaction[];
@@ -76,13 +77,31 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
           </p>
         </div>
 
-        <button
-          onClick={() => setIsRecordModalOpen(true)}
-          className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Record Transaction</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={async () => {
+              try {
+                const res = await api.payments.disburseAllPending();
+                alert(`Bank Gateway Response: ${res.message} (₹${res.totalAmountDisbursed?.toLocaleString('en-IN') || 0} disbursed via IMPS)`);
+                window.location.reload();
+              } catch (err: any) {
+                alert(`Settlement Notice: ${err.message}`);
+              }
+            }}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Disburse All Pending (IMPS)</span>
+          </button>
+
+          <button
+            onClick={() => setIsRecordModalOpen(true)}
+            className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Record Transaction</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Ribbon */}

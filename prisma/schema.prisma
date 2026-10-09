@@ -1,0 +1,259 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String   @default("")
+  role         String   @default("Operations Manager")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Farmer {
+  id            String   @id @default(uuid())
+  farmerCode    String   @unique
+  name          String
+  village       String
+  contactNumber String
+  cattleCount   Int      @default(0)
+  bankAccount   String   @default("")
+  ifscCode      String   @default("")
+  status        String   @default("Active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  collections MilkCollectionRecord[]
+}
+
+model Cattle {
+  id               String   @id @default(uuid())
+  tagNumber        String   @unique
+  breed            String
+  ageYears         Int
+  lactation        Int      @default(1)
+  lactationStage   String   @default("Mid")
+  milkYieldLPerDay Float
+  feedCostPerDay   Float
+  health           String   @default("Healthy")
+  status           String   @default("Milking")
+  shedLocation     String
+  dailyFeedKg      Float    @default(28.0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model FeedItem {
+  id             String   @id @default(uuid())
+  feedCode       String   @unique
+  name           String
+  type           String
+  openingStockKg Float
+  purchasedKg    Float    @default(0)
+  consumedKg     Float    @default(0)
+  closingStockKg Float
+  unitCostPerKg  Float
+  daysRemaining  Float
+  reorderLevelKg Float
+  supplier       String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model MilkCollectionRecord {
+  id             String   @id @default(uuid())
+  collectionCode String   @unique
+  farmerId       String
+  farmerName     String
+  date           String
+  time           String
+  shift          String
+  centre         String
+  quantityLitres Float
+  fat            Float
+  snf            Float
+  temperatureC   Float
+  quality        String   @default("PASS")
+  ratePerLitre   Float
+  payableAmount  Float
+  testedBy       String   @default("QC Lab Desk")
+  createdAt      DateTime @default(now())
+
+  farmer Farmer @relation(fields: [farmerId], references: [farmerCode])
+}
+
+model QualityTestRecord {
+  id               String   @id @default(uuid())
+  batchNumber      String   @unique
+  sourceType       String
+  sourceName       String
+  quantityLitres   Float
+  fat              Float
+  snf              Float
+  clr              Float
+  temperatureC     Float
+  adulterationTest String   @default("Negative")
+  acidityPct       Float
+  mbrtHours        Float
+  result           String   @default("PASS")
+  tester           String
+  testTime         String
+  rejectionReason  String?
+  createdAt        DateTime @default(now())
+}
+
+model ChillingTank {
+  id                  String   @id @default(uuid())
+  tankCode            String   @unique
+  name                String
+  capacityLitres      Float
+  currentVolumeLitres Float
+  temperatureC        Float
+  agitatorStatus      String   @default("Running")
+  lastCleaned         String   @default("")
+  sensorHealth        String   @default("Optimal")
+  updatedAt           DateTime @updatedAt
+}
+
+model ProcessingBatch {
+  id                  String   @id @default(uuid())
+  batchId             String   @unique
+  date                String
+  pasteurizerLine     String
+  inputMilkLitres     Float
+  inputFatPct         Float
+  inputSnfPct         Float
+  yieldPercentage     Float
+  wastageLitres       Float
+  processingCostTotal Float
+  status              String   @default("In Progress")
+  startTime           String
+  completionTime      String
+  operator            String
+  createdAt           DateTime @default(now())
+}
+
+model ProductMaster {
+  id                String   @id @default(uuid())
+  sku               String   @unique
+  name              String
+  category          String
+  packSize          String
+  mrp               Float
+  sellingPrice      Float
+  productionCost    Float
+  currentStockUnits Int      @default(0)
+  expiryDays        Int      @default(3)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model PackagingItem {
+  id            String   @id @default(uuid())
+  itemCode      String   @unique
+  name          String
+  materialType  String
+  size          String
+  openingStock  Int
+  purchased     Int      @default(0)
+  consumed      Int      @default(0)
+  damaged       Int      @default(0)
+  closingStock  Int
+  unitCost      Float
+  reorderLevel  Int
+  daysRemaining Float
+  status        String   @default("Sufficient")
+  updatedAt     DateTime @updatedAt
+}
+
+model InventoryItem {
+  id             String   @id @default(uuid())
+  sku            String   @unique
+  name           String
+  category       String
+  openingBalance Int
+  inward         Int      @default(0)
+  outward        Int      @default(0)
+  closingBalance Int
+  unitValue      Float
+  totalValue     Float
+  status         String   @default("Sufficient")
+  updatedAt      DateTime @updatedAt
+}
+
+model DistributionRoute {
+  id                 String   @id @default(uuid())
+  routeCode          String   @unique
+  routeName          String
+  shift              String   @default("Morning")
+  vehicleNumber      String
+  driverName         String
+  distributorName    String
+  totalDispatchUnits Int
+  deliveredUnits     Int      @default(0)
+  returnUnits        Int      @default(0)
+  logisticsCost      Float
+  revenueGenerated   Float
+  departureTime      String
+  status             String   @default("Preparing")
+  stopsCount         Int      @default(5)
+  updatedAt          DateTime @updatedAt
+}
+
+model SalesOrder {
+  id                String   @id @default(uuid())
+  orderNumber       String   @unique
+  date              String
+  customerName      String
+  channel           String
+  product           String
+  quantityUnits     Int
+  unitRate          Float
+  totalAmount       Float
+  paymentStatus     String   @default("Pending")
+  fulfillmentStatus String   @default("Pending Dispatch")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model PaymentTransaction {
+  id             String   @id @default(uuid())
+  transactionRef String   @unique
+  recipientName  String
+  partyType      String
+  milkLitres     Float?
+  amount         Float
+  paymentDate    String
+  paymentMethod  String   @default("Direct Bank IMPS")
+  status         String   @default("Completed")
+  notes          String   @default("")
+  createdAt      DateTime @default(now())
+}
+
+model AuditLogEntry {
+  id              String   @id @default(uuid())
+  timestamp       String
+  userName        String
+  userRole        String
+  module          String
+  action          String
+  recordId        String?
+  description     String
+  financialImpact String?
+  milkImpactLitres Float?
+  severity        String   @default("info")
+  createdAt       DateTime @default(now())
+}
+
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

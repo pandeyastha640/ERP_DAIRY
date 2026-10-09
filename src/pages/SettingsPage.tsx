@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDairyERP } from '../context/DairyERPContext';
 import {
   Settings,
   Building,
@@ -11,23 +12,50 @@ import {
   Cpu,
   CheckCircle2,
   Save,
+  RotateCcw,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
+  const { settings, updateSettings, resetAllData } = useDairyERP();
   const [activeTab, setActiveTab] = useState<'Org' | 'Facilities' | 'Pricing' | 'Quality' | 'Integrations'>('Org');
   const [savedNotice, setSavedNotice] = useState(false);
 
-  // Settings states
-  const [orgName, setOrgName] = useState('DairyOS Operational Cooperative Ltd.');
-  const [fssaiLicense, setFssaiLicense] = useState('10018021003456');
-  const [baseMilkRate, setBaseMilkRate] = useState('34.50');
-  const [fatMultiplier, setFatMultiplier] = useState('4.50');
-  const [snfMultiplier, setSnfMultiplier] = useState('2.50');
-  const [maxArrivalTemp, setMaxArrivalTemp] = useState('6.0');
+  // Settings states initialized from context
+  const [orgName, setOrgName] = useState(settings.orgName);
+  const [fssaiLicense, setFssaiLicense] = useState(settings.fssaiLicense);
+  const [baseMilkRate, setBaseMilkRate] = useState(String(settings.baseMilkRate));
+  const [fatMultiplier, setFatMultiplier] = useState(String(settings.fatMultiplier));
+  const [snfMultiplier, setSnfMultiplier] = useState(String(settings.snfMultiplier));
+  const [maxArrivalTemp, setMaxArrivalTemp] = useState(String(settings.maxArrivalTemp));
+
+  useEffect(() => {
+    setOrgName(settings.orgName);
+    setFssaiLicense(settings.fssaiLicense);
+    setBaseMilkRate(String(settings.baseMilkRate));
+    setFatMultiplier(String(settings.fatMultiplier));
+    setSnfMultiplier(String(settings.snfMultiplier));
+    setMaxArrivalTemp(String(settings.maxArrivalTemp));
+  }, [settings]);
 
   const handleSave = () => {
+    updateSettings({
+      orgName,
+      fssaiLicense,
+      baseMilkRate: parseFloat(baseMilkRate) || 34.5,
+      fatMultiplier: parseFloat(fatMultiplier) || 4.5,
+      snfMultiplier: parseFloat(snfMultiplier) || 2.5,
+      maxArrivalTemp: parseFloat(maxArrivalTemp) || 6.0,
+    });
     setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 2500);
+    setTimeout(() => setSavedNotice(false), 3000);
+  };
+
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to reset all ERP data to default demo datasets? All custom records will be restored to defaults.')) {
+      resetAllData();
+      setSavedNotice(true);
+      setTimeout(() => setSavedNotice(false), 3000);
+    }
   };
 
   return (
@@ -43,13 +71,23 @@ export const SettingsPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
-        >
-          <Save className="w-4 h-4" />
-          <span>Save Changes</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleReset}
+            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-xs font-semibold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            title="Reset system to defaults"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Demo Data</span>
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <Save className="w-4 h-4" />
+            <span>Save Changes</span>
+          </button>
+        </div>
       </div>
 
       {savedNotice && (

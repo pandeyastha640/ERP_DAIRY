@@ -149,6 +149,7 @@ export interface MilkPoolReconciliation {
   processingConsumptionLitres: number;
   spillageWastageLitres: number;
   closingStockLitres: number;
+  reconciliationStatus?: 'RECONCILED' | 'VARIANCE DETECTED' | 'DISCREPANCY';
 }
 
 export interface ProcessingBatchProductOutput {
@@ -348,6 +349,10 @@ export interface FarmerProcurementSummary {
   weightedAvgRatePerL: number;
   totalPayablesToday: number;
   totalRejectionsL: number;
+  totalPayablePending: number;
+  averageRatePerLitre: number;
+  averageFatPct: number;
+  averageSnfPct: number;
 }
 
 export interface DerivedERPMetrics {
@@ -367,4 +372,23 @@ export interface DerivedERPMetrics {
   totalPayablesPending: number;
   alerts: OperationalAlert[];
   insights: AIInsight[];
+}
+
+export interface SystemSettings {
+  orgName: string;
+  fssaiLicense: string;
+  gstin: string;
+  headOffice: string;
+  baseMilkRate: number;
+  fatMultiplier: number;
+  snfMultiplier: number;
+  maxArrivalTemp: number;
+  minFatPct: number;
+  minSnfPct: number;
+  labourDailyCost: number;
+  chillingDailyCost: number;
+  electricityDailyCost: number;
+  packagingDailyCost: number;
+  veterinaryDailyCost: number;
+  overheadsDailyCost: number;
 }

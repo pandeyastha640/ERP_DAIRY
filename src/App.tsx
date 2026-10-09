@@ -67,7 +67,9 @@ import {
 } from 'lucide-react';
 
 function AppContent() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('dairy_erp_auth') === 'true';
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Modals & Drawers
@@ -134,12 +136,19 @@ function AppContent() {
     setSelectedItemId(itemId);
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('dairy_erp_auth');
+  };
+
   if (!isAuthenticated) {
     return (
       <LoginScreen
         onLogin={(role) => {
           setCurrentRole(role);
           setIsAuthenticated(true);
+          localStorage.setItem('dairy_erp_auth', 'true');
+          localStorage.setItem('dairy_erp_role', role);
         }}
       />
     );
@@ -182,7 +191,7 @@ function AppContent() {
           </button>
           <span className="text-slate-300">|</span>
           <button
-            onClick={() => setIsAuthenticated(false)}
+            onClick={handleLogout}
             className="text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer font-sans"
           >
             <LogOut className="w-3 h-3" />
@@ -452,10 +461,56 @@ function AppContent() {
   );
 }
 
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ErrorBoundary caught:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-6">
+          <div className="max-w-lg bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl text-center">
+            <h2 className="text-xl font-bold text-rose-400 mb-2">Something went wrong</h2>
+            <p className="text-sm text-slate-300 mb-4">{this.state.error?.message}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              Reload Application
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   return (
-    <DairyERPProvider>
-      <AppContent />
-    </DairyERPProvider>
+    <ErrorBoundary>
+      <DairyERPProvider>
+        <AppContent />
+      </DairyERPProvider>
+    </ErrorBoundary>
   );
 }

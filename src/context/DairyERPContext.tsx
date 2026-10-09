@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import {
   Role,
   Facility,
@@ -22,6 +22,7 @@ import {
   AuditLogEntry,
   HerdEconomicsSummary,
   FarmerProcurementSummary,
+  SystemSettings,
 } from '../types/dairy';
 import {
   INITIAL_CATTLE,
@@ -46,6 +47,7 @@ import {
   evaluateOperationalAlerts,
   evaluateAIInsights,
 } from '../services/dairyEngine';
+import { api } from '../services/api';
 
 interface DairyERPContextType {
   // Session State
@@ -99,6 +101,50 @@ interface DairyERPContextType {
   addProduct: (product: ProductMaster) => void;
   addQualityTest: (test: QualityTestRecord) => void;
   dismissAlert: (id: string) => void;
+
+  // System Settings & Reset
+  settings: SystemSettings;
+  updateSettings: (newSettings: Partial<SystemSettings>) => void;
+  resetAllData: () => void;
+}
+
+export const DEFAULT_SETTINGS: SystemSettings = {
+  orgName: 'DairyOS Operational Cooperative Ltd.',
+  fssaiLicense: '10018021003456',
+  gstin: '24AAACC1209B1ZK',
+  headOffice: 'Plant Yard 4, GIDC Industrial Estate, Anand, Gujarat - 388001',
+  baseMilkRate: 34.50,
+  fatMultiplier: 4.50,
+  snfMultiplier: 2.50,
+  maxArrivalTemp: 6.0,
+  minFatPct: 3.2,
+  minSnfPct: 7.8,
+  labourDailyCost: 5200,
+  chillingDailyCost: 2600,
+  electricityDailyCost: 3100,
+  packagingDailyCost: 4850,
+  veterinaryDailyCost: 950,
+  overheadsDailyCost: 1450,
+};
+
+const STORAGE_PREFIX = 'dairy_erp_v2_';
+
+function loadStorage<T>(key: string, defaultValue: T): T {
+  try {
+    const raw = localStorage.getItem(STORAGE_PREFIX + key);
+    if (!raw) return defaultValue;
+    return JSON.parse(raw);
+  } catch (e) {
+    return defaultValue;
+  }
+}
+
+function saveStorage<T>(key: string, value: T) {
+  try {
+    localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 const DairyERPContext = createContext<DairyERPContextType | undefined>(undefined);
@@ -164,22 +210,114 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [currentModule, setCurrentModule] = useState('dashboard');
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
 
-  // Core Data Stores
-  const [cattleList, setCattleList] = useState<Cattle[]>(INITIAL_CATTLE);
-  const [farmersList, setFarmersList] = useState<Farmer[]>(INITIAL_FARMERS);
-  const [feedsList, setFeedsList] = useState<FeedItem[]>(INITIAL_FEEDS);
-  const [collectionsList, setCollectionsList] = useState<MilkCollectionRecord[]>(INITIAL_COLLECTIONS);
-  const [qualityTestsList, setQualityTestsList] = useState<QualityTestRecord[]>(INITIAL_QUALITY_TESTS);
-  const [tanksList, setTanksList] = useState<ChillingTank[]>(INITIAL_CHILLING_TANKS);
-  const [batchesList, setBatchesList] = useState<ProcessingBatch[]>(INITIAL_PROCESSING_BATCHES);
-  const [productsList, setProductsList] = useState<ProductMaster[]>(INITIAL_PRODUCTS);
-  const [packagingList, setPackagingList] = useState<PackagingItem[]>(INITIAL_PACKAGING);
-  const [inventoryList, setInventoryList] = useState<InventoryItem[]>(INITIAL_INVENTORY);
-  const [routesList, setRoutesList] = useState<DistributionRoute[]>(INITIAL_ROUTES);
-  const [salesOrdersList, setSalesOrdersList] = useState<SalesOrder[]>(INITIAL_SALES);
-  const [paymentsList, setPaymentsList] = useState<PaymentTransaction[]>(INITIAL_PAYMENTS);
-  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
+  // Core Data Stores with persistent localStorage backup
+  const [settings, setSettings] = useState<SystemSettings>(() => loadStorage('settings', DEFAULT_SETTINGS));
+  const [cattleList, setCattleList] = useState<Cattle[]>(() => loadStorage('cattle', INITIAL_CATTLE));
+  const [farmersList, setFarmersList] = useState<Farmer[]>(() => loadStorage('farmers', INITIAL_FARMERS));
+  const [feedsList, setFeedsList] = useState<FeedItem[]>(() => loadStorage('feeds', INITIAL_FEEDS));
+  const [collectionsList, setCollectionsList] = useState<MilkCollectionRecord[]>(() => loadStorage('collections', INITIAL_COLLECTIONS));
+  const [qualityTestsList, setQualityTestsList] = useState<QualityTestRecord[]>(() => loadStorage('quality', INITIAL_QUALITY_TESTS));
+  const [tanksList, setTanksList] = useState<ChillingTank[]>(() => loadStorage('tanks', INITIAL_CHILLING_TANKS));
+  const [batchesList, setBatchesList] = useState<ProcessingBatch[]>(() => loadStorage('batches', INITIAL_PROCESSING_BATCHES));
+  const [productsList, setProductsList] = useState<ProductMaster[]>(() => loadStorage('products', INITIAL_PRODUCTS));
+  const [packagingList, setPackagingList] = useState<PackagingItem[]>(() => loadStorage('packaging', INITIAL_PACKAGING));
+  const [inventoryList, setInventoryList] = useState<InventoryItem[]>(() => loadStorage('inventory', INITIAL_INVENTORY));
+  const [routesList, setRoutesList] = useState<DistributionRoute[]>(() => loadStorage('routes', INITIAL_ROUTES));
+  const [salesOrdersList, setSalesOrdersList] = useState<SalesOrder[]>(() => loadStorage('sales', INITIAL_SALES));
+  const [paymentsList, setPaymentsList] = useState<PaymentTransaction[]>(() => loadStorage('payments', INITIAL_PAYMENTS));
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => loadStorage('audit', INITIAL_AUDIT_LOGS));
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
+
+  // Synchronize state changes to localStorage
+  useEffect(() => { saveStorage('settings', settings); }, [settings]);
+  useEffect(() => { saveStorage('cattle', cattleList); }, [cattleList]);
+  useEffect(() => { saveStorage('farmers', farmersList); }, [farmersList]);
+  useEffect(() => { saveStorage('feeds', feedsList); }, [feedsList]);
+  useEffect(() => { saveStorage('collections', collectionsList); }, [collectionsList]);
+  useEffect(() => { saveStorage('quality', qualityTestsList); }, [qualityTestsList]);
+  useEffect(() => { saveStorage('tanks', tanksList); }, [tanksList]);
+  useEffect(() => { saveStorage('batches', batchesList); }, [batchesList]);
+  useEffect(() => { saveStorage('products', productsList); }, [productsList]);
+  useEffect(() => { saveStorage('packaging', packagingList); }, [packagingList]);
+  useEffect(() => { saveStorage('inventory', inventoryList); }, [inventoryList]);
+  useEffect(() => { saveStorage('routes', routesList); }, [routesList]);
+  useEffect(() => { saveStorage('sales', salesOrdersList); }, [salesOrdersList]);
+  useEffect(() => { saveStorage('payments', paymentsList); }, [paymentsList]);
+  useEffect(() => { saveStorage('audit', auditLogs); }, [auditLogs]);
+
+  // Live Backend Synchronization on mount
+  useEffect(() => {
+    api.checkHealth()
+      .then(async () => {
+        try {
+          const [farmersRes, cattleRes, tanksRes] = await Promise.all([
+            api.farmers.getAll(),
+            api.cattle.getAll(),
+            api.chilling.getTanks(),
+          ]);
+
+          if (farmersRes?.data?.length) {
+            setFarmersList((prev) => {
+              const dbMap = new Map(farmersRes.data.map((f: any) => [f.farmerCode, f]));
+              return prev.map((f) => {
+                const dbF = dbMap.get(f.id);
+                if (dbF) {
+                  return {
+                    ...f,
+                    name: dbF.name,
+                    village: dbF.village,
+                    contactNumber: dbF.contactNumber,
+                    cattleCount: dbF.cattleCount,
+                    status: dbF.status,
+                  };
+                }
+                return f;
+              });
+            });
+          }
+
+          if (cattleRes?.data?.length) {
+            setCattleList((prev) => {
+              const dbMap = new Map(cattleRes.data.map((c: any) => [c.tagNumber, c]));
+              return prev.map((c) => {
+                const dbC = dbMap.get(c.tagNumber);
+                if (dbC) {
+                  return {
+                    ...c,
+                    milkYieldLPerDay: dbC.milkYieldLPerDay,
+                    status: dbC.status,
+                    health: dbC.health,
+                  };
+                }
+                return c;
+              });
+            });
+          }
+
+          if (tanksRes?.data?.length) {
+            setTanksList((prev) => {
+              const dbMap = new Map(tanksRes.data.map((t: any) => [t.tankCode, t]));
+              return prev.map((t) => {
+                const dbT = dbMap.get(t.id);
+                if (dbT) {
+                  return {
+                    ...t,
+                    currentVolumeLitres: dbT.currentVolumeLitres,
+                    temperatureC: dbT.temperatureC,
+                  };
+                }
+                return t;
+              });
+            });
+          }
+        } catch (e) {
+          console.warn('Backend sync notice:', e);
+        }
+      })
+      .catch(() => {
+        // Backend not available, fallback seamlessly
+      });
+  }, []);
 
   // 1. DYNAMIC MILK POOL RECONCILIATION
   const reconciliation = useMemo(() => {
@@ -193,8 +331,8 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // 3. DYNAMIC FARMER PROCUREMENT SUMMARY
   const procurementSummary = useMemo(() => {
-    return deriveFarmerProcurement(farmersList, collectionsList);
-  }, [farmersList, collectionsList]);
+    return deriveFarmerProcurement(farmersList, collectionsList, settings);
+  }, [farmersList, collectionsList, settings]);
 
   // 4. DYNAMIC MASTER PROFITABILITY ENGINE
   const profitability = useMemo(() => {
@@ -205,9 +343,10 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       batchesList,
       packagingList,
       routesList,
-      reconciliation
+      reconciliation,
+      settings
     );
-  }, [salesOrdersList, collectionsList, cattleList, batchesList, packagingList, routesList, reconciliation]);
+  }, [salesOrdersList, collectionsList, cattleList, batchesList, packagingList, routesList, reconciliation, settings]);
 
   // 5. DYNAMIC RULE-BASED ALERTS
   const alerts = useMemo(() => {
@@ -328,6 +467,24 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       milkImpactLitres: record.quantityLitres,
       severity: record.quality === 'FAIL' ? 'warning' : 'info',
     });
+
+    // 6. Asynchronously sync to backend database
+    api.collections.create({
+      farmerId: record.farmerId,
+      farmerName: record.farmerName,
+      date: record.date,
+      time: record.time,
+      shift: record.shift,
+      centre: record.centre,
+      quantityLitres: record.quantityLitres,
+      fat: record.fat,
+      snf: record.snf,
+      temperatureC: record.temperatureC,
+      quality: record.quality,
+      ratePerLitre: record.ratePerLitre,
+      payableAmount: record.payableAmount,
+      testedBy: record.testedBy,
+    }).catch((err) => console.warn('Backend collection sync notice:', err.message));
   };
 
   /**
@@ -370,21 +527,43 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       );
     });
 
-    // 3. Deduct packaging film / cups
-    setPackagingList((prev) =>
-      prev.map((pkg) => {
-        if (pkg.id === 'PKG-01') {
-          // 500ml pouch
-          const consumed = 700;
+    // 3. Deduct packaging film / bottles / tubs dynamically based on product outputs
+    setPackagingList((prev) => {
+      const consumptionMap: Record<string, number> = {};
+      batch.products.forEach((prod) => {
+        const pName = prod.productName.toLowerCase();
+        const sku = prod.sku.toLowerCase();
+        if (pName.includes('500ml') || sku.includes('500') || pName.includes('toned milk')) {
+          // 500ml polypouch film: 2 pouches per litre
+          consumptionMap['PKG-01'] = (consumptionMap['PKG-01'] || 0) + Math.round(prod.outputQuantity * 2);
+        } else if (pName.includes('curd') || pName.includes('dahi') || sku.includes('dahi') || pName.includes('400g')) {
+          // 400g cup/tub: 2.5 units per kg/litre
+          consumptionMap['PKG-03'] = (consumptionMap['PKG-03'] || 0) + Math.round(prod.outputQuantity * 2.5);
+        } else if (pName.includes('ghee') || pName.includes('cream') || sku.includes('cream')) {
+          // Glass jar / bulk can: 1.5 units per litre
+          consumptionMap['PKG-05'] = (consumptionMap['PKG-05'] || 0) + Math.max(1, Math.round(prod.outputQuantity * 1.5));
+        } else if (pName.includes('1l') || sku.includes('1l')) {
+          // 1L PET Bottle: 1 unit per litre
+          consumptionMap['PKG-02'] = (consumptionMap['PKG-02'] || 0) + Math.round(prod.outputQuantity);
+        } else {
+          consumptionMap['PKG-01'] = (consumptionMap['PKG-01'] || 0) + Math.round(prod.outputQuantity);
+        }
+      });
+
+      return prev.map((pkg) => {
+        const used = consumptionMap[pkg.id] || 0;
+        if (used > 0) {
+          const scrap = Math.round(used * 0.015); // 1.5% machine scrap
           return {
             ...pkg,
-            consumed: pkg.consumed + consumed,
-            closingStock: Math.max(0, pkg.closingStock - consumed),
+            consumed: pkg.consumed + used,
+            damaged: pkg.damaged + scrap,
+            closingStock: Math.max(0, pkg.closingStock - used - scrap),
           };
         }
         return pkg;
-      })
-    );
+      });
+    });
 
     // 4. Log Audit Trail
     logAudit({
@@ -396,6 +575,19 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       milkImpactLitres: -batch.inputMilkLitres,
       severity: 'info',
     });
+
+    // 5. Asynchronously sync to backend database
+    api.processing.launchBatch({
+      batchId: batch.batchId,
+      inputMilkLitres: batch.inputMilkLitres,
+      inputFatPct: batch.inputFatPct,
+      inputSnfPct: batch.inputSnfPct,
+      yieldPercentage: batch.yieldPercentage,
+      wastageLitres: batch.wastageLitres,
+      processingCostTotal: batch.processingCostTotal,
+      operator: batch.operator,
+      pasteurizerLine: batch.pasteurizerLine,
+    }).catch((err) => console.warn('Backend batch sync notice:', err.message));
   };
 
   /**
@@ -455,13 +647,31 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const recordPayment = (txn: PaymentTransaction) => {
     setPaymentsList((prev) => [txn, ...prev]);
 
-    // If paying a farmer, update the matching pending transaction status
+    // If paying a farmer, update the matching pending transaction status and reduce farmer payable
     if (txn.partyType === 'Farmer') {
       setPaymentsList((prev) =>
         prev.map((p) =>
           p.recipientName.includes(txn.recipientName) && p.status === 'Pending'
             ? { ...p, status: 'Completed' }
             : p
+        )
+      );
+      setFarmersList((prev) =>
+        prev.map((f) =>
+          txn.recipientName.includes(f.name) || txn.recipientName.includes(f.id)
+            ? { ...f, todayPayable: Math.max(0, f.todayPayable - txn.amount) }
+            : f
+        )
+      );
+    }
+
+    // If receiving from distributor, mark matching order Paid
+    if (txn.partyType === 'Distributor') {
+      setSalesOrdersList((prev) =>
+        prev.map((o) =>
+          txn.notes.includes(o.orderNumber) || txn.recipientName.includes(o.customerName)
+            ? { ...o, paymentStatus: 'Paid' }
+            : o
         )
       );
     }
@@ -488,6 +698,20 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       description: `Enrolled ${cow.breed} (${cow.tagNumber}) in ${cow.shedLocation}. Milk yield: ${cow.milkYieldLPerDay} L/d`,
       severity: 'info',
     });
+
+    api.cattle.create({
+      tagNumber: cow.tagNumber,
+      breed: cow.breed,
+      ageYears: cow.ageYears,
+      lactation: cow.lactation,
+      lactationStage: cow.lactationStage,
+      milkYieldLPerDay: cow.milkYieldLPerDay,
+      feedCostPerDay: cow.feedCostPerDay,
+      health: cow.health,
+      status: cow.status,
+      shedLocation: cow.shedLocation,
+      dailyFeedKg: cow.dailyFeedKg,
+    }).catch((err) => console.warn('Backend cattle sync notice:', err.message));
   };
 
   /**
@@ -502,6 +726,16 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       description: `Registered producer ${farmer.name} (${farmer.village}) with ${farmer.cattleCount} animals`,
       severity: 'info',
     });
+
+    api.farmers.create({
+      farmerCode: farmer.id,
+      name: farmer.name,
+      village: farmer.village,
+      contactNumber: farmer.contactNumber,
+      cattleCount: farmer.cattleCount,
+      bankAccount: farmer.bankAccount,
+      status: farmer.status,
+    }).catch((err) => console.warn('Backend farmer sync notice:', err.message));
   };
 
   /**
@@ -640,6 +874,41 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setDismissedAlertIds((prev) => [...prev, id]);
   };
 
+  const updateSettings = (newSettings: Partial<SystemSettings>) => {
+    setSettings((prev) => ({ ...prev, ...newSettings }));
+    logAudit({
+      module: 'Settings',
+      action: 'SETTINGS_UPDATED',
+      recordId: 'SYS-CFG',
+      description: 'System enterprise configuration updated',
+      severity: 'info',
+    });
+  };
+
+  const resetAllData = () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith(STORAGE_PREFIX)) {
+        localStorage.removeItem(key);
+      }
+    });
+    setSettings(DEFAULT_SETTINGS);
+    setCattleList(INITIAL_CATTLE);
+    setFarmersList(INITIAL_FARMERS);
+    setFeedsList(INITIAL_FEEDS);
+    setCollectionsList(INITIAL_COLLECTIONS);
+    setQualityTestsList(INITIAL_QUALITY_TESTS);
+    setTanksList(INITIAL_CHILLING_TANKS);
+    setBatchesList(INITIAL_PROCESSING_BATCHES);
+    setProductsList(INITIAL_PRODUCTS);
+    setPackagingList(INITIAL_PACKAGING);
+    setInventoryList(INITIAL_INVENTORY);
+    setRoutesList(INITIAL_ROUTES);
+    setSalesOrdersList(INITIAL_SALES);
+    setPaymentsList(INITIAL_PAYMENTS);
+    setAuditLogs(INITIAL_AUDIT_LOGS);
+    setDismissedAlertIds([]);
+  };
+
   const value = {
     currentRole,
     setCurrentRole,
@@ -688,6 +957,10 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     addProduct,
     addQualityTest,
     dismissAlert,
+
+    settings,
+    updateSettings,
+    resetAllData,
   };
 
   return <DairyERPContext.Provider value={value}>{children}</DairyERPContext.Provider>;

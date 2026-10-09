@@ -41,6 +41,7 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
   const [line, setLine] = useState('Continuous HTST Line 1 (3000 LPH)');
   const [inputLitres, setInputLitres] = useState('1000');
   const [operator, setOperator] = useState('Rakesh Parmar (Plant Engineer)');
+  const [recipe, setRecipe] = useState<'standard' | 'fluid' | 'curd' | 'ghee'>('standard');
 
   const totalInput = batches.reduce((acc, b) => acc + b.inputMilkLitres, 0);
   const totalCost = batches.reduce((acc, b) => acc + b.processingCostTotal, 0);
@@ -53,6 +54,30 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
     e.preventDefault();
     const batchNum = `BATCH-2026-${100 + batches.length + 1}`;
     const qtyInput = parseFloat(inputLitres) || 1000;
+
+    let products = [
+      { productName: 'Fresh Toned Milk 500ml', sku: 'SKU-MILK-TONED-500', outputQuantity: Math.round(qtyInput * 0.7), unit: 'Litres', standardFatPct: 3.0, standardSnfPct: 8.5 },
+      { productName: 'Classic Creamy Curd 400g', sku: 'SKU-DAHI-400', outputQuantity: Math.round(qtyInput * 0.25), unit: 'Litres', standardFatPct: 4.0, standardSnfPct: 9.0 },
+      { productName: 'Sweet Cream Balance for Ghee', sku: 'SKU-CREAM-BULK', outputQuantity: Math.round(qtyInput * 0.035), unit: 'Litres', standardFatPct: 40.0, standardSnfPct: 5.5 },
+    ];
+
+    if (recipe === 'fluid') {
+      products = [
+        { productName: 'Full Cream Gold Milk 1L', sku: 'SKU-MILK-GOLD-1L', outputQuantity: Math.round(qtyInput * 0.6), unit: 'Litres', standardFatPct: 6.0, standardSnfPct: 9.0 },
+        { productName: 'Fresh Toned Milk 500ml', sku: 'SKU-MILK-TONED-500', outputQuantity: Math.round(qtyInput * 0.38), unit: 'Litres', standardFatPct: 3.0, standardSnfPct: 8.5 },
+      ];
+    } else if (recipe === 'curd') {
+      products = [
+        { productName: 'Classic Creamy Curd 400g', sku: 'SKU-DAHI-400', outputQuantity: Math.round(qtyInput * 0.85), unit: 'Litres', standardFatPct: 4.0, standardSnfPct: 9.0 },
+        { productName: 'Sweet Cream Balance for Ghee', sku: 'SKU-CREAM-BULK', outputQuantity: Math.round(qtyInput * 0.12), unit: 'Litres', standardFatPct: 40.0, standardSnfPct: 5.5 },
+      ];
+    } else if (recipe === 'ghee') {
+      products = [
+        { productName: 'Pure Cow Desi Ghee 1L', sku: 'SKU-GHEE-1L', outputQuantity: Math.round(qtyInput * 0.35), unit: 'Litres', standardFatPct: 99.7, standardSnfPct: 0.1 },
+        { productName: 'Fresh Toned Milk 500ml', sku: 'SKU-MILK-TONED-500', outputQuantity: Math.round(qtyInput * 0.60), unit: 'Litres', standardFatPct: 2.0, standardSnfPct: 8.8 },
+      ];
+    }
+
     const newBatch: ProcessingBatch = {
       id: `BATCH-${100 + batches.length + 1}`,
       batchId: batchNum,
@@ -61,11 +86,7 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
       inputMilkLitres: qtyInput,
       inputFatPct: 4.5,
       inputSnfPct: 8.7,
-      products: [
-        { productName: 'Fresh Toned Milk 500ml', sku: 'SKU-MILK-TONED-500', outputQuantity: Math.round(qtyInput * 0.7), unit: 'Litres', standardFatPct: 3.0, standardSnfPct: 8.5 },
-        { productName: 'Classic Creamy Curd 400g', sku: 'SKU-DAHI-400', outputQuantity: Math.round(qtyInput * 0.25), unit: 'Litres', standardFatPct: 4.0, standardSnfPct: 9.0 },
-        { productName: 'Sweet Cream Balance for Ghee', sku: 'SKU-CREAM-BULK', outputQuantity: Math.round(qtyInput * 0.035), unit: 'Litres', standardFatPct: 40.0, standardSnfPct: 5.5 },
-      ],
+      products,
       yieldPercentage: 98.2,
       wastageLitres: Math.round(qtyInput * 0.015),
       processingCostTotal: Math.round(qtyInput * 5.85),
@@ -271,6 +292,19 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
         maxWidth="md"
       >
         <form onSubmit={handleCreate} className="space-y-3.5">
+          <div>
+            <label className="block text-xs font-medium text-[#8b949e] mb-1">Production Recipe &amp; Output BOM</label>
+            <select
+              value={recipe}
+              onChange={(e) => setRecipe(e.target.value as any)}
+              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs text-[#f0f6fc]"
+            >
+              <option value="standard">Standard Multi-Product Run (70% Toned Milk, 25% Curd, 3.5% Cream)</option>
+              <option value="fluid">Fluid Market Milk Run (60% Full Cream 1L, 38% Toned Milk 500ml)</option>
+              <option value="curd">Fermented Dahi / Curd Run (85% Classic Curd 400g, 12% Cream Balance)</option>
+              <option value="ghee">Desi Cow Ghee &amp; Butter Run (35% Ghee 1L, 60% Skimmed Milk)</option>
+            </select>
+          </div>
           <div>
             <label className="block text-xs font-medium text-[#8b949e] mb-1">Processing Line</label>
             <select

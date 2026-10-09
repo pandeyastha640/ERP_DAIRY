@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dairyos_db
+    restart: always
+    environment:
+      POSTGRES_USER: dairyos
+      POSTGRES_PASSWORD: dairyos_secure_password_2026
+      POSTGRES_DB: dairyos_production
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dairyos -d dairyos_production']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dairyos_cache
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dairyos_app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '5000:5000'
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://dairyos:dairyos_secure_password_2026@postgres:5432/dairyos_production?schema=public
+      JWT_SECRET: dairyos-super-secret-production-key-2026
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+
+volumes:
+  postgres_data:
+  redis_data:

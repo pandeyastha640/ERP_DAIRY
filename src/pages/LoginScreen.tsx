@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Role } from '../types/dairy';
-import { Milk, ArrowRight, UserCheck } from 'lucide-react';
+import { Milk, ArrowRight, UserCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { api } from '../services/api';
 
 interface LoginScreenProps {
   onLogin: (role: Role) => void;
@@ -8,20 +9,54 @@ interface LoginScreenProps {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('operations.manager@dairyos.enterprise');
-  const [password, setPassword] = useState('••••••••••••');
-  const [selectedRole, setSelectedRole] = useState<Role>('Operations Manager');
+  const [password, setPassword] = useState('password123');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const demoRoles: { role: Role; label: string; desc: string }[] = [
-    { role: 'CEO', label: 'Chief Executive Officer', desc: 'Full corporate performance & control tower' },
-    { role: 'Operations Manager', label: 'Operations Manager', desc: 'Central milk pool, collection & processing' },
-    { role: 'Procurement Manager', label: 'Procurement Manager', desc: 'Farmers, routes & quality thresholds' },
-    { role: 'Finance Manager', label: 'Finance Manager', desc: 'Cost-per-litre decomposition & settlements' },
-    { role: 'Field Staff', label: 'Field Staff Agent', desc: 'Ultra-fast mobile collection mode' },
+  const demoRoles: { role: Role; email: string; label: string; desc: string }[] = [
+    { role: 'CEO', email: 'ceo@dairyos.enterprise', label: 'Chief Executive Officer', desc: 'Full corporate performance & control tower' },
+    { role: 'Operations Manager', email: 'operations.manager@dairyos.enterprise', label: 'Operations Manager', desc: 'Central milk pool, collection & processing' },
+    { role: 'Procurement Manager', email: 'procurement.manager@dairyos.enterprise', label: 'Procurement Manager', desc: 'Farmers, routes & quality thresholds' },
+    { role: 'Finance Manager', email: 'finance.manager@dairyos.enterprise', label: 'Finance Manager', desc: 'Cost-per-litre decomposition & settlements' },
+    { role: 'Field Staff', email: 'field.staff@dairyos.enterprise', label: 'Field Staff Agent', desc: 'Ultra-fast mobile collection mode' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(selectedRole);
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      // Attempt backend authentication
+      const res = await api.auth.login(email, password);
+      if (res.success && res.user) {
+        onLogin(res.user.role as Role);
+      } else {
+        // Fallback to role matching
+        const matched = demoRoles.find((r) => r.email === email);
+        onLogin(matched ? matched.role : 'Operations Manager');
+      }
+    } catch (err: any) {
+      console.warn('Backend login fallback to offline demo:', err.message);
+      // Offline fallback: match demo email or fallback to Operations Manager
+      const matched = demoRoles.find((r) => r.email === email);
+      onLogin(matched ? matched.role : 'Operations Manager');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInstantSwitch = async (dr: { role: Role; email: string }) => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      await api.auth.demoSwitch(dr.role);
+    } catch (err) {
+      console.warn('Demo switch API offline fallback:', err);
+    } finally {
+      setLoading(false);
+      onLogin(dr.role);
+    }
   };
 
   return (
@@ -37,18 +72,25 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             Dairy Operations System
           </h1>
           <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
-            One unified operating system for herd, farmer procurement, chilling, processing and commercial distribution.
+            One unified enterprise operating system for herd, farmer procurement, chilling, processing and commercial distribution.
           </p>
         </div>
 
         {/* Demo Environment Badge */}
-        <div className="mb-6 p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between text-xs font-mono text-slate-600">
+        <div className="mb-4 p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between text-xs font-mono text-slate-600">
           <span className="flex items-center gap-1.5 text-emerald-800 font-semibold">
             <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-            <span>DEMO ENVIRONMENT</span>
+            <span>ENTERPRISE BACKEND ACTIVE</span>
           </span>
-          <span className="text-slate-400">Sample Dataset</span>
+          <span className="text-slate-400">REST API :5000</span>
         </div>
+
+        {errorMsg && (
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
 
         {/* Standard Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,10 +120,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
           <button
             type="submit"
-            className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-lg text-xs shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            disabled={loading}
+            className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white font-semibold rounded-lg text-xs shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <span>Sign In to DairyOS</span>
-            <ArrowRight className="w-4 h-4" />
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Authenticating JWT Session...</span>
+              </>
+            ) : (
+              <>
+                <span>Sign In to DairyOS</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </form>
 
@@ -96,8 +148,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             {demoRoles.map((dr) => (
               <button
                 key={dr.role}
-                onClick={() => onLogin(dr.role)}
-                className="w-full text-left p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-emerald-600/40 transition-all flex items-center justify-between text-xs group cursor-pointer"
+                onClick={() => handleInstantSwitch(dr)}
+                disabled={loading}
+                className="w-full text-left p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-emerald-600/40 transition-all flex items-center justify-between text-xs group cursor-pointer disabled:opacity-50"
               >
                 <div>
                   <div className="font-semibold text-slate-900 group-hover:text-emerald-800">

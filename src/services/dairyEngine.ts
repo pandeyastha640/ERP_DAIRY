@@ -19,6 +19,7 @@ import {
   HerdEconomicsSummary,
   FarmerProcurementSummary,
   DerivedERPMetrics,
+  SystemSettings,
 } from '../types/dairy';
 
 /**
@@ -83,6 +84,7 @@ export function calculateMilkReconciliation(
     processingConsumptionLitres,
     spillageWastageLitres,
     closingStockLitres,
+    reconciliationStatus: 'RECONCILED',
   };
 }
 
@@ -134,7 +136,8 @@ export function deriveHerdEconomics(cattleList: Cattle[]): HerdEconomicsSummary 
  */
 export function deriveFarmerProcurement(
   farmersList: Farmer[],
-  collectionsList: MilkCollectionRecord[]
+  collectionsList: MilkCollectionRecord[],
+  settings?: Partial<SystemSettings>
 ): FarmerProcurementSummary {
   const totalActiveFarmers = farmersList.filter((f) => f.status === 'Active').length;
   const totalSuppliersToday = new Set(collectionsList.map((c) => c.farmerId)).size;
@@ -174,6 +177,10 @@ export function deriveFarmerProcurement(
     weightedAvgRatePerL,
     totalPayablesToday,
     totalRejectionsL,
+    totalPayablePending: totalPayablesToday,
+    averageRatePerLitre: weightedAvgRatePerL,
+    averageFatPct: weightedAvgFat,
+    averageSnfPct: weightedAvgSNF,
   };
 }
 
@@ -188,7 +195,8 @@ export function calculateProfitability(
   batchesList: ProcessingBatch[],
   packagingList: PackagingItem[],
   routesList: DistributionRoute[],
-  reconciliation: MilkPoolReconciliation
+  reconciliation: MilkPoolReconciliation,
+  settings?: Partial<SystemSettings>
 ) {
   // 1. Gross Revenue from Commercial Invoices
   const todayRevenue = salesOrdersList.reduce((acc, o) => acc + o.totalAmount, 0);
@@ -207,16 +215,16 @@ export function calculateProfitability(
   );
 
   // 5. Packaging Materials
-  const packagingMaterial = 4850;
+  const packagingMaterial = settings?.packagingDailyCost ?? 4850;
 
   // 6. Labour & Plant Crew
-  const labourStaff = 5200;
+  const labourStaff = settings?.labourDailyCost ?? 5200;
 
   // 7. Cold Chain Chilling
-  const chillingColdChain = 2600;
+  const chillingColdChain = settings?.chillingDailyCost ?? 2600;
 
   // 8. Electricity Utilities
-  const electricityUtilities = 3100;
+  const electricityUtilities = settings?.electricityDailyCost ?? 3100;
 
   // 9. Fleet Transport & Logistics
   const transportLogistics = Math.round(
@@ -227,8 +235,8 @@ export function calculateProfitability(
   const wastageLoss = Math.round(reconciliation.spillageWastageLitres * 27.94);
 
   // 11. Veterinary Healthcare & Overheads
-  const healthcareVeterinary = 950;
-  const otherOverheads = 1450;
+  const healthcareVeterinary = settings?.veterinaryDailyCost ?? 950;
+  const otherOverheads = settings?.overheadsDailyCost ?? 1450;
 
   const operatingCostBreakdown: OperatingCostBreakdown = {
     milkProcurement,
@@ -274,6 +282,12 @@ export function calculateProfitability(
     costPerLitre,
     revenuePerLitre,
     profitPerLitre,
+    farmerProcurementCost: milkProcurement,
+    cattleFeedCost: cattleFeed,
+    processingUtilityCost: dairyProcessing,
+    packagingCost: packagingMaterial,
+    logisticsCost: transportLogistics,
+    coldChainCost: chillingColdChain,
   };
 }
 

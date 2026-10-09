@@ -28,6 +28,9 @@ export const ReportsPage: React.FC = () => {
     inventoryList,
     salesOrdersList,
     paymentsList,
+    feedsList,
+    qualityTestsList,
+    routesList,
   } = useDairyERP();
 
   const [selectedReportId, setSelectedReportId] = useState(REPORTS_LIST[0].id);
@@ -58,6 +61,62 @@ export const ReportsPage: React.FC = () => {
             `${c.id},"${c.farmerName}",${c.shift},${c.quantityLitres},${c.fat},${c.snf},${c.ratePerLitre},${c.payableAmount}`
         ),
       ];
+    } else if (selectedReportId === 'rep-cattle-prod') {
+      rows = [
+        'Animal ID,Tag Number,Breed,Age (Years),Lactation Stage,Status,Daily Milk (L),Feed Cost/Day (INR),Shed Location',
+        ...cattleList.map(
+          (c) =>
+            `${c.id},${c.tagNumber},"${c.breed}",${c.ageYears},${c.lactation},"${c.status}",${c.milkYieldLPerDay},${c.feedCostPerDay},"${c.shedLocation}"`
+        ),
+      ];
+    } else if (selectedReportId === 'rep-feed-consume') {
+      rows = [
+        'Feed ID,Name,Feed Type,Opening (kg),Purchased (kg),Consumed (kg),Closing (kg),Unit Cost (INR),Days Runway',
+        ...feedsList.map(
+          (f) =>
+            `${f.id},"${f.name}","${f.type}",${f.openingStockKg},${f.purchasedKg},${f.consumedKg},${f.closingStockKg},${f.unitCostPerKg},${f.daysRemaining}`
+        ),
+      ];
+    } else if (selectedReportId === 'rep-quality-tests') {
+      rows = [
+        'Batch Number,Source Type,Source Name,Litres,Fat %,SNF %,CLR,Temp (°C),Adulteration,Acidity %,MBRT (Hours),Result,Tester',
+        ...qualityTestsList.map(
+          (q) =>
+            `"${q.batchNumber}","${q.sourceType}","${q.sourceName}",${q.quantityLitres},${q.fat},${q.snf},${q.clr},${q.temperatureC},"${q.adulterationTest}",${q.acidityPct},${q.mbrtHours},"${q.result}","${q.tester}"`
+        ),
+      ];
+    } else if (selectedReportId === 'rep-processing-batch') {
+      rows = [
+        'Batch ID,Date,Line,Input Milk (L),Input Fat %,Input SNF %,Products Count,Yield %,Wastage (L),Cost (INR),Status,Operator',
+        ...batchesList.map(
+          (b) =>
+            `"${b.batchId}",${b.date},"${b.pasteurizerLine}",${b.inputMilkLitres},${b.inputFatPct},${b.inputSnfPct},${b.products.length},${b.yieldPercentage},${b.wastageLitres},${b.processingCostTotal},"${b.status}","${b.operator}"`
+        ),
+      ];
+    } else if (selectedReportId === 'rep-inventory-valuation') {
+      rows = [
+        'Item SKU,Name,Category,Opening,Inward,Outward,Closing,Unit Value (INR),Total Value (INR),Status',
+        ...inventoryList.map(
+          (i) =>
+            `${i.sku},"${i.name}","${i.category}",${i.openingBalance},${i.inward},${i.outward},${i.closingBalance},${i.unitValue},${i.totalValue},"${i.status}"`
+        ),
+      ];
+    } else if (selectedReportId === 'rep-sales-orders') {
+      rows = [
+        'Order Number,Date,Customer,Channel,Product,Quantity Units,Unit Rate (INR),Total Amount (INR),Payment Status,Fulfillment',
+        ...salesOrdersList.map(
+          (o) =>
+            `"${o.orderNumber}",${o.date},"${o.customerName}","${o.channel}","${o.product}",${o.quantityUnits},${o.unitRate},${o.totalAmount},"${o.paymentStatus}","${o.fulfillmentStatus}"`
+        ),
+      ];
+    } else if (selectedReportId === 'rep-route-logistics') {
+      rows = [
+        'Route Code,Route Name,Vehicle,Driver,Total Dispatch,Delivered Units,Return Units,Logistics Cost (INR),Status',
+        ...routesList.map(
+          (r) =>
+            `"${r.routeCode}","${r.routeName}","${r.vehicleNumber}","${r.driverName}",${r.totalDispatchUnits},${r.deliveredUnits},${r.returnUnits},${r.logisticsCost},"${r.status}"`
+        ),
+      ];
     } else if (selectedReportId === 'rep-profitability-unit') {
       const b = profitability.operatingCostBreakdown;
       rows = [
@@ -77,6 +136,14 @@ export const ReportsPage: React.FC = () => {
         `Cost Per Litre,${profitability.costPerLitre},INR/L,Unit Cost`,
         `Revenue Per Litre,${profitability.revenuePerLitre},INR/L,Unit Realization`,
         `Profit Per Litre,${profitability.profitPerLitre},INR/L,Unit Net Yield`,
+      ];
+    } else if (selectedReportId === 'rep-farmer-payment') {
+      rows = [
+        'Transaction Ref,Recipient,Party Type,Litres,Amount (INR),Payment Date,Method,Status,Notes',
+        ...paymentsList.map(
+          (p) =>
+            `"${p.transactionRef}","${p.recipientName}","${p.partyType}",${p.milkLitres || 0},${p.amount},"${p.paymentDate}","${p.paymentMethod}","${p.status}","${p.notes}"`
+        ),
       ];
     } else {
       rows = [

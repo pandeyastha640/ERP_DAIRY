@@ -5,6 +5,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { AreaTrendChart, DonutChart } from '../components/charts/Charts';
 import { Modal } from '../components/common/Modal';
 import { ShoppingCart, Plus, Search, Filter, DollarSign, Layers } from 'lucide-react';
+import { api } from '../services/api';
 
 interface SalesPageProps {
   orders: SalesOrder[];
@@ -201,6 +202,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                 <th className="px-4 py-2.5 font-medium">Total Amount</th>
                 <th className="px-4 py-2.5 font-medium">Payment</th>
                 <th className="px-4 py-2.5 font-medium">Fulfillment</th>
+                <th className="px-4 py-2.5 font-medium text-right">Tax Invoice</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
@@ -218,6 +220,22 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                     <StatusBadge status={ord.paymentStatus} size="sm" />
                   </td>
                   <td className="px-4 py-3 font-sans text-[#8b949e]">{ord.fulfillmentStatus}</td>
+                  <td className="px-4 py-3 text-right font-sans">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const inv = await api.sales.getInvoice(ord.orderNumber);
+                          const d = inv.data;
+                          alert(`=== OFFICIAL GST TAX INVOICE ===\nInvoice: ${d.invoiceNumber}\nDate: ${d.invoiceDate}\nSeller: ${d.seller.legalName}\nGSTIN: ${d.seller.gstin} | FSSAI: ${d.seller.fssaiLicense}\nCustomer: ${d.buyer.customerName}\nProduct: ${d.lineItems[0].description} (HSN ${d.lineItems[0].hsnCode})\nTaxable Value: ₹${d.totals.taxableSubtotal}\nCGST: ₹${d.totals.cgstTotal} | SGST: ₹${d.totals.sgstTotal}\nGrand Total: ₹${d.totals.grandTotalINR}`);
+                        } catch (err: any) {
+                          alert(`Tax Invoice Notice: ${err.message}`);
+                        }
+                      }}
+                      className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 rounded text-xs cursor-pointer font-medium"
+                    >
+                      GST Invoice
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

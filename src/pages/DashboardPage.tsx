@@ -70,25 +70,25 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
   const avgFat =
     qualityTestsList.length > 0
       ? (
-          qualityTestsList.reduce((acc, q) => acc + q.fatPct, 0) / qualityTestsList.length
+          qualityTestsList.reduce((acc, q) => acc + (q.fat ?? 0), 0) / qualityTestsList.length
         ).toFixed(2)
       : '4.45';
 
   const avgSnf =
     qualityTestsList.length > 0
       ? (
-          qualityTestsList.reduce((acc, q) => acc + q.snfPct, 0) / qualityTestsList.length
+          qualityTestsList.reduce((acc, q) => acc + (q.snf ?? 0), 0) / qualityTestsList.length
         ).toFixed(2)
       : '8.72';
 
   const rejectedMilkLitres = reconciliation.qualityRejectedLitres;
   const qualityExceptionsCount = qualityTestsList.filter(
-    (q) => q.status === 'FAIL' || q.status === 'WARNING'
+    (q) => q.result === 'FAIL' || q.result === 'WARNING'
   ).length;
 
   // Inventory numbers
   const lowStockPackagingCount = packagingList.filter(
-    (p) => p.currentStockUnits <= p.reorderLevelUnits
+    (p) => p.closingStock <= p.reorderLevel || p.status !== 'Sufficient'
   ).length;
 
   const totalSoldLitres = batchesList.reduce((acc, b) => acc + b.inputMilkLitres * 0.92, 0);
@@ -97,7 +97,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
   const avgBatchYieldPct =
     batchesList.length > 0
       ? (
-          batchesList.reduce((acc, b) => acc + (b.yieldEfficiencyPct || 98.2), 0) /
+          batchesList.reduce((acc, b) => acc + (b.yieldPercentage || 98.2), 0) /
           batchesList.length
         ).toFixed(1)
       : '98.4';
