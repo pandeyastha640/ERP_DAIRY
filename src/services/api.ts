@@ -145,13 +145,26 @@ class ApiService {
     },
   };
 
+  // Quality Assurance Endpoints
+  quality = {
+    getAll: async () => {
+      return this.request<{ success: boolean; count: number; data: any[] }>('/quality/tests');
+    },
+    create: async (test: any) => {
+      return this.request<{ success: boolean; data: any }>('/quality/tests', {
+        method: 'POST',
+        body: JSON.stringify(test),
+      });
+    },
+  };
+
   // Chilling & Silos Endpoints
   chilling = {
     getTanks: async () => {
       return this.request<{ success: boolean; data: any[] }>('/chilling/tanks');
     },
     transfer: async (tankId: string, litres: number, targetTankId: string) => {
-      return this.request<{ success: boolean; data: any }>(`/chilling/tanks/${tankId}/transfer`, {
+      return this.request<{ success: boolean; message?: string; data: any }>(`/chilling/tanks/${tankId}/transfer`, {
         method: 'POST',
         body: JSON.stringify({ litres, targetTankId }),
       });

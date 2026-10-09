@@ -250,10 +250,14 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     api.checkHealth()
       .then(async () => {
         try {
-          const [farmersRes, cattleRes, tanksRes] = await Promise.all([
+          const [farmersRes, cattleRes, tanksRes, batchesRes, salesRes, paymentsRes, qualityRes] = await Promise.all([
             api.farmers.getAll(),
             api.cattle.getAll(),
             api.chilling.getTanks(),
+            api.processing.getBatches(),
+            api.sales.getOrders(),
+            api.payments.getAll(),
+            api.quality.getAll(),
           ]);
 
           if (farmersRes?.data?.length) {
@@ -309,6 +313,37 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 return t;
               });
             });
+          }
+
+          if (salesRes?.data?.length) {
+            setSalesOrdersList(salesRes.data.map((s: any) => ({
+              id: s.id,
+              orderNumber: s.orderNumber,
+              date: s.date,
+              customerName: s.customerName,
+              channel: s.channel,
+              product: s.product,
+              quantityUnits: s.quantityUnits,
+              unitRate: s.unitRate,
+              totalAmount: s.totalAmount,
+              paymentStatus: s.paymentStatus,
+              fulfillmentStatus: s.fulfillmentStatus,
+            })));
+          }
+
+          if (paymentsRes?.data?.length) {
+            setPaymentsList(paymentsRes.data.map((p: any) => ({
+              id: p.id,
+              transactionRef: p.transactionRef,
+              recipientName: p.recipientName,
+              partyType: p.partyType,
+              milkLitres: p.milkLitres,
+              amount: p.amount,
+              paymentDate: p.paymentDate,
+              paymentMethod: p.paymentMethod,
+              status: p.status,
+              notes: p.notes,
+            })));
           }
         } catch (e) {
           console.warn('Backend sync notice:', e);
@@ -638,6 +673,20 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       financialImpact: `+₹${order.totalAmount.toLocaleString()} revenue`,
       severity: 'info',
     });
+
+    // 4. Asynchronously sync to backend database
+    api.sales.createOrder({
+      orderNumber: order.orderNumber,
+      date: order.date,
+      customerName: order.customerName,
+      channel: order.channel,
+      product: order.product,
+      quantityUnits: order.quantityUnits,
+      unitRate: order.unitRate,
+      totalAmount: order.totalAmount,
+      paymentStatus: order.paymentStatus,
+      fulfillmentStatus: order.fulfillmentStatus,
+    }).catch((err) => console.warn('Sales order sync notice:', err.message));
   };
 
   /**
@@ -684,6 +733,19 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       financialImpact: `₹${txn.amount.toLocaleString()} settled`,
       severity: 'info',
     });
+
+    // Sync to backend database
+    api.payments.create({
+      transactionRef: txn.transactionRef,
+      recipientName: txn.recipientName,
+      partyType: txn.partyType,
+      milkLitres: txn.milkLitres,
+      amount: txn.amount,
+      paymentDate: txn.paymentDate,
+      paymentMethod: txn.paymentMethod,
+      status: txn.status,
+      notes: txn.notes,
+    }).catch((err) => console.warn('Payment transaction sync notice:', err.message));
   };
 
   /**
@@ -868,6 +930,23 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       description: `Lab test completed: ${test.sourceName}. Fat: ${test.fat}%, SNF: ${test.snf}%, Temp: ${test.temperatureC}°C [${test.result}]`,
       severity: test.result === 'FAIL' ? 'critical' : test.result === 'WARNING' ? 'warning' : 'info',
     });
+
+    api.quality.create({
+      batchNumber: test.batchNumber,
+      sourceType: test.sourceType,
+      sourceName: test.sourceName,
+      quantityLitres: test.quantityLitres,
+      fat: test.fat,
+      snf: test.snf,
+      clr: test.clr,
+      temperatureC: test.temperatureC,
+      adulterationTest: test.adulterationTest,
+      acidityPct: test.acidityPct,
+      mbrtHours: test.mbrtHours,
+      result: test.result,
+      tester: test.tester,
+      testTime: test.testTime,
+    }).catch((err) => console.warn('Quality test sync notice:', err.message));
   };
 
   const dismissAlert = (id: string) => {

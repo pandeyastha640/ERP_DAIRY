@@ -13,6 +13,7 @@ import { paymentsRouter } from './routes/payments';
 import { metricsRouter } from './routes/metrics';
 import { iotRouter } from './routes/iot';
 import { aiRouter } from './routes/ai';
+import { qualityRouter } from './routes/quality';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use('/api/v1/chilling', chillingRouter);
 app.use('/api/v1/processing', processingRouter);
 app.use('/api/v1/sales', salesRouter);
 app.use('/api/v1/payments', paymentsRouter);
+app.use('/api/v1/quality', qualityRouter);
 app.use('/api/v1/metrics', metricsRouter);
 app.use('/api/v1/iot', iotRouter);
 app.use('/api/v1/ai', aiRouter);
