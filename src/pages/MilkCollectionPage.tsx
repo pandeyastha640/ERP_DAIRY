@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { MilkCollectionRecord, Farmer } from '../types/dairy';
+import { MilkCollectionRecord, Farmer, QualityTestRecord } from '../types/dairy';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { QuickCollectionModal } from '../components/operations/QuickCollectionModal';
+import { EntityDetailDrawer } from '../components/common/EntityDetailDrawer';
 import {
   Scale,
   Plus,
@@ -19,8 +20,9 @@ import {
 interface MilkCollectionPageProps {
   collections: MilkCollectionRecord[];
   farmers: Farmer[];
-  onAddCollection: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => void;
+  onAddCollection: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => string | undefined;
   onOpenMobileView: () => void;
+  qualityTests: QualityTestRecord[];
 }
 
 export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
@@ -28,10 +30,12 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
   farmers,
   onAddCollection,
   onOpenMobileView,
+  qualityTests,
 }) => {
   const [shiftFilter, setShiftFilter] = useState<'All' | 'Morning' | 'Evening'>('All');
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeCollection, setActiveCollection] = useState<MilkCollectionRecord | null>(null);
 
   const totalLitres = collections.reduce((acc, c) => acc + c.quantityLitres, 0);
   const morningLitres = collections.filter((c) => c.shift === 'Morning').reduce((acc, c) => acc + c.quantityLitres, 0);
@@ -53,12 +57,12 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
             Milk Collection Desk
           </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Real-time farmer inward intake, milk analyzer integration, lactometer testing and instantaneous payable calculation.
           </p>
         </div>
@@ -66,13 +70,13 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenMobileView}
-            className="px-3 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-[#58a6ff] rounded-lg transition-colors"
+            className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-blue-700 rounded-lg transition-colors"
           >
             Touch Field Mode
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
             <span>Record Collection</span>
@@ -99,27 +103,27 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="bg-white border border-slate-200 rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
+          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search Farmer name, ID or Centre..."
-            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+            className="w-full bg-slate-50 border border-slate-200 focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 outline-none"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#8b949e]">Shift Filter:</span>
-          <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
+          <span className="text-xs text-slate-500">Shift Filter:</span>
+          <div className="flex bg-slate-50 border border-slate-200 rounded-lg p-0.5 text-xs">
             {(['All', 'Morning', 'Evening'] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setShiftFilter(s)}
                 className={`px-3 py-1 rounded-md transition-colors ${
-                  shiftFilter === s ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                  shiftFilter === s ? 'bg-emerald-700 text-white font-medium' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 {s}
@@ -130,16 +134,16 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
       </div>
 
       {/* Collection Records Table */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
-        <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#f0f6fc]">Today's Milk Inward Log</h3>
-          <span className="text-xs font-mono text-[#3fb950] font-semibold">
+      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-900">Today's Milk Inward Log</h3>
+          <span className="text-xs font-mono text-emerald-700 font-semibold">
             Total Payable: ₹{totalPayable.toLocaleString()}
           </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+            <thead className="bg-slate-50 text-slate-500 font-mono border-b border-slate-200">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Time / Shift</th>
                 <th className="px-4 py-2.5 font-medium">Farmer</th>
@@ -153,23 +157,23 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
                 <th className="px-4 py-2.5 font-medium text-right">Payable</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-mono tabular-nums">
               {filtered.map((item) => (
-                <tr key={item.id} className="hover:bg-[#1f2937]/30 transition-colors">
+                <tr key={item.id} onClick={() => setActiveCollection(item)} className="cursor-pointer hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-3">
-                    <span className="font-bold text-[#f0f6fc]">{item.time}</span>
-                    <span className="text-[#8b949e] ml-2 text-[11px] font-sans">({item.shift})</span>
+                    <span className="font-bold text-slate-900">{item.time}</span>
+                    <span className="text-slate-500 ml-2 text-[11px] font-sans">({item.shift})</span>
                   </td>
                   <td className="px-4 py-3 font-sans">
-                    <div className="font-semibold text-[#f0f6fc]">{item.farmerName}</div>
-                    <div className="text-[11px] text-[#8b949e] font-mono">{item.farmerId}</div>
+                    <div className="font-semibold text-slate-900">{item.farmerName}</div>
+                    <div className="text-[11px] text-slate-500 font-mono">{item.farmerId}</div>
                   </td>
-                  <td className="px-4 py-3 font-sans text-[#8b949e]">{item.centre}</td>
-                  <td className="px-4 py-3 font-bold text-[#f0f6fc]">{item.quantityLitres.toFixed(1)} L</td>
-                  <td className="px-4 py-3 text-[#58a6ff]">{item.fat.toFixed(2)}%</td>
+                  <td className="px-4 py-3 font-sans text-slate-500">{item.centre}</td>
+                  <td className="px-4 py-3 font-bold text-slate-900">{item.quantityLitres.toFixed(1)} L</td>
+                  <td className="px-4 py-3 text-blue-700">{item.fat.toFixed(2)}%</td>
                   <td className="px-4 py-3">{item.snf.toFixed(2)}%</td>
                   <td className="px-4 py-3">
-                    <span className={item.temperatureC > 20 ? 'text-[#f0883e] font-bold' : 'text-[#c9d1d9]'}>
+                    <span className={item.temperatureC > 20 ? 'text-amber-700 font-bold' : 'text-slate-700'}>
                       {item.temperatureC.toFixed(1)}°C
                     </span>
                   </td>
@@ -179,7 +183,7 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
                   <td className="px-4 py-3">
                     {item.ratePerLitre > 0 ? `₹${item.ratePerLitre.toFixed(2)}` : '-'}
                   </td>
-                  <td className="px-4 py-3 text-right font-bold text-[#3fb950]">
+                  <td className="px-4 py-3 text-right font-bold text-emerald-700">
                     {item.payableAmount > 0 ? `₹${item.payableAmount.toLocaleString()}` : 'REJECTED'}
                   </td>
                 </tr>
@@ -188,6 +192,33 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
           </table>
         </div>
       </div>
+
+      {activeCollection && (
+        <EntityDetailDrawer
+          isOpen={!!activeCollection}
+          onClose={() => setActiveCollection(null)}
+          title={`Milk Collection ${activeCollection.collectionCode}`}
+          subtitle={`${activeCollection.farmerName} (${activeCollection.farmerId}) · ${activeCollection.date} ${activeCollection.time}`}
+        >
+          <dl className="grid grid-cols-2 gap-3 text-xs">
+            {[
+              ['Collection Point', activeCollection.centre],
+              ['Shift', activeCollection.shift],
+              ['Volume', `${activeCollection.quantityLitres.toLocaleString()} L`],
+              ['Fat / SNF', `${activeCollection.fat}% / ${activeCollection.snf}%`],
+              ['Temperature', `${activeCollection.temperatureC}°C`],
+              ['Quality', activeCollection.quality],
+              ['Rate', `₹${activeCollection.ratePerLitre.toFixed(2)}/L`],
+              ['Payable', `₹${activeCollection.payableAmount.toLocaleString()}`],
+            ].map(([label, value]) => <div key={label} className="rounded border border-slate-200 bg-slate-50 p-3"><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-900">{value}</dd></div>)}
+          </dl>
+          <section className="mt-5">
+            <h3 className="text-sm font-semibold text-slate-900">Linked Quality Records</h3>
+            {qualityTests.filter((test) => test.linkedCollectionId === activeCollection.id).map((test) => <div key={test.id} className="mt-2 rounded border border-slate-200 p-3 text-xs"><div className="font-semibold text-slate-900">{test.batchNumber} · {test.result}</div><div className="mt-1 text-slate-600">Fat {test.fat}% · SNF {test.snf}% · {test.temperatureC}°C · Tested by {test.tester}</div></div>)}
+            {qualityTests.every((test) => test.linkedCollectionId !== activeCollection.id) && <p className="mt-2 text-xs text-slate-500">No linked quality record.</p>}
+          </section>
+        </EntityDetailDrawer>
+      )}
 
       {/* QUICK ENTRY MODAL */}
       <QuickCollectionModal

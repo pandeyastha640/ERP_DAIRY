@@ -3,6 +3,7 @@ import { InventoryItem } from '../types/dairy';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
+import { EntityDetailDrawer } from '../components/common/EntityDetailDrawer';
 import { Warehouse, Plus, Minus, Search, ArrowRightLeft, Sliders } from 'lucide-react';
 
 interface InventoryPageProps {
@@ -14,6 +15,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+  const [activeItem, setActiveItem] = useState<InventoryItem | null>(null);
   const [adjustItemId, setAdjustItemId] = useState(inventory[0]?.id || '');
   const [adjustAmount, setAdjustAmount] = useState('100');
   const [adjustType, setAdjustType] = useState<'In' | 'Out'>('In');
@@ -40,12 +42,12 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
             Unified Enterprise Inventory
           </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Single-pane stock ledger unifying Raw Milk, Finished Goods, Packaging, Herd Feed and Plant Chemicals.
           </p>
         </div>
@@ -56,7 +58,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
               setAdjustType('In');
               setIsAdjustModalOpen(true);
             }}
-            className="px-3 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-[#3fb950] rounded-lg transition-colors flex items-center gap-1.5"
+            className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-emerald-700 rounded-lg transition-colors flex items-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Stock In</span>
@@ -66,7 +68,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
               setAdjustType('Out');
               setIsAdjustModalOpen(true);
             }}
-            className="px-3 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-[#f0883e] rounded-lg transition-colors flex items-center gap-1.5"
+            className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-amber-700 rounded-lg transition-colors flex items-center gap-1.5"
           >
             <Minus className="w-3.5 h-3.5" />
             <span>Stock Out</span>
@@ -83,15 +85,15 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
       </div>
 
       {/* Search and Category Filter */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="bg-white border border-slate-200 rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
+          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search Inventory SKU, Item or Warehouse..."
-            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+            className="w-full bg-slate-50 border border-slate-200 focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 outline-none"
           />
         </div>
 
@@ -101,7 +103,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
               key={cat}
               onClick={() => setCategoryFilter(cat)}
               className={`px-3 py-1 text-xs rounded-md font-medium transition-colors whitespace-nowrap ${
-                categoryFilter === cat ? 'bg-[#388bfd] text-white' : 'text-[#8b949e] hover:text-[#f0f6fc] bg-[#0d1117]'
+                categoryFilter === cat ? 'bg-emerald-700 text-white' : 'text-slate-500 hover:text-slate-900 bg-slate-50'
               }`}
             >
               {cat}
@@ -111,10 +113,10 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
       </div>
 
       {/* Inventory Table */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+            <thead className="bg-slate-50 text-slate-500 font-mono border-b border-slate-200">
               <tr>
                 <th className="px-4 py-2.5 font-medium">SKU</th>
                 <th className="px-4 py-2.5 font-medium">Item Name</th>
@@ -129,21 +131,21 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
                 <th className="px-4 py-2.5 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-mono tabular-nums">
               {filtered.map((item) => (
-                <tr key={item.id} className="hover:bg-[#1f2937]/30 transition-colors">
-                  <td className="px-4 py-3 font-bold text-[#58a6ff]">{item.sku}</td>
-                  <td className="px-4 py-3 font-sans font-semibold text-[#f0f6fc]">{item.name}</td>
-                  <td className="px-4 py-3 font-sans text-[#8b949e]">{item.category}</td>
+                <tr key={item.id} onClick={() => setActiveItem(item)} className="cursor-pointer hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3 font-bold text-blue-700">{item.sku}</td>
+                  <td className="px-4 py-3 font-sans font-semibold text-slate-900">{item.name}</td>
+                  <td className="px-4 py-3 font-sans text-slate-500">{item.category}</td>
                   <td className="px-4 py-3">{item.openingBalance.toLocaleString()} {item.unit}</td>
-                  <td className="px-4 py-3 text-[#3fb950]">+{item.inward.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-[#f0883e]">-{item.outward.toLocaleString()}</td>
-                  <td className="px-4 py-3 font-bold text-[#f0f6fc]">
+                  <td className="px-4 py-3 text-emerald-700">+{item.inward.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-amber-700">-{item.outward.toLocaleString()}</td>
+                  <td className="px-4 py-3 font-bold text-slate-900">
                     {item.closingBalance.toLocaleString()} {item.unit}
                   </td>
                   <td className="px-4 py-3">₹{item.unitValue.toFixed(2)}</td>
-                  <td className="px-4 py-3 font-bold text-[#3fb950]">₹{item.totalValue.toLocaleString()}</td>
-                  <td className="px-4 py-3 font-sans text-[#8b949e] text-[11px]">{item.warehouseLocation}</td>
+                  <td className="px-4 py-3 font-bold text-emerald-700">₹{item.totalValue.toLocaleString()}</td>
+                  <td className="px-4 py-3 font-sans text-slate-500 text-[11px]">{item.warehouseLocation}</td>
                   <td className="px-4 py-3 font-sans">
                     <StatusBadge status={item.status} size="sm" />
                   </td>
@@ -153,6 +155,29 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
           </table>
         </div>
       </div>
+
+      {activeItem && (
+        <EntityDetailDrawer
+          isOpen={!!activeItem}
+          onClose={() => setActiveItem(null)}
+          title={activeItem.name}
+          subtitle={`${activeItem.sku} · ${activeItem.category} · ${activeItem.warehouseLocation}`}
+          actions={<button onClick={() => { setAdjustItemId(activeItem.id); setAdjustType('In'); setIsAdjustModalOpen(true); setActiveItem(null); }} className="rounded bg-emerald-700 px-3 py-2 text-xs font-semibold text-white">Adjust Stock</button>}
+        >
+          <dl className="grid grid-cols-2 gap-3 text-xs">
+            {[
+              ['Status', activeItem.status],
+              ['Opening', `${activeItem.openingBalance.toLocaleString()} ${activeItem.unit}`],
+              ['Inward', `${activeItem.inward.toLocaleString()} ${activeItem.unit}`],
+              ['Outward', `${activeItem.outward.toLocaleString()} ${activeItem.unit}`],
+              ['Closing', `${activeItem.closingBalance.toLocaleString()} ${activeItem.unit}`],
+              ['Unit Value', `₹${activeItem.unitValue.toFixed(2)}`],
+              ['Total Value', `₹${activeItem.totalValue.toLocaleString()}`],
+              ['Reorder At', `${activeItem.reorderLevel.toLocaleString()} ${activeItem.unit}`],
+            ].map(([label, value]) => <div key={label} className="rounded border border-slate-200 bg-slate-50 p-3"><dt className="text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-900">{value}</dd></div>)}
+          </dl>
+        </EntityDetailDrawer>
+      )}
 
       {/* ADJUSTMENT MODAL */}
       <Modal
@@ -164,11 +189,11 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
       >
         <form onSubmit={handleAdjust} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Select Item</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Select Item</label>
             <select
               value={adjustItemId}
               onChange={(e) => setAdjustItemId(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs text-[#f0f6fc]"
+              className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs text-slate-900"
             >
               {inventory.map((inv) => (
                 <option key={inv.id} value={inv.id}>
@@ -178,27 +203,27 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">
+            <label className="block text-xs font-medium text-slate-500 mb-1">
               Quantity to {adjustType === 'In' ? 'Add' : 'Deduct'}
             </label>
             <input
               type="number"
               value={adjustAmount}
               onChange={(e) => setAdjustAmount(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono text-[#f0f6fc]"
+              className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs font-mono text-slate-900"
             />
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setIsAdjustModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 text-xs text-slate-500"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded text-xs font-semibold"
+              className="px-4 py-2 bg-emerald-700 text-white rounded text-xs font-semibold"
             >
               Confirm Adjustment
             </button>

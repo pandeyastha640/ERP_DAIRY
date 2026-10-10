@@ -1,5 +1,6 @@
 export type Role =
   | 'CEO'
+  | 'CEO / Owner'
   | 'COO'
   | 'Operations Manager'
   | 'Plant Manager'
@@ -18,6 +19,7 @@ export type DateFilter = 'Today' | 'Yesterday' | 'Last 7 Days' | 'Last 30 Days' 
 
 export interface Cattle {
   id: string; // e.g. COW-001
+  archivedAt?: string;
   tagNumber: string;
   breed: 'Gir' | 'Sahiwal' | 'Murrah Buffalo' | 'Red Sindhi' | 'HF Cross' | 'Jersey';
   ageYears: number;
@@ -37,6 +39,7 @@ export interface Cattle {
 
 export interface Farmer {
   id: string; // e.g. FARM-001
+  archivedAt?: string;
   name: string;
   village: string;
   contactNumber: string;
@@ -111,17 +114,18 @@ export interface MilkCollectionRecord {
 
 export interface QualityTestRecord {
   id: string;
+  linkedCollectionId?: string;
   batchNumber: string;
   sourceType: 'Own Cattle' | 'Farmer Procurement' | 'Chilling Tank Pool';
   sourceName: string;
   quantityLitres: number;
   fat: number;
   snf: number;
-  clr: number; // Corrected Lactometer Reading
+  clr?: number; // Corrected Lactometer Reading
   temperatureC: number;
-  adulterationTest: 'Negative' | 'Trace' | 'Positive';
-  acidityPct: number;
-  mbrtHours: number; // Methylene Blue Reduction Test
+  adulterationTest?: 'Negative' | 'Trace' | 'Positive';
+  acidityPct?: number;
+  mbrtHours?: number; // Methylene Blue Reduction Test
   result: 'PASS' | 'WARNING' | 'FAIL';
   tester: string;
   testTime: string;
@@ -181,6 +185,7 @@ export interface ProcessingBatch {
 
 export interface ProductMaster {
   id: string;
+  archivedAt?: string;
   sku: string;
   name: string;
   category: 'Fresh Milk' | 'Curd & Yogurt' | 'Paneer' | 'Ghee' | 'Butter & Cream' | 'Flavoured Milk';
@@ -198,6 +203,7 @@ export interface ProductMaster {
 
 export interface PackagingItem {
   id: string;
+  archivedAt?: string;
   name: string;
   materialType: 'Polypouch' | 'PET Bottle' | 'Tub & Foil' | 'Corrugated Box' | 'Cap & Seal' | 'Glass Bottle';
   size: string;
@@ -231,6 +237,7 @@ export interface InventoryItem {
 
 export interface DistributionRoute {
   id: string;
+  archivedAt?: string;
   routeCode: string;
   routeName: string;
   shift: 'Morning' | 'Evening';
@@ -247,6 +254,24 @@ export interface DistributionRoute {
   stopsCount: number;
 }
 
+export interface Customer {
+  id: string;
+  name: string;
+  channel: 'Distributor' | 'Retail Supermarket' | 'Direct Consumer' | 'Institutional / Horeca';
+  contactName: string;
+  phone: string;
+  billingAddress: string;
+  archivedAt?: string;
+}
+
+export interface Vehicle {
+  id: string;
+  registration: string;
+  vehicleType: string;
+  capacityUnits: number;
+  archivedAt?: string;
+}
+
 export interface SalesOrder {
   id: string;
   orderNumber: string;
@@ -254,9 +279,11 @@ export interface SalesOrder {
   customerName: string;
   channel: 'Distributor' | 'Retail Supermarket' | 'Direct Consumer' | 'Institutional / Horeca';
   product: string;
+  productSku?: string;
   quantityUnits: number;
   unitRate: number;
   totalAmount: number;
+  paidAmount?: number;
   paymentStatus: 'Paid' | 'Pending' | 'Partially Paid';
   fulfillmentStatus: 'Dispatched' | 'Delivered' | 'Pending Dispatch';
 }
@@ -316,9 +343,13 @@ export interface AuditLogEntry {
   userName: string;
   userRole: Role;
   module: string;
+  entity?: string;
+  entityId?: string;
   action: string;
   recordId: string;
   description: string;
+  previousValue?: unknown;
+  newValue?: unknown;
   financialImpact?: string;
   milkImpactLitres?: number;
   severity?: 'info' | 'warning' | 'critical';

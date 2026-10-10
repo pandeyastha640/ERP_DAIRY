@@ -1,4 +1,6 @@
 import React from 'react';
+import { Role } from '../../types/dairy';
+import { canAccessModule } from '../../services/permissions';
 import {
   LayoutDashboard,
   Radio,
@@ -90,6 +92,7 @@ export const NAV_GROUPS: Array<{
 ];
 
 interface SidebarProps {
+  currentRole: Role;
   currentModule: string;
   onSelectModule: (id: string) => void;
   collapsed: boolean;
@@ -97,6 +100,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
+  currentRole,
   currentModule,
   onSelectModule,
   collapsed,
@@ -144,7 +148,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Navigation Groups */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
-        {NAV_GROUPS.map((grp) => (
+        {NAV_GROUPS.map((grp) => ({
+          ...grp,
+          items: grp.items.filter((item) => canAccessModule(currentRole, item.id)),
+        })).filter((grp) => grp.items.length > 0).map((grp) => (
           <div key={grp.group} className="space-y-0.5">
             {!collapsed && (
               <div className="px-2.5 py-1 text-[10px] font-semibold tracking-wider text-slate-400 uppercase font-mono">

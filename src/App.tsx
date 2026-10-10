@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Role,
   Facility,
@@ -29,6 +29,7 @@ import { QuickCollectionModal } from './components/operations/QuickCollectionMod
 import { MobileFieldView } from './components/operations/MobileFieldView';
 import { MilkMoneyTracerModal } from './components/operations/MilkMoneyTracerModal';
 import { AuditLogDrawer } from './components/operations/AuditLogDrawer';
+import { canAccessModule, getDefaultModuleForRole } from './services/permissions';
 
 // Pages
 import { DashboardPage } from './pages/DashboardPage';
@@ -88,7 +89,7 @@ function AppContent() {
     currentDateFilter,
     setCurrentDateFilter,
     currentModule,
-    setCurrentModule,
+    setCurrentModule: setCurrentModuleState,
     selectedItemId,
     setSelectedItemId,
 
@@ -103,6 +104,8 @@ function AppContent() {
     packagingList,
     inventoryList,
     routesList,
+    customersList,
+    vehiclesList,
     salesOrdersList,
     paymentsList,
     auditLogs,
@@ -119,16 +122,36 @@ function AppContent() {
     recordSalesOrder,
     recordPayment,
     addCattle,
+    archiveCattle,
     addFarmer,
+    archiveFarmer,
     recordFeedPurchase,
     recordFeedConsumption,
     restockPackaging,
+    addPackaging,
+    archivePackaging,
+    saveCustomer,
+    archiveCustomer,
+    saveVehicle,
+    archiveVehicle,
     adjustInventory,
     addRoute,
+    archiveRoute,
     addProduct,
+    archiveProduct,
     addQualityTest,
     dismissAlert,
   } = useDairyERP();
+
+  const setCurrentModule = (moduleId: string) => {
+    if (canAccessModule(currentRole, moduleId)) setCurrentModuleState(moduleId);
+  };
+
+  useEffect(() => {
+    if (!canAccessModule(currentRole, currentModule)) {
+      setCurrentModuleState(getDefaultModuleForRole(currentRole));
+    }
+  }, [currentRole, currentModule, setCurrentModuleState]);
 
   // Search navigation helper
   const handleSelectSearchResult = (moduleName: string, itemId?: string) => {
@@ -203,6 +226,7 @@ function AppContent() {
       <div className="flex flex-1 relative">
         {/* Left Sidebar */}
         <Sidebar
+          currentRole={currentRole}
           currentModule={currentModule}
           onSelectModule={(id) => {
             setCurrentModule(id);
@@ -258,6 +282,7 @@ function AppContent() {
               <CattleManagementPage
                 cattleList={cattleList}
                 onAddCattle={addCattle}
+                onArchiveCattle={archiveCattle}
                 selectedCattleId={selectedItemId}
               />
             )}
@@ -266,6 +291,7 @@ function AppContent() {
               <FarmerManagementPage
                 farmers={farmersList}
                 onAddFarmer={addFarmer}
+                onArchiveFarmer={archiveFarmer}
                 selectedFarmerId={selectedItemId}
               />
             )}
@@ -285,6 +311,7 @@ function AppContent() {
                 farmers={farmersList}
                 onAddCollection={recordMilkCollection}
                 onOpenMobileView={() => setIsMobileFieldOpen(true)}
+                qualityTests={qualityTestsList}
               />
             )}
 
@@ -313,6 +340,7 @@ function AppContent() {
               <ProductManagementPage
                 products={productsList}
                 onAddProduct={addProduct}
+                onArchiveProduct={archiveProduct}
                 selectedProductId={selectedItemId}
               />
             )}
@@ -321,6 +349,8 @@ function AppContent() {
               <PackagingManagementPage
                 packaging={packagingList}
                 onAddStock={restockPackaging}
+                onSavePackaging={addPackaging}
+                onArchivePackaging={archivePackaging}
               />
             )}
 
@@ -335,6 +365,10 @@ function AppContent() {
               <DistributionPage
                 routes={routesList}
                 onAddRoute={addRoute}
+                onArchiveRoute={archiveRoute}
+                vehicles={vehiclesList}
+                onSaveVehicle={saveVehicle}
+                onArchiveVehicle={archiveVehicle}
               />
             )}
 
@@ -342,6 +376,10 @@ function AppContent() {
               <SalesPage
                 orders={salesOrdersList}
                 onAddOrder={recordSalesOrder}
+                customers={customersList}
+                onSaveCustomer={saveCustomer}
+                onArchiveCustomer={archiveCustomer}
+                payments={paymentsList}
               />
             )}
 

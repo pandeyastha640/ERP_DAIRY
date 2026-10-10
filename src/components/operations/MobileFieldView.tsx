@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Farmer, MilkCollectionRecord } from '../../types/dairy';
 import { CheckCircle2, AlertTriangle, XCircle, ArrowLeft, Plus, Check } from 'lucide-react';
+import { assessMilkCollection } from '../../services/dairyEngine';
 
 interface MobileFieldViewProps {
   farmers: Farmer[];
-  onSaveCollection: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => void;
+  onSaveCollection: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => string | undefined;
   onClose?: () => void;
 }
 
@@ -20,6 +21,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
   const [snf, setSnf] = useState<string>('8.6');
   const [temperature, setTemperature] = useState<string>('18.2');
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const selectedFarmer = farmers.find((f) => f.id === selectedFarmerId) || farmers[0];
 
@@ -28,26 +30,23 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
   const numSnf = parseFloat(snf) || 0;
   const numTemp = parseFloat(temperature) || 0;
 
-  // Real-time quality verification
-  const isFail = numFat < 3.2 || numSnf < 7.8 || numTemp > 24;
-  const isWarning = !isFail && (numTemp > 20 || numFat < 3.8);
-  const qualityStatus: 'PASS' | 'WARNING' | 'FAIL' = isFail
-    ? 'FAIL'
-    : isWarning
-    ? 'WARNING'
-    : 'PASS';
-
-  // Standard dairy pricing formula: Base 34.5 + (fat - 4.0)*4.5 + (snf - 8.5)*2.5
-  const calculatedRate = isFail
-    ? 0
-    : Math.max(0, +(34.5 + (numFat - 4.0) * 4.5 + (numSnf - 8.5) * 2.5).toFixed(2));
-  const calculatedPayable = Math.round(numLitres * calculatedRate);
+  const assessment = assessMilkCollection(numLitres, numFat, numSnf, numTemp);
+  const qualityStatus = assessment.valid ? assessment.quality : 'FAIL';
+  const calculatedRate = assessment.valid ? assessment.ratePerLitre : 0;
+  const calculatedPayable = assessment.valid ? assessment.payableAmount : 0;
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFarmer || numLitres <= 0) return;
+    if (!selectedFarmer) {
+      setSubmitError('Select a registered farmer before recording milk.');
+      return;
+    }
+    if (!assessment.valid) {
+      setSubmitError(assessment.error);
+      return;
+    }
 
-    onSaveCollection({
+    const error = onSaveCollection({
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       date: new Date().toISOString().split('T')[0],
       shift,
@@ -58,12 +57,17 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
       fat: numFat,
       snf: numSnf,
       temperatureC: numTemp,
-      quality: qualityStatus,
-      ratePerLitre: calculatedRate,
-      payableAmount: calculatedPayable,
+      quality: assessment.quality,
+      ratePerLitre: assessment.ratePerLitre,
+      payableAmount: assessment.payableAmount,
       testedBy: 'Field Agent Mobile Device',
     });
+    if (error) {
+      setSubmitError(error);
+      return;
+    }
 
+    setSubmitError('');
     setShowSuccessToast(true);
     setTimeout(() => {
       setShowSuccessToast(false);
@@ -123,6 +127,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
       )}
 
       <form onSubmit={handleSave} className="space-y-4">
+        {submitError && <p role="alert" className="text-sm text-rose-700">{submitError}</p>}
         {/* Step 1: Select Farmer */}
         <div>
           <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">

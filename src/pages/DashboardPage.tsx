@@ -70,14 +70,22 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
   const avgFat =
     qualityTestsList.length > 0
       ? (
+<<<<<<< Updated upstream
           qualityTestsList.reduce((acc, q) => acc + (q.fat ?? 0), 0) / qualityTestsList.length
+=======
+          qualityTestsList.reduce((acc, q) => acc + q.fat, 0) / qualityTestsList.length
+>>>>>>> Stashed changes
         ).toFixed(2)
       : '4.45';
 
   const avgSnf =
     qualityTestsList.length > 0
       ? (
+<<<<<<< Updated upstream
           qualityTestsList.reduce((acc, q) => acc + (q.snf ?? 0), 0) / qualityTestsList.length
+=======
+          qualityTestsList.reduce((acc, q) => acc + q.snf, 0) / qualityTestsList.length
+>>>>>>> Stashed changes
         ).toFixed(2)
       : '8.72';
 
@@ -88,7 +96,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
 
   // Inventory numbers
   const lowStockPackagingCount = packagingList.filter(
+<<<<<<< Updated upstream
     (p) => p.closingStock <= p.reorderLevel || p.status !== 'Sufficient'
+=======
+    (p) => p.closingStock <= p.reorderLevel
+>>>>>>> Stashed changes
   ).length;
 
   const totalSoldLitres = batchesList.reduce((acc, b) => acc + b.inputMilkLitres * 0.92, 0);
@@ -132,19 +144,31 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
     },
   ];
 
+  const reconciliationVariance =
+    reconciliation.openingStockLitres +
+    reconciliation.ownProductionLitres +
+    reconciliation.farmerProcurementLitres -
+    reconciliation.qualityRejectedLitres -
+    reconciliation.processingConsumptionLitres -
+    reconciliation.spillageWastageLitres -
+    reconciliation.closingStockLitres;
+  const reconciliationStatus = Math.abs(reconciliationVariance) < 1
+    ? 'RECONCILED'
+    : 'VARIANCE DETECTED';
+
   const reconciliationStatusIcon =
-    reconciliation.reconciliationStatus === 'RECONCILED' ? (
+    reconciliationStatus === 'RECONCILED' ? (
       <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-    ) : reconciliation.reconciliationStatus === 'VARIANCE DETECTED' ? (
+    ) : reconciliationStatus === 'VARIANCE DETECTED' ? (
       <AlertTriangle className="w-4 h-4 text-amber-600" />
     ) : (
       <AlertCircle className="w-4 h-4 text-rose-600" />
     );
 
   const reconciliationBadgeStyle =
-    reconciliation.reconciliationStatus === 'RECONCILED'
+    reconciliationStatus === 'RECONCILED'
       ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-      : reconciliation.reconciliationStatus === 'VARIANCE DETECTED'
+      : reconciliationStatus === 'VARIANCE DETECTED'
       ? 'bg-amber-50 text-amber-800 border-amber-200'
       : 'bg-rose-50 text-rose-800 border-rose-200';
 
@@ -219,7 +243,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold border ${reconciliationBadgeStyle}`}
             >
               {reconciliationStatusIcon}
-              <span>{reconciliation.reconciliationStatus}</span>
+              <span>{reconciliationStatus}</span>
             </span>
             <button
               onClick={() => onNavigate('milk-ops')}
@@ -441,9 +465,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           <div className="p-3 bg-white border border-slate-200 rounded-lg shadow-2xs">
             <span className="text-[11px] font-medium text-slate-500 block">Farmer Payables</span>
             <span className="text-base font-bold font-mono text-slate-900 mt-1 block">
-              ₹{(procurementSummary.totalPayablePending / 1000).toFixed(1)}k
+              ₹{(procurementSummary.totalPayablesToday / 1000).toFixed(1)}k
             </span>
-            <span className="text-[10px] text-slate-500">Avg ₹{procurementSummary.averageRatePerLitre.toFixed(2)}/L</span>
+            <span className="text-[10px] text-slate-500">Avg ₹{procurementSummary.weightedAvgRatePerL.toFixed(2)}/L</span>
           </div>
 
           <div className="p-3 bg-white border border-slate-200 rounded-lg shadow-2xs">
@@ -497,7 +521,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           <div className="p-3 rounded-lg bg-rose-50/40 border border-rose-200">
             <span className="text-[11px] font-medium text-rose-800">- Farmer Procurement</span>
             <div className="text-base font-bold font-mono text-rose-900 mt-1">
-              -₹{profitability.farmerProcurementCost.toLocaleString()}
+              -₹{profitability.operatingCostBreakdown.milkProcurement.toLocaleString()}
             </div>
             <span className="text-[10px] text-slate-500">32 pourers @ ₹45/L</span>
           </div>
@@ -505,7 +529,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           <div className="p-3 rounded-lg bg-rose-50/40 border border-rose-200">
             <span className="text-[11px] font-medium text-rose-800">- Cattle Feed & Herd</span>
             <div className="text-base font-bold font-mono text-rose-900 mt-1">
-              -₹{profitability.cattleFeedCost.toLocaleString()}
+              -₹{profitability.operatingCostBreakdown.cattleFeed.toLocaleString()}
             </div>
             <span className="text-[10px] text-slate-500">TMR, silage & mineral</span>
           </div>
@@ -513,7 +537,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           <div className="p-3 rounded-lg bg-rose-50/40 border border-rose-200">
             <span className="text-[11px] font-medium text-rose-800">- Processing & Packaging</span>
             <div className="text-base font-bold font-mono text-rose-900 mt-1">
-              -₹{(profitability.processingUtilityCost + profitability.packagingCost).toLocaleString()}
+              -₹{(profitability.operatingCostBreakdown.dairyProcessing + profitability.operatingCostBreakdown.electricityUtilities + profitability.operatingCostBreakdown.packagingMaterial).toLocaleString()}
             </div>
             <span className="text-[10px] text-slate-500">Steam, power, pouch film</span>
           </div>
@@ -521,7 +545,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           <div className="p-3 rounded-lg bg-rose-50/40 border border-rose-200">
             <span className="text-[11px] font-medium text-rose-800">- Logistics & Cold Chain</span>
             <div className="text-base font-bold font-mono text-rose-900 mt-1">
-              -₹{(profitability.logisticsCost + profitability.coldChainCost).toLocaleString()}
+              -₹{(profitability.operatingCostBreakdown.transportLogistics + profitability.operatingCostBreakdown.chillingColdChain).toLocaleString()}
             </div>
             <span className="text-[10px] text-slate-500">Diesel, reefers & chilling</span>
           </div>

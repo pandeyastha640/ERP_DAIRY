@@ -4,6 +4,7 @@ import { useDairyERP } from '../context/DairyERPContext';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
+import { EntityDetailDrawer } from '../components/common/EntityDetailDrawer';
 import {
   Factory,
   Plus,
@@ -20,7 +21,7 @@ import {
 
 interface ProcessingPageProps {
   batches?: ProcessingBatch[];
-  onCreateBatch?: (batch: ProcessingBatch) => void;
+  onCreateBatch?: (batch: ProcessingBatch) => string | undefined;
 }
 
 export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBatches, onCreateBatch: propOnCreateBatch }) => {
@@ -41,7 +42,11 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
   const [line, setLine] = useState('Continuous HTST Line 1 (3000 LPH)');
   const [inputLitres, setInputLitres] = useState('1000');
   const [operator, setOperator] = useState('Rakesh Parmar (Plant Engineer)');
+<<<<<<< Updated upstream
   const [recipe, setRecipe] = useState<'standard' | 'fluid' | 'curd' | 'ghee'>('standard');
+=======
+  const [submitError, setSubmitError] = useState('');
+>>>>>>> Stashed changes
 
   const totalInput = batches.reduce((acc, b) => acc + b.inputMilkLitres, 0);
   const totalCost = batches.reduce((acc, b) => acc + b.processingCostTotal, 0);
@@ -53,6 +58,7 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     const batchNum = `BATCH-2026-${100 + batches.length + 1}`;
+<<<<<<< Updated upstream
     const qtyInput = parseFloat(inputLitres) || 1000;
 
     let products = [
@@ -78,6 +84,13 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
       ];
     }
 
+=======
+    const qtyInput = Number(inputLitres);
+    if (!Number.isFinite(qtyInput) || qtyInput <= 0) {
+      setSubmitError('Enter a processing quantity greater than zero litres.');
+      return;
+    }
+>>>>>>> Stashed changes
     const newBatch: ProcessingBatch = {
       id: `BATCH-${100 + batches.length + 1}`,
       batchId: batchNum,
@@ -96,7 +109,12 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
       operator,
     };
 
-    onCreateBatch(newBatch);
+    const error = onCreateBatch(newBatch);
+    if (error) {
+      setSubmitError(error);
+      return;
+    }
+    setSubmitError('');
     setIsCreateModalOpen(false);
     setActiveBatch(newBatch);
   };
@@ -104,19 +122,19 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
             Dairy Processing & Pasteurization
           </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             HTST continuous pasteurization, cream separation, homogenization, and multi-product batch yield conversions.
           </p>
         </div>
 
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Launch Processing Batch</span>
@@ -134,31 +152,31 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
       </div>
 
       {/* CONNECTED CONVERSION FLOW BANNER */}
-      <div className="p-3.5 bg-[#161b22] border border-[#30363d] rounded-lg text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 font-mono">
+      <div className="p-3.5 bg-white border border-slate-200 rounded-lg text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 font-mono">
         <div className="flex items-center gap-2">
-          <Warehouse className="w-4 h-4 text-[#58a6ff]" />
-          <span className="font-semibold text-[#f0f6fc] font-sans">Silo Milk Pool ({availableMilkPool.toLocaleString()} L Available)</span>
-          <ArrowRight className="w-3.5 h-3.5 text-[#8b949e]" />
-          <Factory className="w-4 h-4 text-[#f0883e]" />
-          <span className="text-[#c9d1d9]">HTST Processing</span>
-          <ArrowRight className="w-3.5 h-3.5 text-[#8b949e]" />
-          <Boxes className="w-4 h-4 text-[#3fb950]" />
-          <span className="text-[#3fb950]">Auto-Updates Finished Goods Inventory</span>
+          <Warehouse className="w-4 h-4 text-blue-700" />
+          <span className="font-semibold text-slate-900 font-sans">Silo Milk Pool ({availableMilkPool.toLocaleString()} L Available)</span>
+          <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
+          <Factory className="w-4 h-4 text-amber-700" />
+          <span className="text-slate-700">HTST Processing</span>
+          <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
+          <Boxes className="w-4 h-4 text-emerald-700" />
+          <span className="text-emerald-700">Auto-Updates Finished Goods Inventory</span>
         </div>
-        <div className="text-[11px] text-[#8b949e] font-sans">
+        <div className="text-[11px] text-slate-500 font-sans">
           Launching a batch deducts milk from Silos and generates finished SKU stock automatically.
         </div>
       </div>
 
       {/* Batches Table */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
-        <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#f0f6fc]">Production Batch Log</h3>
-          <span className="text-xs font-mono text-[#8b949e]">Click row to inspect output yield ledger</span>
+      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-900">Production Batch Log</h3>
+          <span className="text-xs font-mono text-slate-500">Click row to inspect output yield ledger</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+            <thead className="bg-slate-50 text-slate-500 font-mono border-b border-slate-200">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Batch ID</th>
                 <th className="px-4 py-2.5 font-medium">Line / Pasteurizer</th>
@@ -171,23 +189,23 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
                 <th className="px-4 py-2.5 font-medium text-right">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-mono tabular-nums">
               {batches.map((batch) => (
                 <tr
                   key={batch.id}
                   onClick={() => setActiveBatch(batch)}
-                  className="hover:bg-[#1f2937]/30 cursor-pointer transition-colors"
+                  className="hover:bg-slate-50 cursor-pointer transition-colors"
                 >
-                  <td className="px-4 py-3 font-bold text-[#58a6ff]">{batch.batchId}</td>
-                  <td className="px-4 py-3 font-sans text-[#f0f6fc]">{batch.pasteurizerLine}</td>
-                  <td className="px-4 py-3 font-bold text-[#f0f6fc]">{batch.inputMilkLitres.toLocaleString()} L</td>
+                  <td className="px-4 py-3 font-bold text-blue-700">{batch.batchId}</td>
+                  <td className="px-4 py-3 font-sans text-slate-900">{batch.pasteurizerLine}</td>
+                  <td className="px-4 py-3 font-bold text-slate-900">{batch.inputMilkLitres.toLocaleString()} L</td>
                   <td className="px-4 py-3 font-sans">
-                    <div className="text-[#c9d1d9] font-medium">{batch.products[0]?.productName}</div>
-                    <div className="text-[11px] text-[#8b949e]">+{batch.products.length - 1} secondary co-products</div>
+                    <div className="text-slate-700 font-medium">{batch.products[0]?.productName}</div>
+                    <div className="text-[11px] text-slate-500">+{batch.products.length - 1} secondary co-products</div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-[#3fb950]">{batch.yieldPercentage}%</td>
-                  <td className="px-4 py-3 text-[#f85149]">{batch.wastageLitres} L</td>
-                  <td className="px-4 py-3 text-[#f0f6fc]">₹{batch.processingCostTotal.toLocaleString()}</td>
+                  <td className="px-4 py-3 font-bold text-emerald-700">{batch.yieldPercentage}%</td>
+                  <td className="px-4 py-3 text-rose-700">{batch.wastageLitres} L</td>
+                  <td className="px-4 py-3 text-slate-900">₹{batch.processingCostTotal.toLocaleString()}</td>
                   <td className="px-4 py-3 font-sans">
                     <StatusBadge status={batch.status} size="sm" />
                   </td>
@@ -197,7 +215,7 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
                         e.stopPropagation();
                         setActiveBatch(batch);
                       }}
-                      className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] rounded text-[11px] font-sans transition-colors"
+                      className="px-2 py-1 bg-slate-50 hover:bg-[#30363d] text-slate-700 rounded text-[11px] font-sans transition-colors"
                     >
                       Inspect Yield
                     </button>
@@ -211,76 +229,75 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
 
       {/* DETAILED BATCH MODAL */}
       {activeBatch && (
-        <Modal
+        <EntityDetailDrawer
           isOpen={!!activeBatch}
           onClose={() => setActiveBatch(null)}
           title={`Batch Specification: ${activeBatch.batchId}`}
           subtitle={`${activeBatch.pasteurizerLine} · Started: ${activeBatch.startTime}`}
-          maxWidth="2xl"
         >
           <div className="space-y-4 text-xs font-mono">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] text-[11px] font-sans">Raw Milk Inward</div>
-                <div className="text-lg font-bold text-[#f0f6fc] mt-1">{activeBatch.inputMilkLitres} L</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">{activeBatch.inputFatPct}% Fat · {activeBatch.inputSnfPct}% SNF</div>
+              <div className="p-3 bg-slate-50 rounded border border-slate-200">
+                <div className="text-slate-500 text-[11px] font-sans">Raw Milk Inward</div>
+                <div className="text-lg font-bold text-slate-900 mt-1">{activeBatch.inputMilkLitres} L</div>
+                <div className="text-[10px] text-slate-500 font-sans">{activeBatch.inputFatPct}% Fat · {activeBatch.inputSnfPct}% SNF</div>
               </div>
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] text-[11px] font-sans">Batch Yield Rate</div>
-                <div className="text-lg font-bold text-[#3fb950] mt-1">{activeBatch.yieldPercentage}%</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">{activeBatch.wastageLitres} L total loss</div>
+              <div className="p-3 bg-slate-50 rounded border border-slate-200">
+                <div className="text-slate-500 text-[11px] font-sans">Batch Yield Rate</div>
+                <div className="text-lg font-bold text-emerald-700 mt-1">{activeBatch.yieldPercentage}%</div>
+                <div className="text-[10px] text-slate-500 font-sans">{activeBatch.wastageLitres} L total loss</div>
               </div>
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] text-[11px] font-sans">Processing Cost</div>
-                <div className="text-lg font-bold text-[#f0883e] mt-1">₹{activeBatch.processingCostTotal}</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">₹{(activeBatch.processingCostTotal / activeBatch.inputMilkLitres).toFixed(2)}/L line cost</div>
+              <div className="p-3 bg-slate-50 rounded border border-slate-200">
+                <div className="text-slate-500 text-[11px] font-sans">Processing Cost</div>
+                <div className="text-lg font-bold text-amber-700 mt-1">₹{activeBatch.processingCostTotal}</div>
+                <div className="text-[10px] text-slate-500 font-sans">₹{(activeBatch.processingCostTotal / activeBatch.inputMilkLitres).toFixed(2)}/L line cost</div>
               </div>
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] text-[11px] font-sans">Batch Operator</div>
-                <div className="text-sm font-bold text-[#bc8cff] mt-1 truncate">{activeBatch.operator}</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">Shift Engineer</div>
+              <div className="p-3 bg-slate-50 rounded border border-slate-200">
+                <div className="text-slate-500 text-[11px] font-sans">Batch Operator</div>
+                <div className="text-sm font-bold text-blue-700 mt-1 truncate">{activeBatch.operator}</div>
+                <div className="text-[10px] text-slate-500 font-sans">Shift Engineer</div>
               </div>
             </div>
 
             {/* Product Output Yield Breakdown */}
-            <div className="p-4 bg-[#0d1117] rounded-lg border border-[#30363d]">
-              <div className="text-xs font-bold text-[#f0f6fc] font-sans mb-3">
+            <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="text-xs font-bold text-slate-900 font-sans mb-3">
                 Standardized Finished Output Breakdown
               </div>
               <div className="space-y-2">
                 {activeBatch.products.map((p, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-2 bg-[#161b22] rounded border border-[#21262d]"
+                    className="flex items-center justify-between p-2 bg-white rounded border border-slate-100"
                   >
                     <div>
-                      <div className="font-sans font-semibold text-[#f0f6fc]">{p.productName}</div>
-                      <div className="text-[11px] text-[#8b949e]">
+                      <div className="font-sans font-semibold text-slate-900">{p.productName}</div>
+                      <div className="text-[11px] text-slate-500">
                         {p.sku} · Spec: {p.standardFatPct}% Fat / {p.standardSnfPct}% SNF
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-bold text-[#3fb950]">
+                      <div className="text-sm font-bold text-emerald-700">
                         {p.outputQuantity} {p.unit}
                       </div>
-                      <div className="text-[10px] text-[#8b949e] font-sans">Output packaged</div>
+                      <div className="text-[10px] text-slate-500 font-sans">Output packaged</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-[#30363d]">
-              <span className="font-sans text-[11px] text-[#8b949e]">Status: {activeBatch.status}</span>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+              <span className="font-sans text-[11px] text-slate-500">Status: {activeBatch.status}</span>
               <button
                 onClick={() => setActiveBatch(null)}
-                className="px-4 py-2 bg-[#21262d] text-[#f0f6fc] rounded text-xs hover:bg-[#30363d]"
+                className="px-4 py-2 bg-slate-50 text-slate-900 rounded text-xs hover:bg-[#30363d]"
               >
                 Close Batch View
               </button>
             </div>
           </div>
-        </Modal>
+        </EntityDetailDrawer>
       )}
 
       {/* CREATE BATCH MODAL */}
@@ -292,7 +309,9 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
         maxWidth="md"
       >
         <form onSubmit={handleCreate} className="space-y-3.5">
+          {submitError && <p role="alert" className="text-xs text-rose-700">{submitError}</p>}
           <div>
+<<<<<<< Updated upstream
             <label className="block text-xs font-medium text-[#8b949e] mb-1">Production Recipe &amp; Output BOM</label>
             <select
               value={recipe}
@@ -307,10 +326,13 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
           </div>
           <div>
             <label className="block text-xs font-medium text-[#8b949e] mb-1">Processing Line</label>
+=======
+            <label className="block text-xs font-medium text-slate-500 mb-1">Processing Line</label>
+>>>>>>> Stashed changes
             <select
               value={line}
               onChange={(e) => setLine(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs text-[#f0f6fc]"
+              className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs text-slate-900"
             >
               <option value="Continuous HTST Line 1 (3000 LPH)">Continuous HTST Line 1 (3000 LPH)</option>
               <option value="Batch Vat Pasteurizer 2 (1500 L)">Batch Vat Pasteurizer 2 (1500 L)</option>
@@ -318,34 +340,36 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Input Raw Milk Volume (Litres)</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Input Raw Milk Volume (Litres)</label>
             <input
               type="number"
+              min="0.1"
+              step="0.1"
               value={inputLitres}
               onChange={(e) => setInputLitres(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono text-[#f0f6fc]"
+              className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs font-mono text-slate-900"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Shift Engineer / Operator</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Shift Engineer / Operator</label>
             <input
               type="text"
               value={operator}
               onChange={(e) => setOperator(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs text-[#f0f6fc]"
+              className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs text-slate-900"
             />
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 text-xs text-slate-500"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded text-xs font-semibold"
+              className="px-4 py-2 bg-emerald-700 text-white rounded text-xs font-semibold"
             >
               Start HTST Processing
             </button>

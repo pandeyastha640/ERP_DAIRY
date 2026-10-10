@@ -272,8 +272,8 @@ export const FinanceProfitabilityPage: React.FC = () => {
                 <div className="flex justify-between text-slate-700">
                   <span>Procurement Cost:</span>
                   <span>
-                    ₹{procurementSummary.totalPayablePending.toLocaleString()} (@ ₹
-                    {procurementSummary.averageRatePerLitre.toFixed(2)}/L)
+                    ₹{procurementSummary.totalPayablesToday.toLocaleString()} (@ ₹
+                    {procurementSummary.weightedAvgRatePerL.toFixed(2)}/L)
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-700">
@@ -286,13 +286,13 @@ export const FinanceProfitabilityPage: React.FC = () => {
                     +₹
                     {Math.round(
                       reconciliation.farmerProcurementLitres * 37 -
-                        procurementSummary.totalPayablePending -
+                        procurementSummary.totalPayablesToday -
                         18500
                     ).toLocaleString()}{' '}
                     (+₹
                     {(
                       (reconciliation.farmerProcurementLitres * 37 -
-                        procurementSummary.totalPayablePending -
+                        procurementSummary.totalPayablesToday -
                         18500) /
                       (reconciliation.farmerProcurementLitres || 1)
                     ).toFixed(2)}
@@ -673,7 +673,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
               <div className="flex justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="font-sans text-slate-600">Farmer Milk Payout:</span>
                 <span className="text-amber-700">
-                  ₹{procurementSummary.totalPayablePending.toLocaleString()}
+                  ₹{procurementSummary.totalPayablesToday.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200">
@@ -689,7 +689,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
                 <span>
                   ₹
                   {(
-                    (procurementSummary.totalPayablePending + 2800 + 1600) /
+                    (procurementSummary.totalPayablesToday + 2800 + 1600) /
                     (reconciliation.farmerProcurementLitres || 1)
                   ).toFixed(2)}{' '}
                   / L

@@ -15,6 +15,8 @@ import {
   PackagingItem,
   InventoryItem,
   DistributionRoute,
+  Customer,
+  Vehicle,
   SalesOrder,
   PaymentTransaction,
   OperationalAlert,
@@ -46,8 +48,14 @@ import {
   calculateProfitability,
   evaluateOperationalAlerts,
   evaluateAIInsights,
+  assessMilkCollection,
 } from '../services/dairyEngine';
+<<<<<<< Updated upstream
 import { api } from '../services/api';
+=======
+import { canPerformAction, permissionError } from '../services/permissions';
+import { duplicateIdentifierError, validIsoDate } from '../services/validationRules';
+>>>>>>> Stashed changes
 
 interface DairyERPContextType {
   // Session State
@@ -74,6 +82,8 @@ interface DairyERPContextType {
   packagingList: PackagingItem[];
   inventoryList: InventoryItem[];
   routesList: DistributionRoute[];
+  customersList: Customer[];
+  vehiclesList: Vehicle[];
   salesOrdersList: SalesOrder[];
   paymentsList: PaymentTransaction[];
   auditLogs: AuditLogEntry[];
@@ -87,18 +97,28 @@ interface DairyERPContextType {
   insights: AIInsight[];
 
   // Mutating Action Handlers with Cross-System Side Effects
-  recordMilkCollection: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => void;
-  launchProcessingBatch: (batch: ProcessingBatch) => void;
-  recordSalesOrder: (order: SalesOrder) => void;
-  recordPayment: (txn: PaymentTransaction) => void;
-  addCattle: (cow: Cattle) => void;
-  addFarmer: (farmer: Farmer) => void;
+  recordMilkCollection: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => string | undefined;
+  launchProcessingBatch: (batch: ProcessingBatch) => string | undefined;
+  recordSalesOrder: (order: SalesOrder) => string | undefined;
+  recordPayment: (txn: PaymentTransaction) => string | undefined;
+  addCattle: (cow: Cattle, existingId?: string) => string | undefined;
+  archiveCattle: (id: string) => void;
+  addFarmer: (farmer: Farmer, existingId?: string) => string | undefined;
+  archiveFarmer: (id: string) => void;
   recordFeedPurchase: (item: { feedId: string; quantityKg: number; costPerKg: number }) => void;
   recordFeedConsumption: (item: { feedId: string; quantityKg: number }) => void;
   restockPackaging: (id: string, qty: number) => void;
   adjustInventory: (id: string, delta: number) => void;
-  addRoute: (route: DistributionRoute) => void;
-  addProduct: (product: ProductMaster) => void;
+  addRoute: (route: DistributionRoute, existingId?: string) => string | undefined;
+  archiveRoute: (id: string) => void;
+  addProduct: (product: ProductMaster, existingId?: string) => string | undefined;
+  archiveProduct: (id: string) => void;
+  addPackaging: (item: PackagingItem, existingId?: string) => string | undefined;
+  archivePackaging: (id: string) => void;
+  saveCustomer: (customer: Customer, existingId?: string) => string | undefined;
+  archiveCustomer: (id: string) => void;
+  saveVehicle: (vehicle: Vehicle, existingId?: string) => string | undefined;
+  archiveVehicle: (id: string) => void;
   addQualityTest: (test: QualityTestRecord) => void;
   dismissAlert: (id: string) => void;
 
@@ -202,6 +222,26 @@ const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
   },
 ];
 
+const INITIAL_CUSTOMERS: Customer[] = Array.from(
+  new Map(INITIAL_SALES.map((order) => [order.customerName, order.channel])).entries()
+).map(([name, channel], index) => ({
+  id: `CUST-${String(index + 1).padStart(3, '0')}`,
+  name,
+  channel,
+  contactName: '',
+  phone: '',
+  billingAddress: '',
+}));
+
+const INITIAL_VEHICLES: Vehicle[] = Array.from(
+  new Set(INITIAL_ROUTES.map((route) => route.vehicleNumber.split(' (')[0].trim()))
+).map((registration, index) => ({
+  id: `VEH-${String(index + 1).padStart(3, '0')}`,
+  registration,
+  vehicleType: INITIAL_ROUTES.find((route) => route.vehicleNumber.startsWith(registration))?.vehicleNumber.split(' (')[1]?.replace(/\)$/, '') ?? 'Insulated delivery vehicle',
+  capacityUnits: Math.max(0, ...INITIAL_ROUTES.filter((route) => route.vehicleNumber.startsWith(registration)).map((route) => route.totalDispatchUnits)),
+}));
+
 export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Session & UI States
   const [currentRole, setCurrentRole] = useState<Role>('Operations Manager');
@@ -210,6 +250,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [currentModule, setCurrentModule] = useState('dashboard');
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
 
+<<<<<<< Updated upstream
   // Core Data Stores with persistent localStorage backup
   const [settings, setSettings] = useState<SystemSettings>(() => loadStorage('settings', DEFAULT_SETTINGS));
   const [cattleList, setCattleList] = useState<Cattle[]>(() => loadStorage('cattle', INITIAL_CATTLE));
@@ -352,12 +393,52 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       .catch(() => {
         // Backend not available, fallback seamlessly
       });
+=======
+  // Core Data Stores
+  const [cattleList, setCattleList] = useState<Cattle[]>(INITIAL_CATTLE);
+  const [farmersList, setFarmersList] = useState<Farmer[]>(INITIAL_FARMERS);
+  const [feedsList, setFeedsList] = useState<FeedItem[]>(INITIAL_FEEDS);
+  const [collectionsList, setCollectionsList] = useState<MilkCollectionRecord[]>(INITIAL_COLLECTIONS);
+  const [qualityTestsList, setQualityTestsList] = useState<QualityTestRecord[]>(INITIAL_QUALITY_TESTS);
+  const [tanksList, setTanksList] = useState<ChillingTank[]>(INITIAL_CHILLING_TANKS);
+  const [batchesList, setBatchesList] = useState<ProcessingBatch[]>(INITIAL_PROCESSING_BATCHES);
+  const [productsList, setProductsList] = useState<ProductMaster[]>(INITIAL_PRODUCTS);
+  const [packagingList, setPackagingList] = useState<PackagingItem[]>(INITIAL_PACKAGING);
+  const [inventoryList, setInventoryList] = useState<InventoryItem[]>(INITIAL_INVENTORY);
+  const [routesList, setRoutesList] = useState<DistributionRoute[]>(INITIAL_ROUTES);
+  const [customersList, setCustomersList] = useState<Customer[]>(INITIAL_CUSTOMERS);
+  const [vehiclesList, setVehiclesList] = useState<Vehicle[]>(INITIAL_VEHICLES);
+  const [salesOrdersList, setSalesOrdersList] = useState<SalesOrder[]>(INITIAL_SALES);
+  const [paymentsList, setPaymentsList] = useState<PaymentTransaction[]>(INITIAL_PAYMENTS);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
+  const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
+
+  const openingMilkBalance = useMemo(() => {
+    const seededBalance = INITIAL_INVENTORY.find((item) => item.sku === 'RAW-MILK-BULK')?.closingBalance;
+    if (seededBalance === undefined) return 1480;
+
+    const baseline = calculateMilkReconciliation(
+      0,
+      INITIAL_CATTLE,
+      INITIAL_COLLECTIONS,
+      INITIAL_PROCESSING_BATCHES,
+      INITIAL_QUALITY_TESTS
+    );
+    return (
+      seededBalance -
+      baseline.ownProductionLitres -
+      baseline.farmerProcurementLitres +
+      baseline.qualityRejectedLitres +
+      baseline.processingConsumptionLitres +
+      baseline.spillageWastageLitres
+    );
+>>>>>>> Stashed changes
   }, []);
 
   // 1. DYNAMIC MILK POOL RECONCILIATION
   const reconciliation = useMemo(() => {
-    return calculateMilkReconciliation(1480, cattleList, collectionsList, batchesList, qualityTestsList);
-  }, [cattleList, collectionsList, batchesList, qualityTestsList]);
+    return calculateMilkReconciliation(openingMilkBalance, cattleList, collectionsList, batchesList, qualityTestsList);
+  }, [openingMilkBalance, cattleList, collectionsList, batchesList, qualityTestsList]);
 
   // 2. DYNAMIC HERD ECONOMICS
   const herdEconomics = useMemo(() => {
@@ -423,32 +504,75 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * Farmer -> Collection -> Quality -> Milk Pool -> Farmer Payable in Finance
    */
   const recordMilkCollection = (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => {
+    if (!canPerformAction(currentRole, 'collection')) return permissionError(currentRole);
+    const farmer = farmersList.find((item) => item.id === record.farmerId);
+    if (!farmer) return 'Select a registered farmer before recording milk.';
+    if (!record.centre.trim()) return 'Select a collection centre.';
+    if (!Number.isFinite(Date.parse(record.date))) return 'Enter a valid collection date.';
+
+    const assessment = assessMilkCollection(
+      record.quantityLitres,
+      record.fat,
+      record.snf,
+      record.temperatureC
+    );
+    if (!assessment.valid) return assessment.error;
+
+    const inwardTank = tanksList.find((tank) => tank.id === 'TANK-B');
+    if (
+      assessment.quality !== 'FAIL' &&
+      inwardTank &&
+      inwardTank.currentVolumeLitres + record.quantityLitres > inwardTank.capacityLitres
+    ) {
+      return `Chilling tank B has room for only ${Math.max(0, inwardTank.capacityLitres - inwardTank.currentVolumeLitres).toLocaleString()} L.`;
+    }
+
     const newId = `COL-${String(collectionsList.length + 1).padStart(3, '0')}`;
     const newRecord: MilkCollectionRecord = {
       ...record,
+      farmerName: farmer.name,
+      quality: assessment.quality,
+      ratePerLitre: assessment.ratePerLitre,
+      payableAmount: assessment.payableAmount,
       id: newId,
       collectionCode: `CC-01-${new Date().getHours()}H-${Math.floor(100 + Math.random() * 900)}`,
     };
 
+    const linkedQualityTest: QualityTestRecord = {
+      id: `QC-${newId}`,
+      linkedCollectionId: newId,
+      batchNumber: newRecord.collectionCode,
+      sourceType: 'Farmer Procurement',
+      sourceName: `${farmer.name} (${farmer.id})`,
+      quantityLitres: newRecord.quantityLitres,
+      fat: newRecord.fat,
+      snf: newRecord.snf,
+      temperatureC: newRecord.temperatureC,
+      result: newRecord.quality,
+      tester: newRecord.testedBy,
+      testTime: newRecord.time,
+    };
+
     // 1. Add to collections
     setCollectionsList((prev) => [newRecord, ...prev]);
+    setQualityTestsList((prev) => [linkedQualityTest, ...prev]);
 
     // 2. Update specific Farmer's balance & stats
     setFarmersList((prev) =>
       prev.map((f) => {
-        if (f.id === record.farmerId) {
+        if (f.id === farmer.id) {
           const shiftField = record.shift === 'Morning' ? 'morningMilkL' : 'eveningMilkL';
           return {
             ...f,
             todayMilkL: +(f.todayMilkL + record.quantityLitres).toFixed(1),
             [shiftField]: +(f[shiftField] + record.quantityLitres).toFixed(1),
-            todayPayable: f.todayPayable + record.payableAmount,
+            todayPayable: f.todayPayable + newRecord.payableAmount,
             supplyHistory: [
               {
                 date: record.date,
                 litres: record.quantityLitres,
-                fat: record.fat,
-                snf: record.snf,
+                fat: newRecord.fat,
+                snf: newRecord.snf,
               },
               ...f.supplyHistory,
             ],
@@ -459,35 +583,44 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
 
     // 3. Create a pending disbursement transaction in Payments
-    if (record.payableAmount > 0) {
+    if (newRecord.payableAmount > 0) {
       const pendingPayment: PaymentTransaction = {
         id: `PAY-AUTO-${Date.now().toString().slice(-4)}`,
         transactionRef: `TXN-PEND-${Math.floor(10000 + Math.random() * 90000)}`,
-        recipientName: `${record.farmerName} (${record.farmerId})`,
+        recipientName: `${farmer.name} (${farmer.id})`,
         partyType: 'Farmer',
         milkLitres: record.quantityLitres,
-        amount: record.payableAmount,
+        amount: newRecord.payableAmount,
         paymentDate: `${record.date} ${record.time}`,
         paymentMethod: 'Direct Bank IMPS',
         status: 'Pending',
-        notes: `${record.shift} shift inward milk clearance @ ₹${record.ratePerLitre}/L`,
+        notes: `${record.shift} shift inward milk clearance @ ₹${newRecord.ratePerLitre}/L`,
       };
       setPaymentsList((prev) => [pendingPayment, ...prev]);
     }
 
     // 4. Update chilling tank volume (Vat B inward)
-    if (record.quality !== 'FAIL') {
+    if (newRecord.quality !== 'FAIL') {
       setTanksList((prev) =>
         prev.map((tank) =>
           tank.id === 'TANK-B'
             ? {
                 ...tank,
-                currentVolumeLitres: Math.min(
-                  tank.capacityLitres,
-                  tank.currentVolumeLitres + Math.round(record.quantityLitres)
-                ),
+                currentVolumeLitres: tank.currentVolumeLitres + newRecord.quantityLitres,
               }
             : tank
+        )
+      );
+      setInventoryList((prev) =>
+        prev.map((item) =>
+          item.sku === 'RAW-MILK-BULK'
+            ? {
+                ...item,
+                inward: item.inward + newRecord.quantityLitres,
+                closingBalance: item.closingBalance + newRecord.quantityLitres,
+                totalValue: (item.closingBalance + newRecord.quantityLitres) * item.unitValue,
+              }
+            : item
         )
       );
     }
@@ -495,13 +628,17 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // 5. Write audit entry
     logAudit({
       module: 'Milk Collection',
+      entity: 'MilkCollection',
+      entityId: newId,
       action: 'COLLECTION_RECORDED',
       recordId: newId,
-      description: `Inward milk: ${record.quantityLitres} L from ${record.farmerName} (${record.farmerId}) [${record.quality}]`,
-      financialImpact: `+₹${record.payableAmount.toLocaleString()} payable generated`,
+      description: `Inward milk: ${newRecord.quantityLitres} L from ${farmer.name} (${farmer.id}) [${newRecord.quality}]`,
+      newValue: newRecord,
+      financialImpact: `+₹${newRecord.payableAmount.toLocaleString()} payable generated`,
       milkImpactLitres: record.quantityLitres,
-      severity: record.quality === 'FAIL' ? 'warning' : 'info',
+      severity: newRecord.quality === 'FAIL' ? 'warning' : 'info',
     });
+<<<<<<< Updated upstream
 
     // 6. Asynchronously sync to backend database
     api.collections.create({
@@ -520,6 +657,19 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       payableAmount: record.payableAmount,
       testedBy: record.testedBy,
     }).catch((err) => console.warn('Backend collection sync notice:', err.message));
+=======
+    logAudit({
+      module: 'Quality Lab',
+      entity: 'QualityTest',
+      entityId: linkedQualityTest.id,
+      action: 'COLLECTION_QUALITY_RECORDED',
+      recordId: linkedQualityTest.batchNumber,
+      description: `Collection quality recorded for ${farmer.name}: Fat ${linkedQualityTest.fat}%, SNF ${linkedQualityTest.snf}% [${linkedQualityTest.result}]`,
+      newValue: linkedQualityTest,
+      severity: linkedQualityTest.result === 'FAIL' ? 'critical' : linkedQualityTest.result === 'WARNING' ? 'warning' : 'info',
+    });
+    return undefined;
+>>>>>>> Stashed changes
   };
 
   /**
@@ -527,41 +677,50 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * Milk Pool -> Processing -> Finished Goods Inventory -> Packaging Stock Deduction
    */
   const launchProcessingBatch = (batch: ProcessingBatch) => {
+    if (!canPerformAction(currentRole, 'processing')) return permissionError(currentRole);
+    if (!Number.isFinite(batch.inputMilkLitres) || batch.inputMilkLitres <= 0) {
+      return 'Processing input must be greater than zero litres.';
+    }
+    if (!validIsoDate(batch.date)) return 'Enter a valid processing date in YYYY-MM-DD format.';
+    const batchIdError = duplicateIdentifierError(batchesList, batch.batchId, (item) => item.batchId, (item) => item.id, 'Batch ID');
+    if (batchIdError) return batchIdError;
+    if (batch.inputMilkLitres > reconciliation.closingStockLitres) {
+      return `Only ${reconciliation.closingStockLitres.toLocaleString()} L are available in the reconciled milk pool.`;
+    }
+
+    const rawMilkInventory = inventoryList.find((item) => item.sku === 'RAW-MILK-BULK');
+    if (!rawMilkInventory || batch.inputMilkLitres > rawMilkInventory.closingBalance) {
+      return `Raw milk inventory has only ${rawMilkInventory?.closingBalance.toLocaleString() ?? 0} L available.`;
+    }
+    const siloVolume = tanksList
+      .filter((tank) => tank.id === 'TANK-A' || tank.id === 'TANK-B')
+      .reduce((total, tank) => total + tank.currentVolumeLitres, 0);
+    if (batch.inputMilkLitres > siloVolume) {
+      return `Silos contain only ${siloVolume.toLocaleString()} L of milk.`;
+    }
+
+    const pouchOutput = batch.products.find((product) => product.sku === 'SKU-MILK-TONED-500');
+    const packagingUsed = Math.round(pouchOutput?.outputQuantity ?? 0);
+    const pouchFilm = packagingList.find((item) => item.id === 'PKG-01');
+    if (packagingUsed > 0 && (!pouchFilm || packagingUsed > pouchFilm.closingStock)) {
+      return `The batch needs ${packagingUsed.toLocaleString()} milk pouches, but only ${pouchFilm?.closingStock.toLocaleString() ?? 0} are available.`;
+    }
+    if (batch.products.some((product) => !Number.isFinite(product.outputQuantity) || product.outputQuantity < 0)) {
+      return 'Batch output quantities must be valid non-negative numbers.';
+    }
+
     setBatchesList((prev) => [batch, ...prev]);
 
-    // 1. Deduct milk from Silo Tanks
-    setTanksList((prev) =>
-      prev.map((tank) =>
-        tank.id === 'TANK-A'
-          ? {
-              ...tank,
-              currentVolumeLitres: Math.max(
-                0,
-                tank.currentVolumeLitres - Math.round(batch.inputMilkLitres)
-              ),
-            }
-          : tank
-      )
-    );
-
-    // 2. Increase Finished Goods Inventory for each output product
-    batch.products.forEach((prod) => {
-      setInventoryList((prev) =>
-        prev.map((inv) => {
-          if (inv.sku.includes(prod.sku) || inv.name.toLowerCase().includes(prod.productName.toLowerCase())) {
-            const addedQty = Math.round(prod.outputQuantity);
-            return {
-              ...inv,
-              inward: inv.inward + addedQty,
-              closingBalance: inv.closingBalance + addedQty,
-              totalValue: (inv.closingBalance + addedQty) * inv.unitValue,
-            };
-          }
-          return inv;
-        })
-      );
+    let remainingInput = batch.inputMilkLitres;
+    const updatedTanks = tanksList.map((tank) => {
+      if (tank.id !== 'TANK-A' && tank.id !== 'TANK-B') return tank;
+      const deducted = Math.min(tank.currentVolumeLitres, remainingInput);
+      remainingInput -= deducted;
+      return { ...tank, currentVolumeLitres: tank.currentVolumeLitres - deducted };
     });
+    setTanksList(updatedTanks);
 
+<<<<<<< Updated upstream
     // 3. Deduct packaging film / bottles / tubs dynamically based on product outputs
     setPackagingList((prev) => {
       const consumptionMap: Record<string, number> = {};
@@ -599,17 +758,67 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return pkg;
       });
     });
+=======
+    setInventoryList((prev) => prev.map((item) => {
+      if (item.sku === 'RAW-MILK-BULK') {
+        const closingBalance = item.closingBalance - batch.inputMilkLitres;
+        return {
+          ...item,
+          outward: item.outward + batch.inputMilkLitres,
+          closingBalance,
+          totalValue: closingBalance * item.unitValue,
+        };
+      }
+      const output = batch.products.find((product) =>
+        item.category === 'Finished Goods' &&
+        item.sku === product.sku.replace(/^SKU-/, 'FG-')
+      );
+      if (!output) return item;
+      const addedQty = Math.round(output.outputQuantity);
+      const closingBalance = item.closingBalance + addedQty;
+      return {
+        ...item,
+        inward: item.inward + addedQty,
+        closingBalance,
+        totalValue: closingBalance * item.unitValue,
+      };
+    }));
+    setProductsList((prev) => prev.map((product) => {
+      const output = batch.products.find((item) => item.sku === product.sku);
+      return output
+        ? { ...product, currentStockUnits: product.currentStockUnits + Math.round(output.outputQuantity) }
+        : product;
+    }));
+
+    setPackagingList((prev) => prev.map((item) => item.id === 'PKG-01' && packagingUsed > 0
+      ? { ...item, consumed: item.consumed + packagingUsed, closingStock: item.closingStock - packagingUsed }
+      : item));
+    setInventoryList((prev) => prev.map((item) => {
+      if (item.sku !== 'PKG-POUCH-500ML' || packagingUsed <= 0) return item;
+      const closingBalance = item.closingBalance - packagingUsed;
+      return {
+        ...item,
+        outward: item.outward + packagingUsed,
+        closingBalance,
+        totalValue: closingBalance * item.unitValue,
+      };
+    }));
+>>>>>>> Stashed changes
 
     // 4. Log Audit Trail
     logAudit({
       module: 'Processing',
+      entity: 'ProcessingBatch',
+      entityId: batch.id,
       action: 'BATCH_LAUNCHED',
       recordId: batch.batchId,
       description: `HTST Batch started with ${batch.inputMilkLitres} L raw milk. Converted to ${batch.products.length} products with ${batch.yieldPercentage}% yield.`,
+      newValue: batch,
       financialImpact: `₹${batch.processingCostTotal.toLocaleString()} processing cost`,
       milkImpactLitres: -batch.inputMilkLitres,
       severity: 'info',
     });
+<<<<<<< Updated upstream
 
     // 5. Asynchronously sync to backend database
     api.processing.launchBatch({
@@ -623,6 +832,9 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       operator: batch.operator,
       pasteurizerLine: batch.pasteurizerLine,
     }).catch((err) => console.warn('Backend batch sync notice:', err.message));
+=======
+    return undefined;
+>>>>>>> Stashed changes
   };
 
   /**
@@ -630,49 +842,100 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * Sales -> Deducts Finished Goods Inventory -> Increases Gross Revenue & Receivables
    */
   const recordSalesOrder = (order: SalesOrder) => {
-    setSalesOrdersList((prev) => [order, ...prev]);
+    if (!canPerformAction(currentRole, 'sales')) return permissionError(currentRole);
+    if (!order.customerName.trim()) return 'Enter a customer name before issuing an invoice.';
+    if (!order.product.trim()) return 'Select a product before issuing an invoice.';
+    if (!Number.isInteger(order.quantityUnits) || order.quantityUnits <= 0) {
+      return 'Sales quantity must be a positive whole number.';
+    }
+    if (!Number.isFinite(order.unitRate) || order.unitRate <= 0) return 'Unit price must be greater than zero.';
+    if (!validIsoDate(order.date)) return 'Enter a valid invoice date in YYYY-MM-DD format.';
+    const invoiceNumberError = duplicateIdentifierError(salesOrdersList, order.orderNumber, (item) => item.orderNumber, (item) => item.id, 'Invoice number');
+    if (invoiceNumberError) return invoiceNumberError;
+    const customer = customersList.find((item) => !item.archivedAt && item.name.toLowerCase() === order.customerName.trim().toLowerCase());
+    if (!customer) return 'Select an active customer from the customer master.';
 
-    // 1. Deduct finished goods inventory
-    setInventoryList((prev) =>
-      prev.map((inv) => {
-        if (inv.name.toLowerCase().includes(order.product.toLowerCase())) {
-          const newClosing = Math.max(0, inv.closingBalance - order.quantityUnits);
-          return {
-            ...inv,
-            outward: inv.outward + order.quantityUnits,
-            closingBalance: newClosing,
-            totalValue: newClosing * inv.unitValue,
-          };
-        }
-        return inv;
-      })
+    const product = productsList.find((item) => !item.archivedAt && (
+      order.productSku
+        ? item.sku === order.productSku
+        : order.product.toLowerCase().includes(item.name.split(' (')[0].toLowerCase())
+    ));
+    if (!product) return 'Choose a product in the product master.';
+    const inventoryItem = inventoryList.find((item) =>
+      item.category === 'Finished Goods' && item.sku === product.sku.replace(/^SKU-/, 'FG-')
     );
+    if (!inventoryItem) return `${product.name} has no finished-goods inventory mapping.`;
+    if (order.quantityUnits > inventoryItem.closingBalance) {
+      return `Only ${inventoryItem.closingBalance.toLocaleString()} units of ${product.name} are available.`;
+    }
 
-    // 2. If paid immediately, create clearance payment entry
-    if (order.paymentStatus === 'Paid') {
+    const invoiceTotal = order.quantityUnits * order.unitRate;
+    const savedOrder: SalesOrder = {
+      ...order,
+      product: product.name,
+      productSku: product.sku,
+      totalAmount: invoiceTotal,
+      paidAmount: order.paymentStatus === 'Paid' ? invoiceTotal : 0,
+    };
+    setSalesOrdersList((prev) => [savedOrder, ...prev]);
+
+    setInventoryList((prev) => prev.map((item) => {
+      if (item.id !== inventoryItem.id) return item;
+      const closingBalance = item.closingBalance - order.quantityUnits;
+      return {
+        ...item,
+        outward: item.outward + order.quantityUnits,
+        closingBalance,
+        totalValue: closingBalance * item.unitValue,
+      };
+    }));
+    setProductsList((prev) => prev.map((item) => item.sku === product.sku
+      ? { ...item, currentStockUnits: Math.max(0, item.currentStockUnits - order.quantityUnits) }
+      : item));
+
+    // 2. Track either immediate settlement or an outstanding customer balance.
+    if (savedOrder.paymentStatus === 'Paid') {
       const receiptPayment: PaymentTransaction = {
-        id: `PAY-REC-${Date.now().toString().slice(-4)}`,
-        transactionRef: `TXN-REC-${Math.floor(10000 + Math.random() * 90000)}`,
-        recipientName: order.customerName,
+        id: `PAY-REC-${savedOrder.id}`,
+        transactionRef: `TXN-REC-${savedOrder.orderNumber}`,
+        recipientName: savedOrder.customerName,
         partyType: 'Distributor',
-        amount: order.totalAmount,
-        paymentDate: `${order.date} 09:30 AM`,
+        amount: savedOrder.totalAmount,
+        paymentDate: savedOrder.date,
         paymentMethod: 'Direct Bank IMPS',
         status: 'Completed',
-        notes: `Immediate settlement for invoice ${order.orderNumber}`,
+        notes: `Immediate settlement for invoice ${savedOrder.orderNumber}`,
       };
       setPaymentsList((prev) => [receiptPayment, ...prev]);
+    } else {
+      const receivable: PaymentTransaction = {
+        id: `PAY-AR-${savedOrder.id}`,
+        transactionRef: `AR-${savedOrder.orderNumber}`,
+        recipientName: savedOrder.customerName,
+        partyType: 'Distributor',
+        amount: savedOrder.totalAmount,
+        paymentDate: savedOrder.date,
+        paymentMethod: 'NEFT',
+        status: 'Pending',
+        notes: `Outstanding receivable for invoice ${savedOrder.orderNumber}`,
+      };
+      setPaymentsList((prev) => [receivable, ...prev]);
     }
 
     // 3. Log Audit Trail
     logAudit({
       module: 'Sales',
+      entity: 'SalesInvoice',
+      entityId: savedOrder.id,
       action: 'ORDER_INVOICED',
-      recordId: order.orderNumber,
-      description: `Invoiced ${order.quantityUnits} units of ${order.product} to ${order.customerName} (${order.channel})`,
-      financialImpact: `+₹${order.totalAmount.toLocaleString()} revenue`,
+      recordId: savedOrder.orderNumber,
+      description: `Invoiced ${savedOrder.quantityUnits} units of ${savedOrder.product} to ${savedOrder.customerName} (${savedOrder.channel})`,
+      previousValue: inventoryItem.closingBalance,
+      newValue: savedOrder,
+      financialImpact: `+₹${savedOrder.totalAmount.toLocaleString()} revenue`,
       severity: 'info',
     });
+<<<<<<< Updated upstream
 
     // 4. Asynchronously sync to backend database
     api.sales.createOrder({
@@ -687,6 +950,9 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       paymentStatus: order.paymentStatus,
       fulfillmentStatus: order.fulfillmentStatus,
     }).catch((err) => console.warn('Sales order sync notice:', err.message));
+=======
+    return undefined;
+>>>>>>> Stashed changes
   };
 
   /**
@@ -694,8 +960,13 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * Settles pending payables or records supplier clearance
    */
   const recordPayment = (txn: PaymentTransaction) => {
-    setPaymentsList((prev) => [txn, ...prev]);
+    if (!canPerformAction(currentRole, 'payment')) return permissionError(currentRole);
+    if (!txn.recipientName.trim()) return 'Enter a recipient before posting a settlement.';
+    if (!Number.isFinite(txn.amount) || txn.amount <= 0) return 'Payment amount must be greater than zero.';
+    const paymentReferenceError = duplicateIdentifierError(paymentsList, txn.transactionRef, (item) => item.transactionRef, (item) => item.id, 'Payment reference');
+    if (paymentReferenceError) return paymentReferenceError;
 
+<<<<<<< Updated upstream
     // If paying a farmer, update the matching pending transaction status and reduce farmer payable
     if (txn.partyType === 'Farmer') {
       setPaymentsList((prev) =>
@@ -723,16 +994,69 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             : o
         )
       );
+=======
+    const normalizeRecipient = (value: string) => value.trim().toLowerCase();
+    const outstanding = paymentsList
+      .filter((item) => item.status === 'Pending' && item.partyType === txn.partyType &&
+        normalizeRecipient(item.recipientName) === normalizeRecipient(txn.recipientName))
+      .reduce((total, item) => total + item.amount, 0);
+    if (outstanding <= 0) return `No pending balance was found for ${txn.recipientName}.`;
+    if (txn.amount > outstanding) {
+      return `Payment exceeds the outstanding balance of ₹${outstanding.toLocaleString()}.`;
+    }
+
+    let remainingPayment = txn.amount;
+    const updatedPayments = paymentsList.flatMap((item) => {
+      if (
+        item.status !== 'Pending' ||
+        item.partyType !== txn.partyType ||
+        normalizeRecipient(item.recipientName) !== normalizeRecipient(txn.recipientName) ||
+        remainingPayment <= 0
+      ) return [item];
+      const applied = Math.min(item.amount, remainingPayment);
+      remainingPayment -= applied;
+      const remainingBalance = item.amount - applied;
+      return remainingBalance > 0 ? [{ ...item, amount: remainingBalance }] : [];
+    });
+    setPaymentsList([{ ...txn, status: 'Completed' }, ...updatedPayments]);
+
+    if (txn.partyType === 'Distributor') {
+      let unallocated = txn.amount;
+      setSalesOrdersList((prev) => prev.map((order) => {
+        if (order.customerName.toLowerCase() !== normalizeRecipient(txn.recipientName) ||
+            order.paymentStatus === 'Paid' || unallocated <= 0) return order;
+        const paidSoFar = order.paidAmount ?? 0;
+        const applied = Math.min(order.totalAmount - paidSoFar, unallocated);
+        unallocated -= applied;
+        const paidAmount = paidSoFar + applied;
+        return {
+          ...order,
+          paidAmount,
+          paymentStatus: paidAmount >= order.totalAmount ? 'Paid' : 'Partially Paid',
+        };
+      }));
+    } else if (txn.partyType === 'Farmer') {
+      setFarmersList((prev) => prev.map((farmer) =>
+        txn.recipientName.includes(`(${farmer.id})`)
+          ? { ...farmer, todayPayable: Math.max(0, farmer.todayPayable - txn.amount) }
+          : farmer
+      ));
+>>>>>>> Stashed changes
     }
 
     logAudit({
       module: 'Payments',
+      entity: 'PaymentTransaction',
+      entityId: txn.id,
       action: 'PAYMENT_SETTLED',
       recordId: txn.transactionRef,
       description: `Settled payment of ₹${txn.amount.toLocaleString()} to ${txn.recipientName} via ${txn.paymentMethod}`,
+      previousValue: outstanding,
+      newValue: { ...txn, status: 'Completed' },
       financialImpact: `₹${txn.amount.toLocaleString()} settled`,
       severity: 'info',
     });
+<<<<<<< Updated upstream
 
     // Sync to backend database
     api.payments.create({
@@ -746,20 +1070,37 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       status: txn.status,
       notes: txn.notes,
     }).catch((err) => console.warn('Payment transaction sync notice:', err.message));
+=======
+    return undefined;
+>>>>>>> Stashed changes
   };
 
   /**
    * 5. Add Cattle Herd Member:
    */
-  const addCattle = (cow: Cattle) => {
-    setCattleList((prev) => [cow, ...prev]);
+  const addCattle = (cow: Cattle, existingId?: string) => {
+    const existing = existingId ? cattleList.find((item) => item.id === existingId) : undefined;
+    if (existingId && !existing) return `Cattle ${existingId} no longer exists.`;
+    const idError = duplicateIdentifierError(cattleList, cow.id, (item) => item.id, (item) => item.id, 'Cattle ID', existingId);
+    if (idError) return idError;
+    const tagError = duplicateIdentifierError(cattleList, cow.tagNumber, (item) => item.tagNumber, (item) => item.id, 'Cattle tag', existingId);
+    if (tagError) return tagError;
+    const savedCow = { ...cow, archivedAt: undefined };
+    setCattleList((prev) => existing
+      ? prev.map((item) => item.id === existingId ? savedCow : item)
+      : [savedCow, ...prev]);
     logAudit({
       module: 'Cattle Herd',
-      action: 'CATTLE_ENROLLED',
+      entity: 'Cattle',
+      entityId: cow.id,
+      action: existing ? 'CATTLE_UPDATED' : 'CATTLE_ENROLLED',
       recordId: cow.id,
-      description: `Enrolled ${cow.breed} (${cow.tagNumber}) in ${cow.shedLocation}. Milk yield: ${cow.milkYieldLPerDay} L/d`,
+      description: `${existing ? 'Updated' : 'Enrolled'} ${cow.breed} (${cow.tagNumber}) in ${cow.shedLocation}. Milk yield: ${cow.milkYieldLPerDay} L/d`,
+      previousValue: existing,
+      newValue: savedCow,
       severity: 'info',
     });
+<<<<<<< Updated upstream
 
     api.cattle.create({
       tagNumber: cow.tagNumber,
@@ -774,20 +1115,45 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       shedLocation: cow.shedLocation,
       dailyFeedKg: cow.dailyFeedKg,
     }).catch((err) => console.warn('Backend cattle sync notice:', err.message));
+=======
+    return undefined;
+  };
+
+  const archiveCattle = (id: string) => {
+    const existing = cattleList.find((item) => item.id === id);
+    if (!existing || existing.archivedAt) return;
+    const archived = { ...existing, archivedAt: new Date().toISOString() };
+    setCattleList((prev) => prev.map((item) => item.id === id ? archived : item));
+    logAudit({
+      module: 'Cattle Herd', entity: 'Cattle', entityId: id, action: 'CATTLE_ARCHIVED',
+      recordId: id, description: `Archived cattle ${id}; historical records were retained.`,
+      previousValue: existing, newValue: archived, severity: 'warning',
+    });
+>>>>>>> Stashed changes
   };
 
   /**
    * 6. Add Farmer Producer:
    */
-  const addFarmer = (farmer: Farmer) => {
-    setFarmersList((prev) => [farmer, ...prev]);
+  const addFarmer = (farmer: Farmer, existingId?: string) => {
+    const existing = existingId ? farmersList.find((item) => item.id === existingId) : undefined;
+    if (existingId && !existing) return `Farmer ${existingId} no longer exists.`;
+    const idError = duplicateIdentifierError(farmersList, farmer.id, (item) => item.id, (item) => item.id, 'Farmer ID', existingId);
+    if (idError) return idError;
+    const savedFarmer = { ...farmer, archivedAt: undefined };
+    setFarmersList((prev) => existing
+      ? prev.map((item) => item.id === existingId ? savedFarmer : item)
+      : [savedFarmer, ...prev]);
     logAudit({
       module: 'Farmers',
-      action: 'FARMER_ENROLLED',
+      entity: 'Farmer', entityId: farmer.id,
+      action: existing ? 'FARMER_UPDATED' : 'FARMER_ENROLLED',
       recordId: farmer.id,
-      description: `Registered producer ${farmer.name} (${farmer.village}) with ${farmer.cattleCount} animals`,
+      description: `${existing ? 'Updated' : 'Registered'} producer ${farmer.name} (${farmer.village}) with ${farmer.cattleCount} animals`,
+      previousValue: existing, newValue: savedFarmer,
       severity: 'info',
     });
+<<<<<<< Updated upstream
 
     api.farmers.create({
       farmerCode: farmer.id,
@@ -798,6 +1164,21 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       bankAccount: farmer.bankAccount,
       status: farmer.status,
     }).catch((err) => console.warn('Backend farmer sync notice:', err.message));
+=======
+    return undefined;
+  };
+
+  const archiveFarmer = (id: string) => {
+    const existing = farmersList.find((item) => item.id === id);
+    if (!existing || existing.archivedAt) return;
+    const archived = { ...existing, archivedAt: new Date().toISOString() };
+    setFarmersList((prev) => prev.map((item) => item.id === id ? archived : item));
+    logAudit({
+      module: 'Farmers', entity: 'Farmer', entityId: id, action: 'FARMER_ARCHIVED',
+      recordId: id, description: `Archived farmer ${existing.name}; procurement and payment history were retained.`,
+      previousValue: existing, newValue: archived, severity: 'warning',
+    });
+>>>>>>> Stashed changes
   };
 
   /**
@@ -907,20 +1288,175 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   /**
    * 11. Add Route:
    */
-  const addRoute = (route: DistributionRoute) => {
-    setRoutesList((prev) => [route, ...prev]);
+  const addRoute = (route: DistributionRoute, existingId?: string) => {
+    const existing = existingId ? routesList.find((item) => item.id === existingId) : undefined;
+    if (existingId && !existing) return `Route ${existingId} no longer exists.`;
+    const idError = duplicateIdentifierError(routesList, route.id, (item) => item.id, (item) => item.id, 'Route ID', existingId);
+    if (idError) return idError;
+    const codeError = duplicateIdentifierError(routesList, route.routeCode, (item) => item.routeCode, (item) => item.id, 'Route code', existingId);
+    if (codeError) return codeError;
+    const vehicleRegistration = route.vehicleNumber.split(' (')[0].trim().toLowerCase();
+    if (!vehiclesList.some((item) => !item.archivedAt && item.registration.toLowerCase() === vehicleRegistration)) {
+      return 'Select an active registered vehicle for this route.';
+    }
+    setRoutesList((prev) => existing
+      ? prev.map((item) => item.id === existingId ? { ...route, archivedAt: undefined } : item)
+      : [route, ...prev]);
+    logAudit({
+      module: 'Distribution', entity: 'Route', entityId: route.id,
+      action: existing ? 'ROUTE_UPDATED' : 'ROUTE_CREATED', recordId: route.routeCode,
+      description: `${existing ? 'Updated' : 'Created'} route ${route.routeName} (${route.routeCode}).`,
+      previousValue: existing, newValue: route, severity: 'info',
+    });
+    return undefined;
+  };
+
+  const archiveRoute = (id: string) => {
+    const existing = routesList.find((item) => item.id === id);
+    if (!existing || existing.archivedAt) return;
+    const archived = { ...existing, archivedAt: new Date().toISOString() };
+    setRoutesList((prev) => prev.map((item) => item.id === id ? archived : item));
+    logAudit({
+      module: 'Distribution', entity: 'Route', entityId: id, action: 'ROUTE_ARCHIVED',
+      recordId: existing.routeCode, description: `Archived route ${existing.routeName}; delivery history retained.`,
+      previousValue: existing, newValue: archived, severity: 'warning',
+    });
   };
 
   /**
    * 12. Add Product:
    */
-  const addProduct = (product: ProductMaster) => {
-    setProductsList((prev) => [product, ...prev]);
+  const addProduct = (product: ProductMaster, existingId?: string) => {
+    const existing = existingId ? productsList.find((item) => item.id === existingId) : undefined;
+    if (existingId && !existing) return `Product ${existingId} no longer exists.`;
+    const idError = duplicateIdentifierError(productsList, product.id, (item) => item.id, (item) => item.id, 'Product ID', existingId);
+    if (idError) return idError;
+    const skuError = duplicateIdentifierError(productsList, product.sku, (item) => item.sku, (item) => item.id, 'Product SKU', existingId);
+    if (skuError) return skuError;
+    setProductsList((prev) => existing
+      ? prev.map((item) => item.id === existingId ? { ...product, archivedAt: undefined } : item)
+      : [product, ...prev]);
+    logAudit({
+      module: 'Products', entity: 'Product', entityId: product.id,
+      action: existing ? 'PRODUCT_UPDATED' : 'PRODUCT_CREATED', recordId: product.sku,
+      description: `${existing ? 'Updated' : 'Created'} product ${product.name} (${product.sku}).`,
+      previousValue: existing, newValue: product, severity: 'info',
+    });
+    return undefined;
+  };
+
+  const archiveProduct = (id: string) => {
+    const existing = productsList.find((item) => item.id === id);
+    if (!existing || existing.archivedAt) return;
+    const archived = { ...existing, archivedAt: new Date().toISOString() };
+    setProductsList((prev) => prev.map((item) => item.id === id ? archived : item));
+    logAudit({
+      module: 'Products', entity: 'Product', entityId: id, action: 'PRODUCT_ARCHIVED',
+      recordId: existing.sku, description: `Archived product ${existing.name}; historical transactions retained.`,
+      previousValue: existing, newValue: archived, severity: 'warning',
+    });
+  };
+
+  const addPackaging = (item: PackagingItem, existingId?: string) => {
+    const existing = existingId ? packagingList.find((entry) => entry.id === existingId) : undefined;
+    if (existingId && !existing) return `Packaging item ${existingId} no longer exists.`;
+    const idError = duplicateIdentifierError(packagingList, item.id, (entry) => entry.id, (entry) => entry.id, 'Packaging ID', existingId);
+    if (idError) return idError;
+    const nameError = duplicateIdentifierError(packagingList, item.name, (entry) => entry.name, (entry) => entry.id, 'Packaging material', existingId);
+    if (nameError) return nameError;
+    setPackagingList((prev) => existing
+      ? prev.map((entry) => entry.id === existingId ? { ...item, archivedAt: undefined } : entry)
+      : [item, ...prev]);
+    logAudit({
+      module: 'Packaging', entity: 'PackagingItem', entityId: item.id,
+      action: existing ? 'PACKAGING_UPDATED' : 'PACKAGING_CREATED', recordId: item.id,
+      description: `${existing ? 'Updated' : 'Created'} packaging master ${item.name}.`,
+      previousValue: existing, newValue: item, severity: 'info',
+    });
+    return undefined;
+  };
+
+  const archivePackaging = (id: string) => {
+    const existing = packagingList.find((item) => item.id === id);
+    if (!existing || existing.archivedAt) return;
+    const archived = { ...existing, archivedAt: new Date().toISOString() };
+    setPackagingList((prev) => prev.map((item) => item.id === id ? archived : item));
+    logAudit({
+      module: 'Packaging', entity: 'PackagingItem', entityId: id, action: 'PACKAGING_ARCHIVED',
+      recordId: id, description: `Archived packaging master ${existing.name}; stock history retained.`,
+      previousValue: existing, newValue: archived, severity: 'warning',
+    });
   };
 
   /**
    * 13. Add Quality Test:
    */
+  const saveCustomer = (customer: Customer, existingId?: string) => {
+    if (!canPerformAction(currentRole, 'customer')) return permissionError(currentRole);
+    const existing = existingId ? customersList.find((item) => item.id === existingId) : undefined;
+    if (existingId && !existing) return `Customer ${existingId} no longer exists.`;
+    const idError = duplicateIdentifierError(customersList, customer.id, (item) => item.id, (item) => item.id, 'Customer ID', existingId);
+    if (idError) return idError;
+    const nameError = duplicateIdentifierError(customersList, customer.name, (item) => item.name, (item) => item.id, 'Customer', existingId);
+    if (nameError) return nameError;
+    const saved = { ...customer, name: customer.name.trim(), archivedAt: undefined };
+    setCustomersList((prev) => existing
+      ? prev.map((item) => item.id === existingId ? saved : item)
+      : [saved, ...prev]);
+    logAudit({
+      module: 'Sales', entity: 'Customer', entityId: customer.id,
+      action: existing ? 'CUSTOMER_UPDATED' : 'CUSTOMER_CREATED', recordId: customer.id,
+      description: `${existing ? 'Updated' : 'Created'} customer ${saved.name}.`,
+      previousValue: existing, newValue: saved, severity: 'info',
+    });
+    return undefined;
+  };
+
+  const archiveCustomer = (id: string) => {
+    const existing = customersList.find((item) => item.id === id);
+    if (!existing || existing.archivedAt) return;
+    const archived = { ...existing, archivedAt: new Date().toISOString() };
+    setCustomersList((prev) => prev.map((item) => item.id === id ? archived : item));
+    logAudit({
+      module: 'Sales', entity: 'Customer', entityId: id, action: 'CUSTOMER_ARCHIVED',
+      recordId: id, description: `Archived customer ${existing.name}; invoice history retained.`,
+      previousValue: existing, newValue: archived, severity: 'warning',
+    });
+  };
+
+  const saveVehicle = (vehicle: Vehicle, existingId?: string) => {
+    if (!canPerformAction(currentRole, 'vehicle')) return permissionError(currentRole);
+    const existing = existingId ? vehiclesList.find((item) => item.id === existingId) : undefined;
+    if (existingId && !existing) return `Vehicle ${existingId} no longer exists.`;
+    const idError = duplicateIdentifierError(vehiclesList, vehicle.id, (item) => item.id, (item) => item.id, 'Vehicle ID', existingId);
+    if (idError) return idError;
+    const registrationError = duplicateIdentifierError(vehiclesList, vehicle.registration, (item) => item.registration, (item) => item.id, 'Vehicle registration', existingId);
+    if (registrationError) return registrationError;
+    const saved = { ...vehicle, registration: vehicle.registration.trim(), archivedAt: undefined };
+    setVehiclesList((prev) => existing
+      ? prev.map((item) => item.id === existingId ? saved : item)
+      : [saved, ...prev]);
+    logAudit({
+      module: 'Distribution', entity: 'Vehicle', entityId: vehicle.id,
+      action: existing ? 'VEHICLE_UPDATED' : 'VEHICLE_CREATED', recordId: vehicle.registration,
+      description: `${existing ? 'Updated' : 'Created'} vehicle ${saved.registration}.`,
+      previousValue: existing, newValue: saved, severity: 'info',
+    });
+    return undefined;
+  };
+
+  const archiveVehicle = (id: string) => {
+    const existing = vehiclesList.find((item) => item.id === id);
+    if (!existing || existing.archivedAt) return;
+    const archived = { ...existing, archivedAt: new Date().toISOString() };
+    setVehiclesList((prev) => prev.map((item) => item.id === id ? archived : item));
+    logAudit({
+      module: 'Distribution', entity: 'Vehicle', entityId: id, action: 'VEHICLE_ARCHIVED',
+      recordId: existing.registration, description: `Archived vehicle ${existing.registration}; route history retained.`,
+      previousValue: existing, newValue: archived, severity: 'warning',
+    });
+  };
+
   const addQualityTest = (test: QualityTestRecord) => {
     setQualityTestsList((prev) => [test, ...prev]);
     logAudit({
@@ -1011,6 +1547,8 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     packagingList,
     inventoryList,
     routesList,
+    customersList,
+    vehiclesList,
     salesOrdersList,
     paymentsList,
     auditLogs,
@@ -1027,13 +1565,23 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     recordSalesOrder,
     recordPayment,
     addCattle,
+    archiveCattle,
     addFarmer,
+    archiveFarmer,
     recordFeedPurchase,
     recordFeedConsumption,
     restockPackaging,
     adjustInventory,
     addRoute,
+    archiveRoute,
     addProduct,
+    archiveProduct,
+    addPackaging,
+    archivePackaging,
+    saveCustomer,
+    archiveCustomer,
+    saveVehicle,
+    archiveVehicle,
     addQualityTest,
     dismissAlert,
 

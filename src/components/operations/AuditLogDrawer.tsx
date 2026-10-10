@@ -85,9 +85,23 @@ export const AuditLogDrawer: React.FC<AuditLogDrawerProps> = ({ isOpen, onClose 
                     <span className="text-slate-300">·</span>
                     <span className="text-slate-700 font-semibold">{log.action}</span>
                     <span className="text-slate-300">·</span>
+                    {log.entity && (
+                      <>
+                        <span className="text-slate-600">{log.entity}{log.entityId ? ` · ${log.entityId}` : ''}</span>
+                        <span className="text-slate-300">·</span>
+                      </>
+                    )}
                     <span className="text-slate-500 font-mono">ID: {log.recordId}</span>
                   </div>
                   <p className="text-xs text-slate-800 font-sans font-medium">{log.description}</p>
+                  {(log.previousValue !== undefined || log.newValue !== undefined) && (
+                    <details className="pt-1 text-[10px] text-slate-600">
+                      <summary className="cursor-pointer">View change data</summary>
+                      <pre className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap rounded bg-slate-50 p-2 font-mono">
+                        {JSON.stringify({ previousValue: log.previousValue, newValue: log.newValue }, null, 2)}
+                      </pre>
+                    </details>
+                  )}
                   <div className="flex items-center gap-3 text-[10px] text-slate-500 font-sans pt-0.5">
                     <span className="flex items-center gap-1">
                       <User className="w-3 h-3 text-slate-400" /> {log.userName} ({log.userRole})

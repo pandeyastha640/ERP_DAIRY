@@ -500,16 +500,16 @@ export const MilkOperationsPage: React.FC = () => {
             <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
               <div className="text-slate-500 font-sans text-xs">Avg Procurement Rate</div>
               <div className="text-lg font-bold text-slate-900 mt-1">
-                ₹{procurementSummary.averageRatePerLitre.toFixed(2)} / L
+                ₹{procurementSummary.weightedAvgRatePerL.toFixed(2)} / L
               </div>
               <div className="text-[11px] text-slate-500 font-sans mt-0.5">
-                Fat {procurementSummary.averageFatPct}% · SNF {procurementSummary.averageSnfPct}%
+                Fat {procurementSummary.weightedAvgFat}% · SNF {procurementSummary.weightedAvgSNF}%
               </div>
             </div>
             <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
               <div className="text-slate-500 font-sans text-xs">Today's Farmer Payables</div>
               <div className="text-lg font-bold text-emerald-800 mt-1">
-                ₹{procurementSummary.totalPayablePending.toLocaleString()}
+                ₹{procurementSummary.totalPayablesToday.toLocaleString()}
               </div>
               <div className="text-[11px] text-slate-500 font-sans mt-0.5">
                 Direct bank settlement enabled

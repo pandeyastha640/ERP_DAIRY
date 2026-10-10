@@ -127,7 +127,7 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
                       <strong className="text-blue-700 font-bold">
                         {reconciliation.farmerProcurementLitres} L
                       </strong>{' '}
-                      (@ ₹{procurementSummary.averageRatePerLitre.toFixed(2)}/L rate)
+                      (@ ₹{procurementSummary.weightedAvgRatePerL.toFixed(2)}/L rate)
                     </div>
                   </div>
                 </div>

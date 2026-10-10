@@ -8,19 +8,82 @@ import { Box, Plus, AlertTriangle, CheckCircle2, ShoppingCart } from 'lucide-rea
 interface PackagingManagementPageProps {
   packaging: PackagingItem[];
   onAddStock: (id: string, qty: number) => void;
+  onSavePackaging: (item: PackagingItem, existingId?: string) => string | undefined;
+  onArchivePackaging: (id: string) => void;
 }
 
-export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = ({ packaging, onAddStock }) => {
+export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = ({ packaging, onAddStock, onSavePackaging, onArchivePackaging }) => {
   const [isRestockModalOpen, setIsRestockModalOpen] = useState(false);
+  const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<PackagingItem | null>(null);
+  const [formError, setFormError] = useState('');
+  const [masterName, setMasterName] = useState('');
+  const [masterType, setMasterType] = useState<PackagingItem['materialType']>('Polypouch');
+  const [masterSize, setMasterSize] = useState('500 ml');
+  const [masterStock, setMasterStock] = useState('0');
+  const [masterThreshold, setMasterThreshold] = useState('1000');
+  const [masterCost, setMasterCost] = useState('0');
   const [selectedId, setSelectedId] = useState(packaging[0]?.id || '');
   const [restockQty, setRestockQty] = useState('25000');
 
-  const totalOpening = packaging.reduce((acc, p) => acc + p.openingStock, 0);
-  const totalPurchased = packaging.reduce((acc, p) => acc + p.purchased, 0);
-  const totalConsumed = packaging.reduce((acc, p) => acc + p.consumed, 0);
-  const totalDamaged = packaging.reduce((acc, p) => acc + p.damaged, 0);
-  const totalClosing = packaging.reduce((acc, p) => acc + p.closingStock, 0);
-  const lowStockCount = packaging.filter((p) => p.status === 'Low Stock').length;
+  const activePackaging = packaging.filter((item) => !item.archivedAt);
+  const totalOpening = activePackaging.reduce((acc, p) => acc + p.openingStock, 0);
+  const totalPurchased = activePackaging.reduce((acc, p) => acc + p.purchased, 0);
+  const totalConsumed = activePackaging.reduce((acc, p) => acc + p.consumed, 0);
+  const totalDamaged = activePackaging.reduce((acc, p) => acc + p.damaged, 0);
+  const totalClosing = activePackaging.reduce((acc, p) => acc + p.closingStock, 0);
+  const lowStockCount = activePackaging.filter((p) => p.status === 'Low Stock').length;
+
+  const openMasterForm = (item?: PackagingItem) => {
+    setEditingItem(item ?? null);
+    setFormError('');
+    setMasterName(item?.name ?? '');
+    setMasterType(item?.materialType ?? 'Polypouch');
+    setMasterSize(item?.size ?? '500 ml');
+    setMasterStock(String(item?.closingStock ?? 0));
+    setMasterThreshold(String(item?.reorderLevel ?? 1000));
+    setMasterCost(String(item?.unitCost ?? 0));
+    setIsMasterModalOpen(true);
+  };
+
+  const handleSaveMaster = (e: React.FormEvent) => {
+    e.preventDefault();
+    const stock = Number(masterStock);
+    const threshold = Number(masterThreshold);
+    const cost = Number(masterCost);
+    if (!masterName.trim() || !masterSize.trim()) {
+      setFormError('Material name and package size are required.');
+      return;
+    }
+    if (!Number.isInteger(stock) || stock < 0 || !Number.isInteger(threshold) || threshold < 0 ||
+        !Number.isFinite(cost) || cost < 0) {
+      setFormError('Stock and reorder threshold must be non-negative whole numbers; cost must be non-negative.');
+      return;
+    }
+    const closingStock = editingItem?.closingStock ?? stock;
+    const item: PackagingItem = {
+      ...(editingItem ?? {} as PackagingItem),
+      id: editingItem?.id ?? `PKG-${Date.now()}`,
+      name: masterName.trim(),
+      materialType: masterType,
+      size: masterSize.trim(),
+      openingStock: editingItem?.openingStock ?? stock,
+      purchased: editingItem?.purchased ?? 0,
+      consumed: editingItem?.consumed ?? 0,
+      damaged: editingItem?.damaged ?? 0,
+      closingStock,
+      unitCost: cost,
+      reorderLevel: threshold,
+      daysRemaining: editingItem?.daysRemaining ?? 0,
+      status: closingStock <= threshold ? 'Low Stock' : 'Sufficient',
+    };
+    const error = onSavePackaging(item, editingItem?.id);
+    if (error) {
+      setFormError(error);
+      return;
+    }
+    setIsMasterModalOpen(false);
+  };
 
   const handleRestock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,22 +94,29 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
             Packaging Material Inventory
           </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Roll films, bottles, cups, cartons, and seal liners with real-time consumption and stockout warnings.
           </p>
         </div>
 
         <button
           onClick={() => setIsRestockModalOpen(true)}
-          className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+          className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
         >
           <ShoppingCart className="w-4 h-4" />
           <span>Restock Purchase Order</span>
+        </button>
+        <button
+          onClick={() => openMasterForm()}
+          className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Add Material</span>
         </button>
       </div>
 
@@ -69,12 +139,12 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
 
       {/* CRITICAL ALERT BANNER */}
       {lowStockCount > 0 && (
-        <div className="p-4 bg-[#f85149]/10 border border-[#f85149]/30 rounded-lg flex items-center justify-between">
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-[#f85149] shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-rose-700 shrink-0" />
             <div>
-              <div className="text-xs font-bold text-[#f85149]">CRITICAL PACKAGING BUFFER WARNING</div>
-              <div className="text-xs text-[#c9d1d9] mt-0.5">
+              <div className="text-xs font-bold text-rose-700">CRITICAL PACKAGING BUFFER WARNING</div>
+              <div className="text-xs text-slate-700 mt-0.5">
                 500ml LDPE Multilayer Milk Pouch Film has only 1.9 days remaining before line stoppage. Reorder level is 20,000 units.
               </div>
             </div>
@@ -93,14 +163,14 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
       )}
 
       {/* Packaging Table */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
-        <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#f0f6fc]">Packaging Material Stock Ledger</h3>
-          <span className="text-xs font-mono text-[#8b949e]">Units in Individual Pieces / Pouches</span>
+      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-900">Packaging Material Stock Ledger</h3>
+          <span className="text-xs font-mono text-slate-500">Units in Individual Pieces / Pouches</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+            <thead className="bg-slate-50 text-slate-500 font-mono border-b border-slate-200">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Material Name</th>
                 <th className="px-4 py-2.5 font-medium">Type</th>
@@ -115,21 +185,21 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
                 <th className="px-4 py-2.5 font-medium text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
-              {packaging.map((item) => (
-                <tr key={item.id} className="hover:bg-[#1f2937]/30 transition-colors">
-                  <td className="px-4 py-3 font-sans font-semibold text-[#f0f6fc]">{item.name}</td>
-                  <td className="px-4 py-3 font-sans text-[#8b949e]">{item.materialType}</td>
+            <tbody className="divide-y divide-slate-100 text-slate-700 font-mono tabular-nums">
+              {activePackaging.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3 font-sans font-semibold text-slate-900">{item.name}</td>
+                  <td className="px-4 py-3 font-sans text-slate-500">{item.materialType}</td>
                   <td className="px-4 py-3">{item.openingStock.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-[#3fb950]">
+                  <td className="px-4 py-3 text-emerald-700">
                     {item.purchased > 0 ? `+${item.purchased.toLocaleString()}` : '-'}
                   </td>
-                  <td className="px-4 py-3 text-[#f0883e]">-{item.consumed.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-[#f85149]">{item.damaged}</td>
-                  <td className="px-4 py-3 font-bold text-[#f0f6fc]">{item.closingStock.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-amber-700">-{item.consumed.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-rose-700">{item.damaged}</td>
+                  <td className="px-4 py-3 font-bold text-slate-900">{item.closingStock.toLocaleString()}</td>
                   <td className="px-4 py-3">₹{item.unitCost.toFixed(2)}</td>
                   <td className="px-4 py-3 font-bold">
-                    <span className={item.daysRemaining <= 2.5 ? 'text-[#f85149]' : 'text-[#3fb950]'}>
+                    <span className={item.daysRemaining <= 2.5 ? 'text-rose-700' : 'text-emerald-700'}>
                       {item.daysRemaining} days
                     </span>
                   </td>
@@ -143,10 +213,22 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
                         setRestockQty('20000');
                         setIsRestockModalOpen(true);
                       }}
-                      className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] rounded text-[11px] font-sans"
+                      className="px-2 py-1 bg-slate-50 hover:bg-[#30363d] text-blue-700 rounded text-[11px] font-sans"
                     >
                       Inward PO
                     </button>
+                    <button
+                      onClick={() => openMasterForm(item)}
+                      className="ml-1 px-2 py-1 border border-slate-300 text-slate-700 rounded text-[11px] font-sans"
+                    >Edit</button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`Archive ${item.name}? Existing stock history will be retained.`)) {
+                          onArchivePackaging(item.id);
+                        }
+                      }}
+                      className="ml-1 px-2 py-1 border border-rose-200 text-rose-700 rounded text-[11px] font-sans"
+                    >Archive</button>
                   </td>
                 </tr>
               ))}
@@ -165,11 +247,11 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
       >
         <form onSubmit={handleRestock} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Packaging Material</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Packaging Material</label>
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs text-[#f0f6fc]"
+              className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs text-slate-900"
             >
               {packaging.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -179,28 +261,66 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Quantity Received (Units)</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Quantity Received (Units)</label>
             <input
               type="number"
               value={restockQty}
               onChange={(e) => setRestockQty(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono text-[#f0f6fc]"
+              className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs font-mono text-slate-900"
             />
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setIsRestockModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 text-xs text-slate-500"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded text-xs font-semibold"
+              className="px-4 py-2 bg-emerald-700 text-white rounded text-xs font-semibold"
             >
               Confirm Delivery
             </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={isMasterModalOpen}
+        onClose={() => setIsMasterModalOpen(false)}
+        title={editingItem ? `Edit ${editingItem.name}` : 'Add Packaging Material'}
+        subtitle="Maintain the packaging master without altering existing stock history"
+        maxWidth="md"
+      >
+        <form onSubmit={handleSaveMaster} className="space-y-3.5">
+          {formError && <p role="alert" className="text-xs text-rose-700">{formError}</p>}
+          <label className="block text-xs font-medium text-slate-700">Material Name
+            <input required value={masterName} onChange={(e) => setMasterName(e.target.value)} className="mt-1 w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900" />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-xs font-medium text-slate-700">Material Type
+              <select value={masterType} onChange={(e) => setMasterType(e.target.value as PackagingItem['materialType'])} className="mt-1 w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900">
+                {(['Polypouch', 'PET Bottle', 'Tub & Foil', 'Corrugated Box', 'Cap & Seal', 'Glass Bottle'] as const).map((type) => <option key={type}>{type}</option>)}
+              </select>
+            </label>
+            <label className="block text-xs font-medium text-slate-700">Pack Size
+              <input required value={masterSize} onChange={(e) => setMasterSize(e.target.value)} className="mt-1 w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900" />
+            </label>
+            <label className="block text-xs font-medium text-slate-700">{editingItem ? 'Current Stock' : 'Opening Stock'}
+              <input type="number" min="0" step="1" required value={masterStock} onChange={(e) => setMasterStock(e.target.value)} className="mt-1 w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900" />
+            </label>
+            <label className="block text-xs font-medium text-slate-700">Reorder Threshold
+              <input type="number" min="0" step="1" required value={masterThreshold} onChange={(e) => setMasterThreshold(e.target.value)} className="mt-1 w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900" />
+            </label>
+            <label className="block text-xs font-medium text-slate-700">Unit Cost
+              <input type="number" min="0" step="0.01" required value={masterCost} onChange={(e) => setMasterCost(e.target.value)} className="mt-1 w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900" />
+            </label>
+          </div>
+          <div className="flex justify-end gap-2 border-t border-slate-200 pt-3">
+            <button type="button" onClick={() => setIsMasterModalOpen(false)} className="px-3 py-2 text-xs text-slate-600">Cancel</button>
+            <button type="submit" className="px-3 py-2 bg-emerald-700 text-white rounded-lg text-xs font-semibold">{editingItem ? 'Save Changes' : 'Add Material'}</button>
           </div>
         </form>
       </Modal>

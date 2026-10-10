@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Farmer, MilkCollectionRecord } from '../../types/dairy';
 import { Modal } from '../common/Modal';
 import { Plus } from 'lucide-react';
+import { assessMilkCollection } from '../../services/dairyEngine';
 
 interface QuickCollectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   farmers: Farmer[];
-  onSave: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => void;
+  onSave: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => string | undefined;
 }
 
 export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
@@ -23,6 +24,7 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
   const [fat, setFat] = useState('4.4');
   const [snf, setSnf] = useState('8.6');
   const [temp, setTemp] = useState('18.0');
+  const [submitError, setSubmitError] = useState('');
 
   const selectedFarmer = farmers.find((f) => f.id === farmerId) || farmers[0];
 
@@ -31,18 +33,23 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
   const s = parseFloat(snf) || 0;
   const t = parseFloat(temp) || 0;
 
-  const isFail = f < 3.2 || s < 7.8 || t > 24;
-  const isWarn = !isFail && (t > 20 || f < 3.8);
-  const quality = isFail ? 'FAIL' : isWarn ? 'WARNING' : 'PASS';
-
-  const rate = isFail ? 0 : Math.max(0, +(34.5 + (f - 4.0) * 4.5 + (s - 8.5) * 2.5).toFixed(2));
-  const payable = Math.round(q * rate);
+  const assessment = assessMilkCollection(q, f, s, t);
+  const quality = assessment.valid ? assessment.quality : 'FAIL';
+  const rate = assessment.valid ? assessment.ratePerLitre : 0;
+  const payable = assessment.valid ? assessment.payableAmount : 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFarmer || q <= 0) return;
+    if (!selectedFarmer) {
+      setSubmitError('Select a registered farmer before recording milk.');
+      return;
+    }
+    if (!assessment.valid) {
+      setSubmitError(assessment.error);
+      return;
+    }
 
-    onSave({
+    const error = onSave({
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       date: new Date().toISOString().split('T')[0],
       shift,
@@ -53,12 +60,17 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
       fat: f,
       snf: s,
       temperatureC: t,
-      quality,
-      ratePerLitre: rate,
-      payableAmount: payable,
+      quality: assessment.quality,
+      ratePerLitre: assessment.ratePerLitre,
+      payableAmount: assessment.payableAmount,
       testedBy: 'QC Lab Desk',
     });
+    if (error) {
+      setSubmitError(error);
+      return;
+    }
 
+    setSubmitError('');
     onClose();
   };
 
@@ -71,6 +83,7 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {submitError && <p role="alert" className="text-xs text-rose-700">{submitError}</p>}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1">Shift</label>

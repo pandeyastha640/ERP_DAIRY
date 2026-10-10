@@ -90,12 +90,12 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
             Feed & Nutrition Management
           </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Ration balancing, dry matter intake, feed procurement and cost-per-litre optimization for cattle.
           </p>
         </div>
@@ -103,21 +103,21 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsPurchaseModalOpen(true)}
-            className="px-3 py-1.5 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-[#f0f6fc] rounded-lg transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 rounded-lg transition-colors flex items-center gap-1.5"
           >
             <ShoppingCart className="w-3.5 h-3.5 text-[#388bfd]" />
             <span>Add Purchase</span>
           </button>
           <button
             onClick={() => setIsConsumptionModalOpen(true)}
-            className="px-3 py-1.5 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-[#f0f6fc] rounded-lg transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 rounded-lg transition-colors flex items-center gap-1.5"
           >
             <Wheat className="w-3.5 h-3.5 text-[#e3b341]" />
             <span>Record Consumption</span>
           </button>
           <button
             onClick={() => setActiveTab('Formulation')}
-            className="px-3 py-1.5 bg-[#388bfd] hover:bg-[#4c97ff] text-xs font-semibold text-white rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-xs font-semibold text-white rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
           >
             <Calculator className="w-3.5 h-3.5" />
             <span>Feed Formula</span>
@@ -167,11 +167,11 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 p-1 bg-[#161b22] border border-[#30363d] rounded-lg max-w-fit">
+      <div className="flex items-center gap-1 p-1 bg-white border border-slate-200 rounded-lg max-w-fit">
         <button
           onClick={() => setActiveTab('Inventory')}
           className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-            activeTab === 'Inventory' ? 'bg-[#388bfd] text-white' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+            activeTab === 'Inventory' ? 'bg-emerald-700 text-white' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           Feed Inventory & Stock
@@ -179,7 +179,7 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
         <button
           onClick={() => setActiveTab('Formulation')}
           className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-            activeTab === 'Formulation' ? 'bg-[#388bfd] text-white' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+            activeTab === 'Formulation' ? 'bg-emerald-700 text-white' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
           Formulation & Cost Calculator
@@ -189,14 +189,14 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       {/* INVENTORY TAB */}
       {activeTab === 'Inventory' && (
         <div className="space-y-4">
-          <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
-            <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#f0f6fc]">Feed Inventory Ledger</h3>
-              <span className="text-xs font-mono text-[#8b949e]">Units in Kilograms (Kg)</span>
+          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-900">Feed Inventory Ledger</h3>
+              <span className="text-xs font-mono text-slate-500">Units in Kilograms (Kg)</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+                <thead className="bg-slate-50 text-slate-500 font-mono border-b border-slate-200">
                   <tr>
                     <th className="px-4 py-2.5 font-medium">Feed Item</th>
                     <th className="px-4 py-2.5 font-medium">Category</th>
@@ -210,32 +210,32 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     <th className="px-4 py-2.5 font-medium">Supplier</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
+                <tbody className="divide-y divide-slate-100 text-slate-700 font-mono tabular-nums">
                   {feeds.map((feed) => (
-                    <tr key={feed.id} className="hover:bg-[#1f2937]/30 transition-colors">
-                      <td className="px-4 py-3 font-sans font-semibold text-[#f0f6fc]">
+                    <tr key={feed.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-3 font-sans font-semibold text-slate-900">
                         {feed.name}
                         {feed.daysRemaining <= 4.0 && (
-                          <span className="ml-2 text-[10px] text-[#f85149] font-mono bg-[#f85149]/15 px-1.5 py-0.2 rounded border border-[#f85149]/30">
+                          <span className="ml-2 text-[10px] text-rose-700 font-mono bg-[#f85149]/15 px-1.5 py-0.2 rounded border border-rose-200">
                             LOW STOCK
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 font-sans text-[#8b949e]">{feed.type}</td>
+                      <td className="px-4 py-3 font-sans text-slate-500">{feed.type}</td>
                       <td className="px-4 py-3">{feed.openingStockKg.toLocaleString()} kg</td>
-                      <td className="px-4 py-3 text-[#3fb950]">
+                      <td className="px-4 py-3 text-emerald-700">
                         {feed.purchasedKg > 0 ? `+${feed.purchasedKg.toLocaleString()} kg` : '-'}
                       </td>
-                      <td className="px-4 py-3 text-[#f0883e]">-{feed.consumedKg.toLocaleString()} kg</td>
-                      <td className="px-4 py-3 font-bold text-[#f0f6fc]">{feed.closingStockKg.toLocaleString()} kg</td>
+                      <td className="px-4 py-3 text-amber-700">-{feed.consumedKg.toLocaleString()} kg</td>
+                      <td className="px-4 py-3 font-bold text-slate-900">{feed.closingStockKg.toLocaleString()} kg</td>
                       <td className="px-4 py-3">₹{feed.unitCostPerKg.toFixed(2)}/kg</td>
-                      <td className="px-4 py-3 text-[#58a6ff]">₹{feed.stockValue.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-blue-700">₹{feed.stockValue.toLocaleString()}</td>
                       <td className="px-4 py-3 font-bold">
-                        <span className={feed.daysRemaining <= 4.0 ? 'text-[#f85149]' : 'text-[#3fb950]'}>
+                        <span className={feed.daysRemaining <= 4.0 ? 'text-rose-700' : 'text-emerald-700'}>
                           {feed.daysRemaining} days
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-sans text-[#8b949e] text-[11px]">{feed.supplier}</td>
+                      <td className="px-4 py-3 font-sans text-slate-500 text-[11px]">{feed.supplier}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -249,22 +249,22 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       {activeTab === 'Formulation' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Form: Parameters */}
-          <div className="lg:col-span-2 bg-[#161b22] border border-[#30363d] rounded-lg p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
-                <h3 className="text-sm font-semibold text-[#f0f6fc]">Ration Balancing Formulation</h3>
-                <p className="text-xs text-[#8b949e]">Adjust dietary dry matter ratios per animal to observe cost impact</p>
+                <h3 className="text-sm font-semibold text-slate-900">Ration Balancing Formulation</h3>
+                <p className="text-xs text-slate-500">Adjust dietary dry matter ratios per animal to observe cost impact</p>
               </div>
               <span className="text-xs font-mono text-[#388bfd] font-semibold">{formGroup}</span>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[#8b949e] mb-1">Cattle Production Group</label>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Cattle Production Group</label>
                 <select
                   value={formGroup}
                   onChange={(e) => setFormGroup(e.target.value as any)}
-                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs text-[#f0f6fc] outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none"
                 >
                   <option value="High Yield Milking">High Yield Milking Herd</option>
                   <option value="Mid Lactation">Mid Lactation / Maintenance</option>
@@ -272,22 +272,22 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#8b949e] mb-1">Number of Animals in Group</label>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Number of Animals in Group</label>
                 <input
                   type="number"
                   value={calcAnimals}
                   onChange={(e) => setCalcAnimals(parseInt(e.target.value) || 1)}
-                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 outline-none"
                 />
               </div>
             </div>
 
             {/* Component Sliders/Inputs */}
             <div className="space-y-3 pt-2">
-              <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded-lg flex items-center justify-between">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-[#f0f6fc]">Green Maize Fodder (Hybrid Chari)</div>
-                  <div className="text-[11px] text-[#8b949e]">Unit rate: ₹3.20/kg</div>
+                  <div className="text-xs font-semibold text-slate-900">Green Maize Fodder (Hybrid Chari)</div>
+                  <div className="text-[11px] text-slate-500">Unit rate: ₹3.20/kg</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -295,17 +295,17 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     step="0.5"
                     value={calcGreenFodder}
                     onChange={(e) => setCalcGreenFodder(parseFloat(e.target.value) || 0)}
-                    className="w-20 bg-[#161b22] border border-[#30363d] rounded px-2 py-1 text-xs font-mono text-center text-[#f0f6fc]"
+                    className="w-20 bg-white border border-slate-200 rounded px-2 py-1 text-xs font-mono text-center text-slate-900"
                   />
-                  <span className="text-xs text-[#8b949e]">kg/cow</span>
-                  <span className="text-xs font-mono font-bold text-[#58a6ff] w-16 text-right">₹{costGreen.toFixed(1)}</span>
+                  <span className="text-xs text-slate-500">kg/cow</span>
+                  <span className="text-xs font-mono font-bold text-blue-700 w-16 text-right">₹{costGreen.toFixed(1)}</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded-lg flex items-center justify-between">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-[#f0f6fc]">Wheat Straw (Dry Bhusa / Turi)</div>
-                  <div className="text-[11px] text-[#8b949e]">Unit rate: ₹6.80/kg</div>
+                  <div className="text-xs font-semibold text-slate-900">Wheat Straw (Dry Bhusa / Turi)</div>
+                  <div className="text-[11px] text-slate-500">Unit rate: ₹6.80/kg</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -313,17 +313,17 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     step="0.5"
                     value={calcDryFodder}
                     onChange={(e) => setCalcDryFodder(parseFloat(e.target.value) || 0)}
-                    className="w-20 bg-[#161b22] border border-[#30363d] rounded px-2 py-1 text-xs font-mono text-center text-[#f0f6fc]"
+                    className="w-20 bg-white border border-slate-200 rounded px-2 py-1 text-xs font-mono text-center text-slate-900"
                   />
-                  <span className="text-xs text-[#8b949e]">kg/cow</span>
-                  <span className="text-xs font-mono font-bold text-[#58a6ff] w-16 text-right">₹{costDry.toFixed(1)}</span>
+                  <span className="text-xs text-slate-500">kg/cow</span>
+                  <span className="text-xs font-mono font-bold text-blue-700 w-16 text-right">₹{costDry.toFixed(1)}</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded-lg flex items-center justify-between">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-[#f0f6fc]">Milking Concentrate Pellet 22% CP</div>
-                  <div className="text-[11px] text-[#8b949e]">Unit rate: ₹28.50/kg</div>
+                  <div className="text-xs font-semibold text-slate-900">Milking Concentrate Pellet 22% CP</div>
+                  <div className="text-[11px] text-slate-500">Unit rate: ₹28.50/kg</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -331,17 +331,17 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     step="0.5"
                     value={calcConcentrate}
                     onChange={(e) => setCalcConcentrate(parseFloat(e.target.value) || 0)}
-                    className="w-20 bg-[#161b22] border border-[#30363d] rounded px-2 py-1 text-xs font-mono text-center text-[#f0f6fc]"
+                    className="w-20 bg-white border border-slate-200 rounded px-2 py-1 text-xs font-mono text-center text-slate-900"
                   />
-                  <span className="text-xs text-[#8b949e]">kg/cow</span>
-                  <span className="text-xs font-mono font-bold text-[#58a6ff] w-16 text-right">₹{costConc.toFixed(1)}</span>
+                  <span className="text-xs text-slate-500">kg/cow</span>
+                  <span className="text-xs font-mono font-bold text-blue-700 w-16 text-right">₹{costConc.toFixed(1)}</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded-lg flex items-center justify-between">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-[#f0f6fc]">Chelated Mineral Mixture & Vitamins</div>
-                  <div className="text-[11px] text-[#8b949e]">Unit rate: ₹115.00/kg</div>
+                  <div className="text-xs font-semibold text-slate-900">Chelated Mineral Mixture & Vitamins</div>
+                  <div className="text-[11px] text-slate-500">Unit rate: ₹115.00/kg</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -349,50 +349,50 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     step="0.05"
                     value={calcMineral}
                     onChange={(e) => setCalcMineral(parseFloat(e.target.value) || 0)}
-                    className="w-20 bg-[#161b22] border border-[#30363d] rounded px-2 py-1 text-xs font-mono text-center text-[#f0f6fc]"
+                    className="w-20 bg-white border border-slate-200 rounded px-2 py-1 text-xs font-mono text-center text-slate-900"
                   />
-                  <span className="text-xs text-[#8b949e]">kg/cow</span>
-                  <span className="text-xs font-mono font-bold text-[#58a6ff] w-16 text-right">₹{costMin.toFixed(1)}</span>
+                  <span className="text-xs text-slate-500">kg/cow</span>
+                  <span className="text-xs font-mono font-bold text-blue-700 w-16 text-right">₹{costMin.toFixed(1)}</span>
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Expected Avg Milk Yield per Cow (Litres/day)</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Expected Avg Milk Yield per Cow (Litres/day)</label>
               <input
                 type="number"
                 step="0.5"
                 value={expectedYieldPerCow}
                 onChange={(e) => setExpectedYieldPerCow(parseFloat(e.target.value) || 1)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 outline-none"
               />
             </div>
           </div>
 
           {/* Right Summary Card */}
-          <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5 flex flex-col justify-between space-y-4">
+          <div className="bg-white border border-slate-200 rounded-lg p-5 flex flex-col justify-between space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-[#f0f6fc] mb-3">Ration Economic Summary</h3>
+              <h3 className="text-sm font-semibold text-slate-900 mb-3">Ration Economic Summary</h3>
 
               <div className="space-y-3 font-mono text-xs">
-                <div className="p-3 bg-[#0d1117] rounded-lg border border-[#30363d]">
-                  <div className="text-[11px] text-[#8b949e] font-sans">Daily Intake / Animal</div>
-                  <div className="text-lg font-bold text-[#f0f6fc] mt-1">{dailyFeedKgPerAnimal.toFixed(2)} kg</div>
-                  <div className="text-[10px] text-[#8b949e] font-sans">Dry matter verified</div>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="text-[11px] text-slate-500 font-sans">Daily Intake / Animal</div>
+                  <div className="text-lg font-bold text-slate-900 mt-1">{dailyFeedKgPerAnimal.toFixed(2)} kg</div>
+                  <div className="text-[10px] text-slate-500 font-sans">Dry matter verified</div>
                 </div>
 
-                <div className="p-3 bg-[#0d1117] rounded-lg border border-[#30363d]">
-                  <div className="text-[11px] text-[#8b949e] font-sans">Daily Cost / Animal</div>
-                  <div className="text-lg font-bold text-[#f0883e] mt-1">₹{dailyCostPerAnimal.toFixed(2)}</div>
-                  <div className="text-[10px] text-[#8b949e] font-sans">₹{totalDailyCost.toFixed(0)} for group</div>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="text-[11px] text-slate-500 font-sans">Daily Cost / Animal</div>
+                  <div className="text-lg font-bold text-amber-700 mt-1">₹{dailyCostPerAnimal.toFixed(2)}</div>
+                  <div className="text-[10px] text-slate-500 font-sans">₹{totalDailyCost.toFixed(0)} for group</div>
                 </div>
 
                 <div className="p-4 bg-[#238636]/15 rounded-lg border border-[#238636]/40">
-                  <div className="text-xs font-semibold text-[#3fb950] font-sans">Estimated Feed Cost / Litre</div>
-                  <div className="text-2xl font-bold text-[#3fb950] mt-1 font-mono">
+                  <div className="text-xs font-semibold text-emerald-700 font-sans">Estimated Feed Cost / Litre</div>
+                  <div className="text-2xl font-bold text-emerald-700 mt-1 font-mono">
                     ₹{feedCostPerLitre} / L
                   </div>
-                  <div className="text-[11px] text-[#c9d1d9] font-sans mt-1">
+                  <div className="text-[11px] text-slate-700 font-sans mt-1">
                     At ₹38/L milk procurement parity, provides ₹{(38 - parseFloat(feedCostPerLitre)).toFixed(2)} gross contribution margin per litre.
                   </div>
                 </div>
@@ -403,7 +403,7 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
               onClick={() => {
                 alert(`Feed Formula for ${formGroup} updated with Feed Cost: ₹${feedCostPerLitre}/L.`);
               }}
-              className="w-full py-2.5 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-bold transition-colors"
+              className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-colors"
             >
               Apply Ration to {formGroup}
             </button>
@@ -421,11 +421,11 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       >
         <form onSubmit={handleSavePurchase} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Select Feed Product</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Select Feed Product</label>
             <select
               value={selectedFeedId}
               onChange={(e) => setSelectedFeedId(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs text-[#f0f6fc] outline-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none"
             >
               {feeds.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -436,36 +436,36 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Quantity (Kg)</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Quantity (Kg)</label>
               <input
                 type="number"
                 value={purchaseQty}
                 onChange={(e) => setPurchaseQty(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Unit Rate (₹/kg)</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Unit Rate (₹/kg)</label>
               <input
                 type="number"
                 step="0.1"
                 value={purchaseRate}
                 onChange={(e) => setPurchaseRate(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 outline-none"
               />
             </div>
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setIsPurchaseModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 text-xs text-slate-500"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded-lg text-xs font-semibold"
+              className="px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-semibold"
             >
               Save Inward Purchase
             </button>
@@ -483,11 +483,11 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       >
         <form onSubmit={handleSaveConsumption} className="space-y-3.5">
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Feed Item</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Feed Item</label>
             <select
               value={consumeFeedId}
               onChange={(e) => setConsumeFeedId(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs text-[#f0f6fc] outline-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none"
             >
               {feeds.map((f) => (
                 <option key={f.id} value={f.id}>
@@ -497,25 +497,25 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Consumed Today (Kg)</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Consumed Today (Kg)</label>
             <input
               type="number"
               value={consumeQty}
               onChange={(e) => setConsumeQty(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 outline-none"
             />
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
             <button
               type="button"
               onClick={() => setIsConsumptionModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 text-xs text-slate-500"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded-lg text-xs font-semibold"
+              className="px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-semibold"
             >
               Deduct Consumption
             </button>

@@ -4,6 +4,7 @@ import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { AreaTrendChart } from '../components/charts/Charts';
 import { Modal } from '../components/common/Modal';
+import { EntityDetailDrawer } from '../components/common/EntityDetailDrawer';
 import {
   PageContainer,
   PageHeader,
@@ -18,13 +19,15 @@ import {
 
 interface FarmerManagementPageProps {
   farmers: Farmer[];
-  onAddFarmer: (farmer: Farmer) => void;
+  onAddFarmer: (farmer: Farmer, existingId?: string) => string | undefined;
+  onArchiveFarmer: (id: string) => void;
   selectedFarmerId?: string;
 }
 
 export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
   farmers,
   onAddFarmer,
+  onArchiveFarmer,
   selectedFarmerId,
 }) => {
   const [search, setSearch] = useState('');
@@ -36,6 +39,8 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
     return null;
   });
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingFarmer, setEditingFarmer] = useState<Farmer | null>(null);
+  const [formError, setFormError] = useState('');
 
   // New Farmer Form
   const [newName, setNewName] = useState('');
@@ -44,21 +49,22 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
   const [newCattle, setNewCattle] = useState('5');
   const [newBank, setNewBank] = useState('SBI-XXXX9901');
 
-  const totalFarmers = farmers.length;
-  const activeCount = farmers.filter((f) => f.status === 'Active').length;
-  const totalLitres = farmers.reduce((acc, f) => acc + f.todayMilkL, 0);
+  const activeFarmers = farmers.filter((farmer) => !farmer.archivedAt);
+  const totalFarmers = activeFarmers.length;
+  const activeCount = activeFarmers.filter((f) => f.status === 'Active').length;
+  const totalLitres = activeFarmers.reduce((acc, f) => acc + f.todayMilkL, 0);
   const avgLitres = totalFarmers > 0 ? (totalLitres / totalFarmers).toFixed(1) : '0';
-  const totalPayable = farmers.reduce((acc, f) => acc + f.todayPayable, 0);
-  const avgFat = (farmers.reduce((acc, f) => acc + f.avgFat, 0) / Math.max(1, totalFarmers)).toFixed(
+  const totalPayable = activeFarmers.reduce((acc, f) => acc + f.todayPayable, 0);
+  const avgFat = (activeFarmers.reduce((acc, f) => acc + f.avgFat, 0) / Math.max(1, totalFarmers)).toFixed(
     2
   );
-  const avgSNF = (farmers.reduce((acc, f) => acc + f.avgSNF, 0) / Math.max(1, totalFarmers)).toFixed(
+  const avgSNF = (activeFarmers.reduce((acc, f) => acc + f.avgSNF, 0) / Math.max(1, totalFarmers)).toFixed(
     2
   );
 
-  const villages = Array.from(new Set(farmers.map((f) => f.village)));
+  const villages = Array.from(new Set(activeFarmers.map((f) => f.village)));
 
-  const filteredFarmers = farmers.filter((f) => {
+  const filteredFarmers = activeFarmers.filter((f) => {
     const matchesSearch =
       f.id.toLowerCase().includes(search.toLowerCase()) ||
       f.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -69,37 +75,64 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
 
   const handleCreateFarmer = (e: React.FormEvent) => {
     e.preventDefault();
-    const newId = `FARM-${String(totalFarmers + 1).padStart(3, '0')}`;
+    const cattleCount = Number(newCattle);
+    if (!newName.trim() || !newVillage.trim() || !newBank.trim()) {
+      setFormError('Farmer name, village, and bank account are required.');
+      return;
+    }
+    if (!Number.isInteger(cattleCount) || cattleCount < 0) {
+      setFormError('Cattle count must be a non-negative whole number.');
+      return;
+    }
+    const newId = editingFarmer?.id ?? `FARM-${String(farmers.length + 1).padStart(3, '0')}`;
     const newFarmer: Farmer = {
+      ...(editingFarmer ?? {} as Farmer),
       id: newId,
-      name: newName || 'Sanjaybhai Patel',
+      name: newName.trim(),
       village: newVillage,
       contactNumber: newPhone,
-      cattleCount: parseInt(newCattle) || 4,
-      todayMilkL: 55.0,
-      morningMilkL: 30.0,
-      eveningMilkL: 25.0,
-      avgFat: 4.4,
-      avgSNF: 8.6,
-      ratePerL: 36.8,
-      todayPayable: Math.round(55.0 * 36.8),
-      status: 'Active',
-      bankAccount: newBank,
-      joinedDate: new Date().toISOString().split('T')[0],
-      demoPerformanceScore: 88,
-      supplyHistory: [
+      cattleCount,
+      todayMilkL: editingFarmer?.todayMilkL ?? 0,
+      morningMilkL: editingFarmer?.morningMilkL ?? 0,
+      eveningMilkL: editingFarmer?.eveningMilkL ?? 0,
+      avgFat: editingFarmer?.avgFat ?? 0,
+      avgSNF: editingFarmer?.avgSNF ?? 0,
+      ratePerL: editingFarmer?.ratePerL ?? 0,
+      todayPayable: editingFarmer?.todayPayable ?? 0,
+      status: editingFarmer?.status ?? 'Active',
+      bankAccount: newBank.trim(),
+      joinedDate: editingFarmer?.joinedDate ?? new Date().toISOString().split('T')[0],
+      demoPerformanceScore: editingFarmer?.demoPerformanceScore ?? 0,
+      supplyHistory: editingFarmer?.supplyHistory ?? [
         { date: '2026-10-01', litres: 52, fat: 4.3, snf: 8.5 },
         { date: '2026-10-02', litres: 54, fat: 4.4, snf: 8.6 },
         { date: '2026-10-03', litres: 55, fat: 4.4, snf: 8.6 },
       ],
-      paymentHistory: [
+      paymentHistory: editingFarmer?.paymentHistory ?? [
         { date: '2026-09-30', amount: 30500, method: 'Direct Bank IMPS', status: 'Paid' },
       ],
     };
 
-    onAddFarmer(newFarmer);
+    const error = onAddFarmer(newFarmer, editingFarmer?.id);
+    if (error) {
+      setFormError(error);
+      return;
+    }
+    setFormError('');
     setIsAddModalOpen(false);
+    setEditingFarmer(null);
     setActiveProfile(newFarmer);
+  };
+
+  const openFarmerForm = (farmer?: Farmer) => {
+    setEditingFarmer(farmer ?? null);
+    setFormError('');
+    setNewName(farmer?.name ?? '');
+    setNewVillage(farmer?.village ?? villages[0] ?? 'Anand Rural');
+    setNewPhone(farmer?.contactNumber ?? '');
+    setNewCattle(String(farmer?.cattleCount ?? 0));
+    setNewBank(farmer?.bankAccount ?? '');
+    setIsAddModalOpen(true);
   };
 
   return (
@@ -111,7 +144,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
         statusBadge="Direct Bank Settlement Ready"
         actions={
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => openFarmerForm()}
             className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
@@ -269,12 +302,11 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
 
       {/* 5. FARMER PROFILE MODAL */}
       {activeProfile && (
-        <Modal
+        <EntityDetailDrawer
           isOpen={!!activeProfile}
           onClose={() => setActiveProfile(null)}
           title={`Farmer Profile: ${activeProfile.name} (${activeProfile.id})`}
           subtitle={`Village: ${activeProfile.village} · Contact: ${activeProfile.contactNumber}`}
-          maxWidth="2xl"
         >
           <div className="space-y-5 text-xs">
             {/* Top Metrics Strip */}
@@ -372,6 +404,19 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
               <button
+                onClick={() => openFarmerForm(activeProfile)}
+                className="px-3 py-2 bg-emerald-700 text-white rounded-lg text-xs font-medium cursor-pointer"
+              >Edit Farmer</button>
+              <button
+                onClick={() => {
+                  if (window.confirm(`Archive farmer ${activeProfile.id}? Collection and payment history will remain.`)) {
+                    onArchiveFarmer(activeProfile.id);
+                    setActiveProfile(null);
+                  }
+                }}
+                className="px-3 py-2 border border-rose-200 text-rose-700 rounded-lg text-xs font-medium cursor-pointer"
+              >Archive</button>
+              <button
                 onClick={() => setActiveProfile(null)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium cursor-pointer"
               >
@@ -379,18 +424,19 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
               </button>
             </div>
           </div>
-        </Modal>
+        </EntityDetailDrawer>
       )}
 
       {/* 6. ADD FARMER MODAL */}
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Register New Milk Producer"
+        title={editingFarmer ? `Edit Farmer ${editingFarmer.id}` : 'Register New Milk Producer'}
         subtitle="Enrol farmer into DairyOS procurement network and setup automated banking"
         maxWidth="md"
       >
         <form onSubmit={handleCreateFarmer} className="space-y-3.5">
+          {formError && <p role="alert" className="text-xs text-rose-700">{formError}</p>}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1">
               Farmer Full Name
@@ -426,6 +472,8 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
               <label className="block text-xs font-medium text-slate-700 mb-1">Cattle Count</label>
               <input
                 type="number"
+                min="0"
+                step="1"
                 value={newCattle}
                 onChange={(e) => setNewCattle(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-emerald-600 shadow-2xs"
@@ -468,7 +516,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
               type="submit"
               className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs cursor-pointer"
             >
-              Save Farmer
+              {editingFarmer ? 'Save Changes' : 'Save Farmer'}
             </button>
           </div>
         </form>

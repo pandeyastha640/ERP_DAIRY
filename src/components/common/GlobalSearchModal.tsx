@@ -6,14 +6,23 @@ import {
   Users,
   Factory,
   PackageSearch,
+  FlaskConical,
+  Warehouse,
+  Truck,
+  CreditCard,
+  Receipt,
 } from 'lucide-react';
 import {
   Cattle,
   Farmer,
+  MilkCollectionRecord,
+  QualityTestRecord,
   ProductMaster,
   ProcessingBatch,
   DistributionRoute,
+  InventoryItem,
   SalesOrder,
+  PaymentTransaction,
 } from '../../types/dairy';
 
 interface GlobalSearchModalProps {
@@ -23,8 +32,12 @@ interface GlobalSearchModalProps {
   farmers: Farmer[];
   products: ProductMaster[];
   batches: ProcessingBatch[];
+  collections: MilkCollectionRecord[];
+  qualityTests: QualityTestRecord[];
+  inventory: InventoryItem[];
   routes: DistributionRoute[];
   orders: SalesOrder[];
+  payments: PaymentTransaction[];
   onSelectResult: (module: string, itemId?: string) => void;
 }
 
@@ -35,8 +48,12 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
   farmers,
   products,
   batches,
+  collections,
+  qualityTests,
+  inventory,
   routes,
   orders,
+  payments,
   onSelectResult,
 }) => {
   const [query, setQuery] = useState('');
@@ -83,12 +100,36 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
         .filter((b) => b.batchId.toLowerCase().includes(q) || b.id.toLowerCase().includes(q))
         .slice(0, 3)
     : [];
+  const filteredCollections = q
+    ? collections.filter((item) => [item.id, item.collectionCode, item.farmerId, item.farmerName, item.centre].some((value) => value.toLowerCase().includes(q))).slice(0, 4)
+    : [];
+  const filteredQuality = q
+    ? qualityTests.filter((item) => [item.id, item.batchNumber, item.sourceName].some((value) => value.toLowerCase().includes(q))).slice(0, 4)
+    : [];
+  const filteredInventory = q
+    ? inventory.filter((item) => [item.id, item.sku, item.name, item.warehouseLocation].some((value) => value.toLowerCase().includes(q))).slice(0, 4)
+    : [];
+  const filteredRoutes = q
+    ? routes.filter((item) => [item.id, item.routeCode, item.routeName, item.vehicleNumber, item.driverName].some((value) => value.toLowerCase().includes(q))).slice(0, 4)
+    : [];
+  const filteredOrders = q
+    ? orders.filter((item) => [item.id, item.orderNumber, item.customerName, item.product].some((value) => value.toLowerCase().includes(q))).slice(0, 4)
+    : [];
+  const filteredPayments = q
+    ? payments.filter((item) => [item.id, item.transactionRef, item.recipientName, item.notes].some((value) => value.toLowerCase().includes(q))).slice(0, 4)
+    : [];
 
   const totalResults =
     filteredCattle.length +
     filteredFarmers.length +
     filteredProducts.length +
-    filteredBatches.length;
+    filteredBatches.length +
+    filteredCollections.length +
+    filteredQuality.length +
+    filteredInventory.length +
+    filteredRoutes.length +
+    filteredOrders.length +
+    filteredPayments.length;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/40 backdrop-blur-xs flex items-start justify-center pt-20 px-4">
@@ -117,10 +158,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
         <div className="max-h-96 overflow-y-auto p-3 space-y-4">
           {!query && (
             <div className="p-6 text-center text-xs text-slate-500">
-              Try searching for <span className="text-emerald-700 font-mono font-bold">COW-001</span>,{' '}
-              <span className="text-emerald-700 font-mono font-bold">FARM-002</span>,{' '}
-              <span className="text-emerald-700 font-mono font-bold">BATCH-104</span>, or{' '}
-              <span className="text-emerald-700 font-mono font-bold">Gold Milk</span>
+              Search farmers, cattle, collections, quality tests, batches, products, inventory, routes, invoices, and payments.
             </div>
           )}
 
@@ -239,6 +277,36 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
               </div>
             </div>
           )}
+
+          {filteredCollections.length > 0 && <div>
+            <div className="px-2 mb-1 flex items-center gap-1.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-500"><Search className="h-3.5 w-3.5 text-emerald-700" /> Milk Collections</div>
+            {filteredCollections.map((item) => <button key={item.id} onClick={() => { onSelectResult('milk-collection', item.id); onClose(); }} className="flex w-full items-center justify-between rounded-lg border border-transparent p-2.5 text-left text-xs hover:border-slate-200 hover:bg-slate-50"><span><strong className="font-mono text-emerald-800">{item.collectionCode}</strong><span className="ml-2 text-slate-800">{item.farmerName} · {item.quantityLitres} L</span></span><span className="text-slate-500">{item.quality}</span></button>)}
+          </div>}
+
+          {filteredQuality.length > 0 && <div>
+            <div className="px-2 mb-1 flex items-center gap-1.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-500"><FlaskConical className="h-3.5 w-3.5 text-blue-700" /> Quality Records</div>
+            {filteredQuality.map((item) => <button key={item.id} onClick={() => { onSelectResult('quality', item.id); onClose(); }} className="flex w-full items-center justify-between rounded-lg border border-transparent p-2.5 text-left text-xs hover:border-slate-200 hover:bg-slate-50"><span><strong className="font-mono text-blue-700">{item.batchNumber}</strong><span className="ml-2 text-slate-800">{item.sourceName}</span></span><span className="text-slate-600">{item.result}</span></button>)}
+          </div>}
+
+          {filteredInventory.length > 0 && <div>
+            <div className="px-2 mb-1 flex items-center gap-1.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-500"><Warehouse className="h-3.5 w-3.5 text-emerald-700" /> Inventory</div>
+            {filteredInventory.map((item) => <button key={item.id} onClick={() => { onSelectResult('inventory', item.id); onClose(); }} className="flex w-full items-center justify-between rounded-lg border border-transparent p-2.5 text-left text-xs hover:border-slate-200 hover:bg-slate-50"><span><strong className="font-mono text-slate-700">{item.sku}</strong><span className="ml-2 text-slate-800">{item.name}</span></span><span className="text-slate-600">{item.closingBalance} {item.unit} · {item.status}</span></button>)}
+          </div>}
+
+          {filteredRoutes.length > 0 && <div>
+            <div className="px-2 mb-1 flex items-center gap-1.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-500"><Truck className="h-3.5 w-3.5 text-blue-700" /> Routes</div>
+            {filteredRoutes.map((item) => <button key={item.id} onClick={() => { onSelectResult('distribution', item.id); onClose(); }} className="flex w-full items-center justify-between rounded-lg border border-transparent p-2.5 text-left text-xs hover:border-slate-200 hover:bg-slate-50"><span><strong className="font-mono text-blue-700">{item.routeCode}</strong><span className="ml-2 text-slate-800">{item.routeName} · {item.vehicleNumber}</span></span><span className="text-slate-600">{item.status}</span></button>)}
+          </div>}
+
+          {filteredOrders.length > 0 && <div>
+            <div className="px-2 mb-1 flex items-center gap-1.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-500"><Receipt className="h-3.5 w-3.5 text-emerald-700" /> Sales Invoices</div>
+            {filteredOrders.map((item) => <button key={item.id} onClick={() => { onSelectResult('sales', item.id); onClose(); }} className="flex w-full items-center justify-between rounded-lg border border-transparent p-2.5 text-left text-xs hover:border-slate-200 hover:bg-slate-50"><span><strong className="font-mono text-emerald-800">{item.orderNumber}</strong><span className="ml-2 text-slate-800">{item.customerName} · {item.product}</span></span><span className="text-slate-600">{item.paymentStatus}</span></button>)}
+          </div>}
+
+          {filteredPayments.length > 0 && <div>
+            <div className="px-2 mb-1 flex items-center gap-1.5 text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-500"><CreditCard className="h-3.5 w-3.5 text-emerald-700" /> Payments</div>
+            {filteredPayments.map((item) => <button key={item.id} onClick={() => { onSelectResult('payments', item.id); onClose(); }} className="flex w-full items-center justify-between rounded-lg border border-transparent p-2.5 text-left text-xs hover:border-slate-200 hover:bg-slate-50"><span><strong className="font-mono text-emerald-800">{item.transactionRef}</strong><span className="ml-2 text-slate-800">{item.recipientName} · ₹{item.amount.toLocaleString()}</span></span><span className="text-slate-600">{item.status}</span></button>)}
+          </div>}
         </div>
 
         <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">

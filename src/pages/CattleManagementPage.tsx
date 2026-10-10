@@ -4,6 +4,7 @@ import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { MiniSparkline, AreaTrendChart } from '../components/charts/Charts';
 import { Modal } from '../components/common/Modal';
+import { EntityDetailDrawer } from '../components/common/EntityDetailDrawer';
 import {
   PageContainer,
   PageHeader,
@@ -20,13 +21,15 @@ import {
 
 interface CattleManagementPageProps {
   cattleList: Cattle[];
-  onAddCattle: (cattle: Cattle) => void;
+  onAddCattle: (cattle: Cattle, existingId?: string) => string | undefined;
+  onArchiveCattle: (id: string) => void;
   selectedCattleId?: string;
 }
 
 export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
   cattleList,
   onAddCattle,
+  onArchiveCattle,
   selectedCattleId,
 }) => {
   const [search, setSearch] = useState('');
@@ -41,9 +44,11 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
     return null;
   });
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingCattle, setEditingCattle] = useState<Cattle | null>(null);
+  const [formError, setFormError] = useState('');
 
   // New Cattle Form State
-  const [newBreed, setNewBreed] = useState<'Gir' | 'Sahiwal' | 'Murrah Buffalo' | 'Red Sindhi'>('Gir');
+  const [newBreed, setNewBreed] = useState<Cattle['breed']>('Gir');
   const [newTag, setNewTag] = useState('');
   const [newAge, setNewAge] = useState('4');
   const [newLactation, setNewLactation] = useState('2');
@@ -52,18 +57,19 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
   const [newFeedCost, setNewFeedCost] = useState('190');
   const [newShed, setNewShed] = useState('Shed A-Row 2');
 
-  const totalCattle = cattleList.length;
-  const milkingCount = cattleList.filter((c) => c.status === 'Milking').length;
-  const dryCount = cattleList.filter((c) => c.status === 'Dry').length;
-  const pregnantCount = cattleList.filter((c) => c.status === 'Pregnant').length;
-  const sickCount = cattleList.filter((c) => c.status === 'Sick').length;
+  const activeCattle = cattleList.filter((c) => !c.archivedAt);
+  const totalCattle = activeCattle.length;
+  const milkingCount = activeCattle.filter((c) => c.status === 'Milking').length;
+  const dryCount = activeCattle.filter((c) => c.status === 'Dry').length;
+  const pregnantCount = activeCattle.filter((c) => c.status === 'Pregnant').length;
+  const sickCount = activeCattle.filter((c) => c.status === 'Sick').length;
 
-  const totalYield = cattleList.reduce((acc, c) => acc + c.milkYieldLPerDay, 0);
+  const totalYield = activeCattle.reduce((acc, c) => acc + c.milkYieldLPerDay, 0);
   const avgYield = milkingCount > 0 ? (totalYield / milkingCount).toFixed(1) : '0';
-  const totalFeed = cattleList.reduce((acc, c) => acc + c.feedCostPerDay, 0);
+  const totalFeed = activeCattle.reduce((acc, c) => acc + c.feedCostPerDay, 0);
   const avgFeedCost = (totalFeed / Math.max(1, totalCattle)).toFixed(0);
 
-  const filteredCattle = cattleList.filter((c) => {
+  const filteredCattle = activeCattle.filter((c) => {
     const matchesSearch =
       c.id.toLowerCase().includes(search.toLowerCase()) ||
       c.tagNumber.toLowerCase().includes(search.toLowerCase()) ||
@@ -75,32 +81,66 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
 
   const handleCreateCattle = (e: React.FormEvent) => {
     e.preventDefault();
-    const newId = `COW-${String(totalCattle + 1).padStart(3, '0')}`;
+    const age = Number(newAge);
+    const lactation = Number(newLactation);
+    const milkYield = newStatus === 'Milking' ? Number(newYield) : 0;
+    const feedCost = Number(newFeedCost);
+    if (!newTag.trim() || !newShed.trim()) {
+      setFormError('Ear tag and shed location are required.');
+      return;
+    }
+    if (!Number.isFinite(age) || age <= 0 || !Number.isInteger(lactation) || lactation < 0 ||
+        !Number.isFinite(milkYield) || milkYield < 0 || !Number.isFinite(feedCost) || feedCost < 0) {
+      setFormError('Enter valid age, lactation, milk yield, and feed cost values.');
+      return;
+    }
+    const newId = editingCattle?.id ?? `COW-${String(cattleList.length + 1).padStart(3, '0')}`;
     const newCattle: Cattle = {
+      ...(editingCattle ?? {} as Cattle),
       id: newId,
-      tagNumber: newTag || `TAG-IN-${88000 + totalCattle + 1}`,
+      tagNumber: newTag.trim(),
       breed: newBreed,
-      ageYears: parseInt(newAge) || 4,
-      lactation: parseInt(newLactation) || 2,
+      ageYears: age,
+      lactation,
       lactationStage: newStatus === 'Dry' ? 'Dry' : 'Early',
-      lastCalvingDate: new Date().toISOString().split('T')[0],
-      milkYieldLPerDay: newStatus === 'Milking' ? parseFloat(newYield) || 0 : 0,
-      feedCostPerDay: parseFloat(newFeedCost) || 180,
-      health: newStatus === 'Sick' ? 'Under Treatment' : 'Healthy',
+      lastCalvingDate: editingCattle?.lastCalvingDate ?? new Date().toISOString().split('T')[0],
+      milkYieldLPerDay: milkYield,
+      feedCostPerDay: feedCost,
+      health: newStatus === 'Sick' ? 'Under Treatment' : editingCattle?.health ?? 'Healthy',
       status: newStatus,
-      shedLocation: newShed,
-      dailyFeedKg: newStatus === 'Milking' ? 24.5 : 18.0,
-      vaccinations: [
+      shedLocation: newShed.trim(),
+      dailyFeedKg: editingCattle?.dailyFeedKg ?? (newStatus === 'Milking' ? 24.5 : 18.0),
+      vaccinations: editingCattle?.vaccinations ?? [
         { name: 'FMD (Foot & Mouth Disease)', date: '2026-04-12', status: 'Completed' },
         { name: 'Brucellosis Strain 19', date: '2026-06-20', status: 'Completed' },
       ],
-      veterinaryNotes: 'Newly inducted cattle. General inspection normal.',
-      historicalYields: [12, 13, 13.5, 14, 13.8, 14.2, parseFloat(newYield) || 14],
+      veterinaryNotes: editingCattle?.veterinaryNotes ?? 'Newly inducted cattle. General inspection normal.',
+      historicalYields: editingCattle?.historicalYields ?? [milkYield],
     };
 
-    onAddCattle(newCattle);
+    const error = onAddCattle(newCattle, editingCattle?.id);
+    if (error) {
+      setFormError(error);
+      return;
+    }
+    setFormError('');
     setIsAddModalOpen(false);
+    setEditingCattle(null);
     setActiveProfile(newCattle);
+  };
+
+  const openCattleForm = (cattle?: Cattle) => {
+    setEditingCattle(cattle ?? null);
+    setFormError('');
+    setNewBreed(cattle?.breed ?? 'Gir');
+    setNewTag(cattle?.tagNumber ?? '');
+    setNewAge(String(cattle?.ageYears ?? 4));
+    setNewLactation(String(cattle?.lactation ?? 2));
+    setNewStatus(cattle?.status ?? 'Milking');
+    setNewYield(String(cattle?.milkYieldLPerDay ?? 14));
+    setNewFeedCost(String(cattle?.feedCostPerDay ?? 190));
+    setNewShed(cattle?.shedLocation ?? 'Shed A-Row 2');
+    setIsAddModalOpen(true);
   };
 
   return (
@@ -112,7 +152,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
         statusBadge="Automated Parlour Connected"
         actions={
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => openCattleForm()}
             className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
@@ -297,12 +337,11 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
 
       {/* 5. CATTLE PROFILE DETAIL MODAL */}
       {activeProfile && (
-        <Modal
+        <EntityDetailDrawer
           isOpen={!!activeProfile}
           onClose={() => setActiveProfile(null)}
           title={`Cattle Record: ${activeProfile.id} (${activeProfile.breed})`}
           subtitle={`Tag: ${activeProfile.tagNumber} · Location: ${activeProfile.shedLocation}`}
-          maxWidth="2xl"
         >
           <div className="space-y-5 text-xs">
             {/* Top Stat Ribbon */}
@@ -412,46 +451,61 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               <span className="text-[11px] text-slate-500 font-mono">
                 Status: {activeProfile.status}
               </span>
-              <button
-                onClick={() => setActiveProfile(null)}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium cursor-pointer"
-              >
-                Close Profile
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => openCattleForm(activeProfile)}
+                  className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-medium cursor-pointer"
+                >Edit Record</button>
+                <button
+                  onClick={() => {
+                    if (window.confirm(`Archive cattle ${activeProfile.id}? Historical records will remain.`)) {
+                      onArchiveCattle(activeProfile.id);
+                      setActiveProfile(null);
+                    }
+                  }}
+                  className="px-3 py-1.5 border border-rose-200 text-rose-700 rounded-lg text-xs font-medium cursor-pointer"
+                >Archive</button>
+                <button
+                  onClick={() => setActiveProfile(null)}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium cursor-pointer"
+                >Close Profile</button>
+              </div>
             </div>
           </div>
-        </Modal>
+        </EntityDetailDrawer>
       )}
 
       {/* 6. ADD CATTLE MODAL */}
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Register New Cattle to Herd"
+        title={editingCattle ? `Edit Cattle ${editingCattle.id}` : 'Register New Cattle to Herd'}
         subtitle="Record ear tag number, breed genetics, age, and initial lactation status"
         maxWidth="lg"
       >
         <form onSubmit={handleCreateCattle} className="space-y-4">
+          {formError && <p role="alert" className="text-xs text-rose-700">{formError}</p>}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-1">Breed</label>
               <select
                 value={newBreed}
-                onChange={(e) =>
-                  setNewBreed(e.target.value as 'Gir' | 'Sahiwal' | 'Murrah Buffalo' | 'Red Sindhi')
-                }
+                onChange={(e) => setNewBreed(e.target.value as Cattle['breed'])}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
               >
                 <option value="Gir">Gir (Indigenous Cow)</option>
                 <option value="Sahiwal">Sahiwal</option>
                 <option value="Murrah Buffalo">Murrah Buffalo</option>
                 <option value="Red Sindhi">Red Sindhi</option>
+                <option value="HF Cross">HF Cross</option>
+                <option value="Jersey">Jersey</option>
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-1">Ear Tag #</label>
               <input
                 type="text"
+                required
                 placeholder="TAG-IN-88053"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
@@ -465,6 +519,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               <label className="block text-xs font-medium text-slate-700 mb-1">Age (Years)</label>
               <input
                 type="number"
+                min="1"
                 value={newAge}
                 onChange={(e) => setNewAge(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
@@ -474,6 +529,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               <label className="block text-xs font-medium text-slate-700 mb-1">Lactation</label>
               <input
                 type="number"
+                min="0"
                 value={newLactation}
                 onChange={(e) => setNewLactation(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
@@ -503,6 +559,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               </label>
               <input
                 type="number"
+                min="0"
                 step="0.1"
                 value={newYield}
                 onChange={(e) => setNewYield(e.target.value)}
@@ -515,6 +572,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               </label>
               <input
                 type="number"
+                min="0"
                 value={newFeedCost}
                 onChange={(e) => setNewFeedCost(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
@@ -543,7 +601,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               type="submit"
               className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs cursor-pointer"
             >
-              Save Cattle Record
+              {editingCattle ? 'Save Changes' : 'Save Cattle Record'}
             </button>
           </div>
         </form>

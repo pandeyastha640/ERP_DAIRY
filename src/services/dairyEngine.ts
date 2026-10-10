@@ -22,6 +22,52 @@ import {
   SystemSettings,
 } from '../types/dairy';
 
+export type MilkCollectionAssessment =
+  | {
+      valid: true;
+      quality: 'PASS' | 'WARNING' | 'FAIL';
+      ratePerLitre: number;
+      payableAmount: number;
+    }
+  | { valid: false; error: string };
+
+export function assessMilkCollection(
+  quantityLitres: number,
+  fat: number,
+  snf: number,
+  temperatureC: number
+): MilkCollectionAssessment {
+  if (!Number.isFinite(quantityLitres) || quantityLitres <= 0) {
+    return { valid: false, error: 'Milk quantity must be greater than zero litres.' };
+  }
+  if (!Number.isFinite(fat) || fat < 2 || fat > 12) {
+    return { valid: false, error: 'Fat must be between 2% and 12%.' };
+  }
+  if (!Number.isFinite(snf) || snf < 5 || snf > 15) {
+    return { valid: false, error: 'SNF must be between 5% and 15%.' };
+  }
+  if (!Number.isFinite(temperatureC) || temperatureC < -5 || temperatureC > 50) {
+    return { valid: false, error: 'Temperature must be between -5°C and 50°C.' };
+  }
+
+  const isFail = fat < 3.2 || snf < 7.8 || temperatureC > 24;
+  const quality = isFail
+    ? 'FAIL'
+    : temperatureC > 20 || fat < 3.8
+    ? 'WARNING'
+    : 'PASS';
+  const ratePerLitre = isFail
+    ? 0
+    : Math.max(0, +(34.5 + (fat - 4.0) * 4.5 + (snf - 8.5) * 2.5).toFixed(2));
+
+  return {
+    valid: true,
+    quality,
+    ratePerLitre,
+    payableAmount: Math.round(quantityLitres * ratePerLitre),
+  };
+}
+
 /**
  * Calculates the exact volumetric milk mass balance.
  * Visually & mathematically balances across all modules.
@@ -62,9 +108,8 @@ export function calculateMilkReconciliation(
     batchesList.reduce((acc, b) => acc + b.inputMilkLitres, 0)
   );
 
-  // 5. Line Wastage & Spillage
-  const batchWastage = batchesList.reduce((acc, b) => acc + b.wastageLitres, 0);
-  const spillageWastageLitres = Math.round(batchWastage + 18); // Line rinse loss
+  // 5. Line rinse loss is separate from batch wastage, which is included in input milk.
+  const spillageWastageLitres = 18;
 
   // 6. Balanced Closing Stock
   const closingStockLitres = Math.round(

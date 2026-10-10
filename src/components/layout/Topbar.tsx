@@ -54,6 +54,7 @@ export const Topbar: React.FC<TopbarProps> = ({
 
   const roles: Role[] = [
     'CEO',
+    'CEO / Owner',
     'COO',
     'Operations Manager',
     'Plant Manager',
