@@ -1,0 +1,32 @@
+{
+  "name": "DairyOS Enterprise ERP",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+  "forwardPorts": [3000, 5000, 5555],
+  "portsAttributes": {
+    "3000": {
+      "label": "DairyOS Web Console",
+      "onAutoForward": "openBrowser"
+    },
+    "5000": {
+      "label": "DairyOS Express REST API",
+      "onAutoForward": "silent"
+    },
+    "5555": {
+      "label": "Prisma Studio Database GUI",
+      "onAutoForward": "silent"
+    }
+  },
+  "postCreateCommand": "npm install && npx prisma db push --skip-generate && npx prisma generate && npm run seed",
+  "postStartCommand": "git pull origin main",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Prisma.prisma",
+        "bradlc.vscode-tailwindcss"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}
