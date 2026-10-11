@@ -1,0 +1,143 @@
+{
+  "summary": {
+    "total": 22,
+    "passed": 22,
+    "failed": 0,
+    "consoleErrors": []
+  },
+  "logs": [
+    {
+      "step": "Init",
+      "action": "Load App",
+      "result": "PASS",
+      "details": "App loaded successfully. Page title: \"DairyOS Enterprise Dairy ERP\""
+    },
+    {
+      "step": "Auth",
+      "action": "Session Login",
+      "result": "PASS",
+      "details": "Authenticated session successfully via Operations Manager role"
+    },
+    {
+      "step": "Dashboard",
+      "action": "Heading Check",
+      "result": "PASS",
+      "details": "Active view: \"Dairy Operations Control Tower\""
+    },
+    {
+      "step": "Cattle",
+      "action": "Navigation",
+      "result": "PASS",
+      "details": "View: \"Cattle Herd Management\""
+    },
+    {
+      "step": "Cattle",
+      "action": "Breed Filter",
+      "result": "PASS",
+      "details": "Filtered cattle records by \"Murrah\""
+    },
+    {
+      "step": "Farmers",
+      "action": "Navigation",
+      "result": "PASS",
+      "details": "View: \"Farmer & Procurement Directory\""
+    },
+    {
+      "step": "Farmers",
+      "action": "Search Filter",
+      "result": "PASS",
+      "details": "Filtered cooperative farmer registry"
+    },
+    {
+      "step": "Milk Collection",
+      "action": "Navigation",
+      "result": "PASS",
+      "details": "View: \"Milk Collection Desk\""
+    },
+    {
+      "step": "Lactoscan IoT",
+      "action": "Open Bridge Modal",
+      "result": "PASS",
+      "details": "Opened Milkotronic Lactoscan MCC Serial Bridge"
+    },
+    {
+      "step": "Lactoscan IoT",
+      "action": "Commit Inward Batch",
+      "result": "PASS",
+      "details": "Committed milk intake batch & credited Chilling Vat B",
+      "screenshot": "07_lactoscan_committed.png"
+    },
+    {
+      "step": "PWA Field Mode",
+      "action": "Open Mobile Field View",
+      "result": "PASS",
+      "details": "Opened offline-first Touch Field Collection Mode"
+    },
+    {
+      "step": "PWA Field Mode",
+      "action": "Return to Desktop",
+      "result": "PASS",
+      "details": "Returned to full enterprise console"
+    },
+    {
+      "step": "Chilling Silos",
+      "action": "Navigation",
+      "result": "PASS",
+      "details": "View: \"Chilling Centre & Bulk Milk Pool\""
+    },
+    {
+      "step": "Sales & GST",
+      "action": "Navigation",
+      "result": "PASS",
+      "details": "View: \"Sales Orders & Revenue Operations\""
+    },
+    {
+      "step": "Sales & GST",
+      "action": "Open GST Invoice Modal",
+      "result": "PASS",
+      "details": "Opened 3-Ply GST Tax Invoice modal"
+    },
+    {
+      "step": "Sales & GST",
+      "action": "Switch Invoice Ply",
+      "result": "PASS",
+      "details": "Switched to Duplicate (Transporter Copy) tab"
+    },
+    {
+      "step": "Payments",
+      "action": "Navigation",
+      "result": "PASS",
+      "details": "View: \"Payments & Settlement Ledger\""
+    },
+    {
+      "step": "Finance",
+      "action": "P&L Analytics",
+      "result": "PASS",
+      "details": "Loaded real-time EBITDA margins and revenue ledgers"
+    },
+    {
+      "step": "Processing",
+      "action": "Batch Production",
+      "result": "PASS",
+      "details": "Loaded HTST pasteurizer batches & packaging consumption"
+    },
+    {
+      "step": "Quality Lab",
+      "action": "QC Analysis",
+      "result": "PASS",
+      "details": "Loaded Gerber Fat/SNF/MBRT records and adulteration status"
+    },
+    {
+      "step": "Distribution",
+      "action": "Fleet Logistics",
+      "result": "PASS",
+      "details": "Loaded reefer routes, delivery stops and ePOD tracking"
+    },
+    {
+      "step": "Control Tower",
+      "action": "Live Telemetry",
+      "result": "PASS",
+      "details": "Loaded operational alert feeds and mass balance metrics"
+    }
+  ]
+}

@@ -23,16 +23,18 @@ export const AIIntelligencePage: React.FC = () => {
   const [activeModal, setActiveModal] = useState<'forecast' | 'feed' | 'anomaly' | null>(null);
   const [loading, setLoading] = useState(false);
   const [aiData, setAiData] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleRunForecast = async () => {
     setActiveModal('forecast');
     setLoading(true);
     setAiData(null);
+    setErrorMsg(null);
     try {
       const res = await api.ai.forecastProcurement({ forecastHorizonHours: 72, expectedTempCelsius: 34 });
       setAiData(res.data);
     } catch (err: any) {
-      alert(`AI Forecast error: ${err.message}`);
+      setErrorMsg(`AI Forecast Notice: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -42,11 +44,12 @@ export const AIIntelligencePage: React.FC = () => {
     setActiveModal('feed');
     setLoading(true);
     setAiData(null);
+    setErrorMsg(null);
     try {
       const res = await api.ai.optimizeFeed({ targetYieldL: 22, breed: 'Murrah Buffalo / HF Cross' });
       setAiData(res.data);
     } catch (err: any) {
-      alert(`AI Feed error: ${err.message}`);
+      setErrorMsg(`AI Feed Notice: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -56,11 +59,12 @@ export const AIIntelligencePage: React.FC = () => {
     setActiveModal('anomaly');
     setLoading(true);
     setAiData(null);
+    setErrorMsg(null);
     try {
       const res = await api.ai.analyzeAnomalies();
       setAiData(res.data);
     } catch (err: any) {
-      alert(`AI Anomaly error: ${err.message}`);
+      setErrorMsg(`AI Anomaly Notice: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -235,6 +239,13 @@ export const AIIntelligencePage: React.FC = () => {
         subtitle="Live calculation generated from DairyOS backend AI engine"
         maxWidth="lg"
       >
+        {errorMsg && (
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 mb-3 flex items-center gap-2 font-mono">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
         {loading ? (
           <div className="py-12 flex flex-col items-center justify-center space-y-3">
             <Loader2 className="w-8 h-8 text-[#8957e5] animate-spin" />

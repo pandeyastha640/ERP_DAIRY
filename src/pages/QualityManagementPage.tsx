@@ -3,6 +3,7 @@ import { QualityTestRecord } from '../types/dairy';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
+import { TankerClearanceModal } from '../components/quality/TankerClearanceModal';
 import {
   FlaskConical,
   Plus,
@@ -12,6 +13,7 @@ import {
   Thermometer,
   ShieldCheck,
   Search,
+  FileCheck2,
 } from 'lucide-react';
 
 interface QualityManagementPageProps {
@@ -23,6 +25,8 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
   const [activeRecord, setActiveRecord] = useState<QualityTestRecord | null>(null);
   const [filterResult, setFilterResult] = useState<'All' | 'PASS' | 'WARNING' | 'FAIL'>('All');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [selectedCertRecord, setSelectedCertRecord] = useState<any>(null);
 
   // New Quality Record Form
   const [batchNo, setBatchNo] = useState('QC-MANUAL-01');
@@ -194,15 +198,29 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
                   </td>
                   <td className="px-4 py-3 font-sans text-[#8b949e] text-[11px]">{test.tester}</td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveRecord(test);
-                      }}
-                      className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] rounded text-[11px] font-sans transition-colors"
-                    >
-                      View Report
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCertRecord(test);
+                          setIsCertModalOpen(true);
+                        }}
+                        className="px-2 py-1 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 rounded text-[11px] font-mono inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                        title="View Official FSSAI Tanker Lab Clearance Certificate"
+                      >
+                        <FileCheck2 className="w-3 h-3 text-emerald-400" />
+                        <span>FSSAI Cert</span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveRecord(test);
+                        }}
+                        className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] rounded text-[11px] font-sans transition-colors cursor-pointer"
+                      >
+                        View Report
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -402,6 +420,13 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
           </div>
         </form>
       </Modal>
+
+      {/* OFFICIAL FSSAI BULK TANKER CLEARANCE CERTIFICATE MODAL */}
+      <TankerClearanceModal
+        isOpen={isCertModalOpen}
+        onClose={() => setIsCertModalOpen(false)}
+        testRecord={selectedCertRecord}
+      />
     </div>
   );
 };

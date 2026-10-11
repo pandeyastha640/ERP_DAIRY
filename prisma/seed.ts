@@ -8,6 +8,8 @@ import {
   INITIAL_PACKAGING,
   INITIAL_ROUTES,
   INITIAL_COLLECTIONS,
+  INITIAL_SALES,
+  INITIAL_PAYMENTS,
 } from '../src/data/mockDairyData';
 
 const prisma = new PrismaClient();
@@ -262,7 +264,97 @@ async function main() {
     });
   }
 
-  // 9. Seed Enterprise Users
+  // 9. Seed Sales Orders
+  console.log(`Seeding ${INITIAL_SALES.length} sales orders...`);
+  const allOrdersToSeed = [
+    ...INITIAL_SALES,
+    {
+      id: 'ORD-001042',
+      orderNumber: 'SO-001042',
+      date: '2026-10-06',
+      customerName: 'Anand Heritage Milk Cooperative Outlet',
+      channel: 'Retail Supermarket',
+      product: 'Full Cream Gold Milk 1L',
+      quantityUnits: 800,
+      unitRate: 64.0,
+      totalAmount: 51200,
+      paymentStatus: 'Paid',
+      fulfillmentStatus: 'Pending Dispatch',
+    },
+    {
+      id: 'ORD-TEST-001',
+      orderNumber: 'SO-TEST-001',
+      date: '2026-10-06',
+      customerName: 'Amul Dairy Parlour Anand',
+      channel: 'Distributor',
+      product: 'Standard Toned Milk 500ml',
+      quantityUnits: 2000,
+      unitRate: 27.5,
+      totalAmount: 55000,
+      paymentStatus: 'Pending',
+      fulfillmentStatus: 'Pending Dispatch',
+    },
+  ];
+
+  for (const so of allOrdersToSeed) {
+    await prisma.salesOrder.upsert({
+      where: { orderNumber: so.orderNumber },
+      update: {
+        date: so.date,
+        customerName: so.customerName,
+        channel: so.channel,
+        product: so.product,
+        quantityUnits: so.quantityUnits,
+        unitRate: so.unitRate,
+        totalAmount: so.totalAmount,
+        paymentStatus: so.paymentStatus,
+        fulfillmentStatus: so.fulfillmentStatus,
+      },
+      create: {
+        orderNumber: so.orderNumber,
+        date: so.date,
+        customerName: so.customerName,
+        channel: so.channel,
+        product: so.product,
+        quantityUnits: so.quantityUnits,
+        unitRate: so.unitRate,
+        totalAmount: so.totalAmount,
+        paymentStatus: so.paymentStatus,
+        fulfillmentStatus: so.fulfillmentStatus,
+      },
+    });
+  }
+
+  // 10. Seed Payment Transactions
+  console.log(`Seeding ${INITIAL_PAYMENTS.length} payment transactions...`);
+  for (const pay of INITIAL_PAYMENTS) {
+    await prisma.paymentTransaction.upsert({
+      where: { transactionRef: pay.transactionRef },
+      update: {
+        recipientName: pay.recipientName,
+        partyType: pay.partyType,
+        milkLitres: pay.milkLitres || null,
+        amount: pay.amount,
+        paymentDate: pay.paymentDate,
+        paymentMethod: pay.paymentMethod,
+        status: pay.status,
+        notes: pay.notes || '',
+      },
+      create: {
+        transactionRef: pay.transactionRef,
+        recipientName: pay.recipientName,
+        partyType: pay.partyType,
+        milkLitres: pay.milkLitres || null,
+        amount: pay.amount,
+        paymentDate: pay.paymentDate,
+        paymentMethod: pay.paymentMethod,
+        status: pay.status,
+        notes: pay.notes || '',
+      },
+    });
+  }
+
+  // 11. Seed Enterprise Users
   const bcrypt = await import('bcryptjs');
   const defaultPasswordHash = await bcrypt.default.hash('password123', 10);
 

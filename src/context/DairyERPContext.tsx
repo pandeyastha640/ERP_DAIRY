@@ -250,9 +250,10 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     api.checkHealth()
       .then(async () => {
         try {
-          const [farmersRes, cattleRes, tanksRes, batchesRes, salesRes, paymentsRes, qualityRes] = await Promise.all([
+          const [farmersRes, cattleRes, collectionsRes, tanksRes, batchesRes, salesRes, paymentsRes, qualityRes] = await Promise.all([
             api.farmers.getAll(),
             api.cattle.getAll(),
+            api.collections.getAll(),
             api.chilling.getTanks(),
             api.processing.getBatches(),
             api.sales.getOrders(),
@@ -262,40 +263,79 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
           if (farmersRes?.data?.length) {
             setFarmersList((prev) => {
-              const dbMap = new Map(farmersRes.data.map((f: any) => [f.farmerCode, f]));
-              return prev.map((f) => {
-                const dbF = dbMap.get(f.id);
-                if (dbF) {
-                  return {
-                    ...f,
-                    name: dbF.name,
-                    village: dbF.village,
-                    contactNumber: dbF.contactNumber,
-                    cattleCount: dbF.cattleCount,
-                    status: dbF.status,
-                  };
-                }
-                return f;
+              const prevMap = new Map(prev.map((f) => [f.id, f]));
+              return farmersRes.data.map((dbF: any) => {
+                const existing = prevMap.get(dbF.farmerCode) || prevMap.get(dbF.id);
+                return {
+                  id: dbF.farmerCode || dbF.id,
+                  name: dbF.name,
+                  village: dbF.village,
+                  contactNumber: dbF.contactNumber,
+                  cattleCount: Number(dbF.cattleCount) || 1,
+                  todayMilkL: existing?.todayMilkL || 0,
+                  morningMilkL: existing?.morningMilkL || 0,
+                  eveningMilkL: existing?.eveningMilkL || 0,
+                  avgFat: existing?.avgFat || 4.2,
+                  avgSNF: existing?.avgSNF || 8.5,
+                  ratePerL: existing?.ratePerL || 35.0,
+                  todayPayable: existing?.todayPayable || 0,
+                  status: (dbF.status || existing?.status || 'Active') as 'Active' | 'Inactive' | 'Under Review',
+                  bankAccount: dbF.bankAccount || existing?.bankAccount || '',
+                  joinedDate: existing?.joinedDate || '2025-01-01',
+                  demoPerformanceScore: existing?.demoPerformanceScore || 85,
+                  supplyHistory: existing?.supplyHistory || [],
+                  paymentHistory: existing?.paymentHistory || [],
+                };
               });
             });
           }
 
           if (cattleRes?.data?.length) {
             setCattleList((prev) => {
-              const dbMap = new Map(cattleRes.data.map((c: any) => [c.tagNumber, c]));
-              return prev.map((c) => {
-                const dbC = dbMap.get(c.tagNumber);
-                if (dbC) {
-                  return {
-                    ...c,
-                    milkYieldLPerDay: dbC.milkYieldLPerDay,
-                    status: dbC.status,
-                    health: dbC.health,
-                  };
-                }
-                return c;
+              const prevMap = new Map(prev.map((c) => [c.tagNumber, c]));
+              return cattleRes.data.map((dbC: any) => {
+                const existing = prevMap.get(dbC.tagNumber);
+                return {
+                  id: dbC.id || dbC.tagNumber,
+                  tagNumber: dbC.tagNumber,
+                  breed: (dbC.breed || existing?.breed || 'Gir') as any,
+                  ageYears: Number(dbC.ageYears) || 4,
+                  lactation: Number(dbC.lactation) || 2,
+                  lactationStage: (dbC.lactationStage || existing?.lactationStage || 'Mid') as any,
+                  lastCalvingDate: existing?.lastCalvingDate || '2025-11-15',
+                  milkYieldLPerDay: Number(dbC.milkYieldLPerDay) || 12.5,
+                  feedCostPerDay: Number(dbC.feedCostPerDay) || 190,
+                  health: (dbC.health || existing?.health || 'Healthy') as any,
+                  status: (dbC.status || existing?.status || 'Milking') as any,
+                  shedLocation: dbC.shedLocation || existing?.shedLocation || 'Shed A-Row 1',
+                  dailyFeedKg: Number(dbC.dailyFeedKg) || 28.0,
+                  vaccinations: existing?.vaccinations || [{ name: 'FMD', date: '2026-01-10', status: 'Completed' }],
+                  veterinaryNotes: existing?.veterinaryNotes || 'Regular health check completed.',
+                  historicalYields: existing?.historicalYields || [12, 13, 12.5, 11.8, 12.2, 13, 12.5],
+                };
               });
             });
+          }
+
+          if (collectionsRes?.data?.length) {
+            setCollectionsList(collectionsRes.data.map((c: any) => ({
+              id: c.id,
+              collectionCode: c.collectionCode,
+              farmerId: c.farmerId,
+              farmerName: c.farmerName,
+              date: c.date,
+              time: c.time,
+              shift: c.shift,
+              centre: c.centre,
+              quantityLitres: c.quantityLitres,
+              fat: c.fat,
+              snf: c.snf,
+              temperatureC: c.temperatureC,
+              quality: c.quality,
+              ratePerLitre: c.ratePerLitre,
+              payableAmount: c.payableAmount,
+              testedBy: c.testedBy,
+            })));
           }
 
           if (tanksRes?.data?.length) {
@@ -311,6 +351,32 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                   };
                 }
                 return t;
+              });
+            });
+          }
+
+          if (batchesRes?.data?.length) {
+            setBatchesList((prev) => {
+              const prevMap = new Map(prev.map((b) => [b.batchId, b]));
+              return batchesRes.data.map((b: any) => {
+                const existing = prevMap.get(b.batchId);
+                return {
+                  id: b.id || b.batchId,
+                  batchId: b.batchId,
+                  date: b.date,
+                  pasteurizerLine: b.pasteurizerLine,
+                  inputMilkLitres: Number(b.inputMilkLitres),
+                  inputFatPct: Number(b.inputFatPct),
+                  inputSnfPct: Number(b.inputSnfPct),
+                  yieldPercentage: Number(b.yieldPercentage),
+                  wastageLitres: Number(b.wastageLitres),
+                  processingCostTotal: Number(b.processingCostTotal),
+                  status: (b.status || 'In Progress') as any,
+                  startTime: b.startTime,
+                  completionTime: b.completionTime,
+                  operator: b.operator,
+                  products: existing?.products || [],
+                };
               });
             });
           }
@@ -343,6 +409,26 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               paymentMethod: p.paymentMethod,
               status: p.status,
               notes: p.notes,
+            })));
+          }
+
+          if (qualityRes?.data?.length) {
+            setQualityTestsList(qualityRes.data.map((q: any) => ({
+              id: q.id,
+              batchNumber: q.batchNumber,
+              sourceType: q.sourceType,
+              sourceName: q.sourceName,
+              quantityLitres: q.quantityLitres,
+              fat: q.fat,
+              snf: q.snf,
+              clr: q.clr,
+              temperatureC: q.temperatureC,
+              adulterationTest: q.adulterationTest,
+              acidityPct: q.acidityPct,
+              mbrtHours: q.mbrtHours,
+              result: q.result,
+              tester: q.tester,
+              testTime: q.testTime,
             })));
           }
         } catch (e) {

@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "server",
+      "label": "Start Backend Server (:5000)",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": ".*Backend API running on.*"
+        }
+      }
+    },
+    {
+      "type": "npm",
+      "script": "dev",
+      "label": "Start Frontend Web (:3000)",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": ".*ready in.*"
+        }
+      }
+    },
+    {
+      "type": "npm",
+      "script": "dev:all",
+      "label": "Start Full Stack (API + Web)",
+      "isBackground": true,
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

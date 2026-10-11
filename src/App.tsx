@@ -447,8 +447,11 @@ function AppContent() {
 
       {/* Mobile Field Touch Drawer Modal */}
       {isMobileFieldOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-3">
-          <div className="w-full max-w-md">
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-3 cursor-pointer"
+          onClick={() => setIsMobileFieldOpen(false)}
+        >
+          <div className="w-full max-w-md cursor-default" onClick={(e) => e.stopPropagation()}>
             <MobileFieldView
               farmers={farmersList}
               onSaveCollection={recordMilkCollection}

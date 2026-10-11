@@ -156,6 +156,15 @@ class ApiService {
         body: JSON.stringify(test),
       });
     },
+    getCertificate: async (testId: string) => {
+      return this.request<{ success: boolean; data: any }>(`/quality/tests/${testId}/certificate`);
+    },
+    certify: async (testId: string, payload?: any) => {
+      return this.request<{ success: boolean; message: string; certificateId: string }>(`/quality/tests/${testId}/certify`, {
+        method: 'POST',
+        body: JSON.stringify(payload || {}),
+      });
+    },
   };
 
   // Chilling & Silos Endpoints
@@ -267,6 +276,29 @@ class ApiService {
       return this.request<{ success: boolean; data: any }>('/ai/analyze-anomalies', {
         method: 'POST',
       });
+    },
+  };
+
+  // Notifications & POS Receipt Slips (Phase 9)
+  notifications = {
+    sendReceiptSms: async (data: any) => {
+      return this.request<{ success: boolean; messageId: string; channels: string[]; content: any }>('/notifications/receipt-sms', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    getThermalSlip: async (collectionId: string) => {
+      return this.request<{ success: boolean; data: any }>(`/notifications/collections/${collectionId}/slip`);
+    },
+  };
+
+  // Cooperative Federation & Union Hierarchy (Phase 11)
+  federation = {
+    getSocieties: async () => {
+      return this.request<{ success: boolean; count: number; data: any[] }>('/federation/societies');
+    },
+    getUnionSummary: async () => {
+      return this.request<{ success: boolean; data: any }>('/federation/union-summary');
     },
   };
 }

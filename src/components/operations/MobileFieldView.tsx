@@ -1,6 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Farmer, MilkCollectionRecord } from '../../types/dairy';
-import { CheckCircle2, AlertTriangle, XCircle, ArrowLeft, Plus, Check } from 'lucide-react';
+import {
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  ArrowLeft,
+  Plus,
+  Check,
+  Wifi,
+  WifiOff,
+  CloudOff,
+  UploadCloud,
+  RotateCw,
+} from 'lucide-react';
 
 interface MobileFieldViewProps {
   farmers: Farmer[];
@@ -20,6 +32,28 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
   const [snf, setSnf] = useState<string>('8.6');
   const [temperature, setTemperature] = useState<string>('18.2');
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('Collection Saved! Receipt TXN generated.');
+
+  // Offline / Connectivity State
+  const [isSimulatedOffline, setIsSimulatedOffline] = useState(false);
+  const [offlineQueue, setOfflineQueue] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem('dairy_offline_queue');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Sync state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('dairy_offline_queue', JSON.stringify(offlineQueue));
+    } catch (e) {
+      console.warn('Could not persist offline queue:', e);
+    }
+  }, [offlineQueue]);
 
   const selectedFarmer = farmers.find((f) => f.id === selectedFarmerId) || farmers[0];
 
@@ -47,7 +81,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
     e.preventDefault();
     if (!selectedFarmer || numLitres <= 0) return;
 
-    onSaveCollection({
+    const recordPayload = {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       date: new Date().toISOString().split('T')[0],
       shift,
@@ -62,26 +96,58 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
       ratePerLitre: calculatedRate,
       payableAmount: calculatedPayable,
       testedBy: 'Field Agent Mobile Device',
-    });
+    };
 
-    setShowSuccessToast(true);
+    if (isSimulatedOffline) {
+      // Store in local offline queue
+      const queuedItem = { ...recordPayload, queuedAt: new Date().toISOString() };
+      setOfflineQueue((prev) => [...prev, queuedItem]);
+      setToastMessage(`Stored in Offline Cache! (${offlineQueue.length + 1} pending sync)`);
+      setShowSuccessToast(true);
+    } else {
+      onSaveCollection(recordPayload);
+      setToastMessage('Collection Synced Online! Receipt TXN generated.');
+      setShowSuccessToast(true);
+    }
+
     setTimeout(() => {
       setShowSuccessToast(false);
       setLitres('');
-    }, 1800);
+    }, 2000);
+  };
+
+  const handleSyncOfflineQueue = () => {
+    if (offlineQueue.length === 0) return;
+    setIsSyncing(true);
+
+    setTimeout(() => {
+      // Replay all offline records
+      offlineQueue.forEach((rec) => {
+        onSaveCollection(rec);
+      });
+      const count = offlineQueue.length;
+      setOfflineQueue([]);
+      setIsSyncing(false);
+      setToastMessage(`Synced ${count} offline records to central database!`);
+      setShowSuccessToast(true);
+      setTimeout(() => setShowSuccessToast(false), 2500);
+    }, 800);
   };
 
   return (
     <div className="bg-white min-h-[580px] max-w-md mx-auto p-5 rounded-2xl border border-slate-200 shadow-2xl text-slate-900">
       {/* Top Header */}
-      <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
+      <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
         <div className="flex items-center gap-2">
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              aria-label="Close Field View"
+              title="Close Field View"
+              className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 cursor-pointer flex items-center gap-1"
             >
               <ArrowLeft className="w-5 h-5" />
+              <span className="text-xs font-semibold">Exit</span>
             </button>
           )}
           <div>
@@ -115,10 +181,54 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
         </div>
       </div>
 
+      {/* Connectivity & Offline Queue Bar */}
+      <div className="mb-3 p-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-xs">
+        <div className="flex items-center gap-1.5">
+          {isSimulatedOffline ? (
+            <span className="flex items-center gap-1 text-amber-700 font-medium">
+              <WifiOff className="w-3.5 h-3.5 text-amber-600" />
+              <span>Offline Mode ({offlineQueue.length} queued)</span>
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-emerald-700 font-medium">
+              <Wifi className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Online Direct Sync</span>
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {offlineQueue.length > 0 && !isSimulatedOffline && (
+            <button
+              type="button"
+              onClick={handleSyncOfflineQueue}
+              disabled={isSyncing}
+              className="px-2 py-0.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <UploadCloud className="w-3 h-3" />
+              <span>{isSyncing ? 'Syncing...' : `Sync (${offlineQueue.length})`}</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsSimulatedOffline(!isSimulatedOffline)}
+            className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold transition-colors cursor-pointer ${
+              isSimulatedOffline
+                ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+            }`}
+            title="Toggle offline mode to test IndexedDB / LocalStorage queueing"
+          >
+            {isSimulatedOffline ? 'Go Online' : 'Simulate Offline'}
+          </button>
+        </div>
+      </div>
+
       {showSuccessToast && (
         <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg flex items-center gap-2 text-xs font-semibold animate-in fade-in duration-200">
           <Check className="w-4 h-4 text-emerald-700" />
-          <span>Collection Saved! Receipt TXN generated.</span>
+          <span>{toastMessage}</span>
         </div>
       )}
 

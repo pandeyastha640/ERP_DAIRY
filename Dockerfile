@@ -1,30 +1,38 @@
-# Stage 1: Build React Frontend
-FROM node:20-alpine AS frontend-builder
+# ------------------------------------------------------------------------------
+# Stage 1: Build the React 19 Frontend
+# ------------------------------------------------------------------------------
+FROM node:20-alpine AS builder
+
 WORKDIR /app
+
+# Copy package descriptors
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+
+# Install dependencies (using legacy peer deps for Vite 8 compatibility)
+RUN npm ci --legacy-peer-deps
+
+# Copy application source
 COPY . .
-RUN npx prisma generate
+
+# Build production static bundle
 RUN npm run build
 
-# Stage 2: Production Runtime
-FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=5000
+# ------------------------------------------------------------------------------
+# Stage 2: Serve with High-Performance Nginx Alpine
+# ------------------------------------------------------------------------------
+FROM nginx:alpine-slim
 
-COPY package*.json ./
-RUN npm install --legacy-peer-deps --omit=dev
+# Remove default nginx static assets
+RUN rm -rf /usr/share/nginx/html/*
 
-# Copy Prisma schema and generated client
-COPY prisma ./prisma
-RUN npx prisma generate
+# Copy built frontend assets from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy backend source & compile or run via tsx/node
-COPY server ./server
-COPY --from=frontend-builder /app/dist ./dist
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose production port
-EXPOSE 5000
+# Expose HTTP port 80
+EXPOSE 80
 
-CMD ["npx", "tsx", "server/src/index.ts"]
+# Start Nginx in foreground
+CMD ["nginx", "-g", "daemon off;"]

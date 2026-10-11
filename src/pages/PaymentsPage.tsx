@@ -4,7 +4,8 @@ import { useDairyERP } from '../context/DairyERPContext';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
-import { CreditCard, Plus, CheckCircle2, Clock, ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react';
+import { BankPayoutBatchModal } from '../components/finance/BankPayoutBatchModal';
+import { CreditCard, Plus, CheckCircle2, Clock, ArrowDownLeft, ArrowUpRight, Search, Zap } from 'lucide-react';
 import { api } from '../services/api';
 
 interface PaymentsPageProps {
@@ -25,6 +26,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
 
   const [filterType, setFilterType] = useState('All');
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  const [isBatchPayoutModalOpen, setIsBatchPayoutModalOpen] = useState(false);
 
   // New Payment Form
   const [recipient, setRecipient] = useState('');
@@ -79,18 +81,10 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
 
         <div className="flex items-center gap-2">
           <button
-            onClick={async () => {
-              try {
-                const res = await api.payments.disburseAllPending();
-                alert(`Bank Gateway Response: ${res.message} (₹${res.totalAmountDisbursed?.toLocaleString('en-IN') || 0} disbursed via IMPS)`);
-                window.location.reload();
-              } catch (err: any) {
-                alert(`Settlement Notice: ${err.message}`);
-              }
-            }}
-            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+            onClick={() => setIsBatchPayoutModalOpen(true)}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
           >
-            <CheckCircle2 className="w-4 h-4" />
+            <Zap className="w-4 h-4" />
             <span>Disburse All Pending (IMPS)</span>
           </button>
 
@@ -255,6 +249,18 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
           </div>
         </form>
       </Modal>
+
+      {/* AUTOMATED BANKING PAYOUT GATEWAY MODAL */}
+      <BankPayoutBatchModal
+        isOpen={isBatchPayoutModalOpen}
+        onClose={() => setIsBatchPayoutModalOpen(false)}
+        pendingAmount={totalPayablesPending}
+        farmerCount={payments.filter((p) => p.status === 'Pending').length}
+        onSuccess={(disbursedCount, totalAmount) => {
+          // Asynchronously update context if available
+        }}
+      />
     </div>
   );
 };
+

@@ -1,51 +1,107 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: dairyos_db
-    restart: always
-    environment:
-      POSTGRES_USER: dairyos
-      POSTGRES_PASSWORD: dairyos_secure_password_2026
-      POSTGRES_DB: dairyos_production
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U dairyos -d dairyos_production']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    container_name: dairyos_cache
-    restart: always
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
-
-  app:
+  # ----------------------------------------------------------------------------
+  # 1. Frontend Web & Nginx Reverse Proxy
+  # ----------------------------------------------------------------------------
+  web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: dairyos_app
-    restart: always
+    container_name: dairyos_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - dairyos_network
+
+  # ----------------------------------------------------------------------------
+  # 2. Node.js Express & Prisma API Server
+  # ----------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: dairyos_api
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://dairy_admin:secure_dairy_pass_2026@postgres:5432/dairyos_prod?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dairyos_enterprise_jwt_secret_key_production_2026
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    ports:
+      - "5000:5000"
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - '5000:5000'
-    environment:
-      NODE_ENV: production
-      PORT: 5000
-      DATABASE_URL: postgresql://dairyos:dairyos_secure_password_2026@postgres:5432/dairyos_production?schema=public
-      JWT_SECRET: dairyos-super-secret-production-key-2026
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - dairyos_network
 
+  # ----------------------------------------------------------------------------
+  # 3. PostgreSQL 16 Enterprise Relational Database
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: dairyos_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dairyos_prod
+      POSTGRES_USER: dairy_admin
+      POSTGRES_PASSWORD: secure_dairy_pass_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dairy_admin -d dairyos_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dairyos_network
+
+  # ----------------------------------------------------------------------------
+  # 4. Redis 7 High-Speed Session & IoT Cache
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: dairyos_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - dairyos_network
+
+# ------------------------------------------------------------------------------
+# Persistent Storage Volumes & Private Network
+# ------------------------------------------------------------------------------
 volumes:
   postgres_data:
+    name: dairyos_postgres_volume
   redis_data:
+    name: dairyos_redis_volume
+
+networks:
+  dairyos_network:
+    name: dairyos_enterprise_network
+    driver: bridge

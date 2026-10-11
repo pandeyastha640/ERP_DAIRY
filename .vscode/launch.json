@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend: Debug API Server (Port 5000)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx", "watch", "server/src/index.ts"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "restart": true,
+      "env": {
+        "PORT": "5000",
+        "NODE_ENV": "development"
+      }
+    },
+    {
+      "name": "Full Stack: Run Backend + Frontend",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev:all"
+    }
+  ]
+}
