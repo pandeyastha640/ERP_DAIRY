@@ -29,6 +29,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const [villageFilter, setVillageFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Under Review' | 'Inactive'>('All');
   const [activeProfile, setActiveProfile] = useState<Farmer | null>(() => {
     if (selectedFarmerId) {
       return farmers.find((f) => f.id === selectedFarmerId) || null;
@@ -46,6 +47,8 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
 
   const totalFarmers = farmers.length;
   const activeCount = farmers.filter((f) => f.status === 'Active').length;
+  const underReviewCount = farmers.filter((f) => f.status === 'Under Review').length;
+  const inactiveCount = farmers.filter((f) => f.status === 'Inactive').length;
   const totalLitres = farmers.reduce((acc, f) => acc + f.todayMilkL, 0);
   const avgLitres = totalFarmers > 0 ? (totalLitres / totalFarmers).toFixed(1) : '0';
   const totalPayable = farmers.reduce((acc, f) => acc + f.todayPayable, 0);
@@ -64,7 +67,8 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
       f.name.toLowerCase().includes(search.toLowerCase()) ||
       f.village.toLowerCase().includes(search.toLowerCase());
     const matchesVillage = villageFilter === 'All' || f.village === villageFilter;
-    return matchesSearch && matchesVillage;
+    const matchesStatus = statusFilter === 'All' || f.status === statusFilter;
+    return matchesSearch && matchesVillage && matchesStatus;
   });
 
   const handleCreateFarmer = (e: React.FormEvent) => {
@@ -99,7 +103,6 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
 
     onAddFarmer(newFarmer);
     setIsAddModalOpen(false);
-    setActiveProfile(newFarmer);
   };
 
   return (
@@ -175,15 +178,58 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
       </div>
 
       {/* 3. Filter and Search Bar */}
-      <FilterBar onReset={() => { setSearch(''); setVillageFilter('All'); }}>
+      <FilterBar onReset={() => { setSearch(''); setVillageFilter('All'); setStatusFilter('All'); }}>
         <SearchInput
           value={search}
           onChange={setSearch}
           placeholder="Search Farmer ID, Name or Village..."
         />
 
+        <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-xs">
+          <button
+            onClick={() => setStatusFilter('All')}
+            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+              statusFilter === 'All'
+                ? 'bg-white text-slate-900 font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            All ({totalFarmers})
+          </button>
+          <button
+            onClick={() => setStatusFilter('Active')}
+            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+              statusFilter === 'Active'
+                ? 'bg-white text-emerald-800 font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Active ({activeCount})
+          </button>
+          <button
+            onClick={() => setStatusFilter('Under Review')}
+            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+              statusFilter === 'Under Review'
+                ? 'bg-white text-amber-800 font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Under Review ({underReviewCount})
+          </button>
+          <button
+            onClick={() => setStatusFilter('Inactive')}
+            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+              statusFilter === 'Inactive'
+                ? 'bg-white text-rose-800 font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Inactive ({inactiveCount})
+          </button>
+        </div>
+
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 font-medium">Village Cluster:</span>
+          <span className="text-xs text-slate-500 font-medium">Village:</span>
           <select
             value={villageFilter}
             onChange={(e) => setVillageFilter(e.target.value)}
@@ -197,6 +243,10 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
             ))}
           </select>
         </div>
+
+        <span className="text-xs text-slate-500 font-mono">
+          Showing <strong className="text-emerald-700">{filteredFarmers.length}</strong> of {totalFarmers}
+        </span>
       </FilterBar>
 
       {/* 4. Farmers Table */}

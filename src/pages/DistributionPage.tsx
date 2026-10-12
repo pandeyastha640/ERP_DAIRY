@@ -3,7 +3,7 @@ import { DistributionRoute } from '../types/dairy';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
-import { Truck, Plus, AlertTriangle, CheckCircle2, MapPin, Navigation, Clock } from 'lucide-react';
+import { Truck, Plus, AlertTriangle, CheckCircle2, MapPin, Navigation, Clock, Search } from 'lucide-react';
 
 interface DistributionPageProps {
   routes: DistributionRoute[];
@@ -12,6 +12,9 @@ interface DistributionPageProps {
 
 export const DistributionPage: React.FC<DistributionPageProps> = ({ routes, onAddRoute }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [shiftFilter, setShiftFilter] = useState<'All' | 'Morning' | 'Evening'>('All');
   const [routeCode, setRouteCode] = useState('RT-NEW-SUBURB');
   const [routeName, setRouteName] = useState('Route 06 — South Anand Retail Outlets');
   const [driver, setDriver] = useState('Mohanbhai Barot');
@@ -100,9 +103,88 @@ export const DistributionPage: React.FC<DistributionPageProps> = ({ routes, onAd
         </div>
       )}
 
+      {/* Comprehensive Logistics Filter and Search Bar */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search Route Code, Name, or Driver..."
+            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-[#8b949e]">Status:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Completed">Completed</option>
+              <option value="In Transit">In Transit</option>
+              <option value="Preparing">Preparing</option>
+              <option value="Delayed">Delayed</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-[#8b949e]">Shift:</span>
+            <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
+              {(['All', 'Morning', 'Evening'] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setShiftFilter(s)}
+                  className={`px-2.5 py-1 rounded-md transition-colors ${
+                    shiftFilter === s ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <span className="text-xs text-[#8b949e] font-mono ml-1">
+            Showing {routes.filter((r) => {
+              const mSearch = r.routeCode.toLowerCase().includes(search.toLowerCase()) ||
+                r.routeName.toLowerCase().includes(search.toLowerCase()) ||
+                r.driverName.toLowerCase().includes(search.toLowerCase());
+              const mStatus = statusFilter === 'All' || r.status === statusFilter;
+              const mShift = shiftFilter === 'All' || r.shift === shiftFilter;
+              return mSearch && mStatus && mShift;
+            }).length} of {routes.length}
+          </span>
+
+          {(search !== '' || statusFilter !== 'All' || shiftFilter !== 'All') && (
+            <button
+              onClick={() => {
+                setSearch('');
+                setStatusFilter('All');
+                setShiftFilter('All');
+              }}
+              className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Routes List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {routes.map((route) => {
+        {routes.filter((r) => {
+          const mSearch = r.routeCode.toLowerCase().includes(search.toLowerCase()) ||
+            r.routeName.toLowerCase().includes(search.toLowerCase()) ||
+            r.driverName.toLowerCase().includes(search.toLowerCase());
+          const mStatus = statusFilter === 'All' || r.status === statusFilter;
+          const mShift = shiftFilter === 'All' || r.shift === shiftFilter;
+          return mSearch && mStatus && mShift;
+        }).map((route) => {
           const completionPct = route.totalDispatchUnits > 0
             ? Math.round(((route.deliveredUnits + route.returnUnits) / route.totalDispatchUnits) * 100)
             : 0;

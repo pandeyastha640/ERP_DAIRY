@@ -28,10 +28,19 @@ import {
 interface ChillingMilkPoolPageProps {
   tanks: ChillingTank[];
   reconciliation: MilkPoolReconciliation;
+  onTransferMilk?: (sourceId: string, targetId: string, litres: number) => void;
 }
 
-export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({ tanks, reconciliation }) => {
+export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
+  tanks,
+  reconciliation,
+  onTransferMilk,
+}) => {
   const [localTanks, setLocalTanks] = useState<ChillingTank[]>(tanks);
+
+  React.useEffect(() => {
+    setLocalTanks(tanks);
+  }, [tanks]);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [sourceTankId, setSourceTankId] = useState(tanks[0]?.id || 'TANK-A');
   const [targetTankId, setTargetTankId] = useState(tanks[1]?.id || 'TANK-B');
@@ -132,17 +141,21 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({ tank
     try {
       const res = await api.chilling.transfer(sourceTankId, litres, targetTankId);
       if (res.success) {
-        setLocalTanks((prev) =>
-          prev.map((t) => {
-            if (t.id === sourceTankId || t.name === sourceTankId) {
-              return { ...t, currentVolumeLitres: Math.max(0, t.currentVolumeLitres - litres) };
-            }
-            if (t.id === targetTankId || t.name === targetTankId) {
-              return { ...t, currentVolumeLitres: Math.min(t.capacityLitres, t.currentVolumeLitres + litres) };
-            }
-            return t;
-          })
-        );
+        if (onTransferMilk) {
+          onTransferMilk(sourceTankId, targetTankId, litres);
+        } else {
+          setLocalTanks((prev) =>
+            prev.map((t) => {
+              if (t.id === sourceTankId || t.name === sourceTankId) {
+                return { ...t, currentVolumeLitres: Math.max(0, t.currentVolumeLitres - litres) };
+              }
+              if (t.id === targetTankId || t.name === targetTankId) {
+                return { ...t, currentVolumeLitres: Math.min(t.capacityLitres, t.currentVolumeLitres + litres) };
+              }
+              return t;
+            })
+          );
+        }
         alert(`Transfer Successful: ${res.message}`);
         setIsTransferModalOpen(false);
       }

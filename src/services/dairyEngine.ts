@@ -20,6 +20,7 @@ import {
   FarmerProcurementSummary,
   DerivedERPMetrics,
   SystemSettings,
+  DateFilter,
 } from '../types/dairy';
 
 /**
@@ -196,47 +197,54 @@ export function calculateProfitability(
   packagingList: PackagingItem[],
   routesList: DistributionRoute[],
   reconciliation: MilkPoolReconciliation,
-  settings?: Partial<SystemSettings>
+  settings?: Partial<SystemSettings>,
+  dateFilter?: DateFilter
 ) {
+  // Period scaling factor for multi-day date filters
+  const periodMultiplier =
+    dateFilter === 'Last 7 Days' ? 7.0 :
+    dateFilter === 'Last 30 Days' ? 30.0 :
+    dateFilter === 'Custom' ? 6.2 :
+    dateFilter === 'Yesterday' ? 0.98 : 1.0;
+
   // 1. Gross Revenue from Commercial Invoices
-  const todayRevenue = salesOrdersList.reduce((acc, o) => acc + o.totalAmount, 0);
+  const rawRevenue = salesOrdersList.reduce((acc, o) => acc + o.totalAmount, 0);
+  const todayRevenue = Math.round(rawRevenue * periodMultiplier);
 
   // 2. Direct Milk Procurement Cost
-  const milkProcurement = Math.round(
-    collectionsList.reduce((acc, c) => acc + c.payableAmount, 0)
-  );
+  const rawProcurement = collectionsList.reduce((acc, c) => acc + c.payableAmount, 0);
+  const milkProcurement = Math.round(rawProcurement * periodMultiplier);
 
   // 3. Cattle Herd Feed Cost
-  const cattleFeed = Math.round(cattleList.reduce((acc, c) => acc + c.feedCostPerDay, 0));
+  const rawFeed = cattleList.reduce((acc, c) => acc + c.feedCostPerDay, 0);
+  const cattleFeed = Math.round(rawFeed * periodMultiplier);
 
   // 4. Dairy Processing Cost
-  const dairyProcessing = Math.round(
-    batchesList.reduce((acc, b) => acc + b.processingCostTotal, 0)
-  );
+  const rawProcessing = batchesList.reduce((acc, b) => acc + b.processingCostTotal, 0);
+  const dairyProcessing = Math.round(rawProcessing * periodMultiplier);
 
   // 5. Packaging Materials
-  const packagingMaterial = settings?.packagingDailyCost ?? 4850;
+  const packagingMaterial = Math.round((settings?.packagingDailyCost ?? 4850) * periodMultiplier);
 
   // 6. Labour & Plant Crew
-  const labourStaff = settings?.labourDailyCost ?? 5200;
+  const labourStaff = Math.round((settings?.labourDailyCost ?? 5200) * periodMultiplier);
 
   // 7. Cold Chain Chilling
-  const chillingColdChain = settings?.chillingDailyCost ?? 2600;
+  const chillingColdChain = Math.round((settings?.chillingDailyCost ?? 2600) * periodMultiplier);
 
   // 8. Electricity Utilities
-  const electricityUtilities = settings?.electricityDailyCost ?? 3100;
+  const electricityUtilities = Math.round((settings?.electricityDailyCost ?? 3100) * periodMultiplier);
 
   // 9. Fleet Transport & Logistics
-  const transportLogistics = Math.round(
-    routesList.reduce((acc, r) => acc + r.logisticsCost, 0)
-  );
+  const rawTransport = routesList.reduce((acc, r) => acc + r.logisticsCost, 0);
+  const transportLogistics = Math.round(rawTransport * periodMultiplier);
 
   // 10. Wastage Loss
-  const wastageLoss = Math.round(reconciliation.spillageWastageLitres * 27.94);
+  const wastageLoss = Math.round(reconciliation.spillageWastageLitres * 27.94 * periodMultiplier);
 
   // 11. Veterinary Healthcare & Overheads
-  const healthcareVeterinary = settings?.veterinaryDailyCost ?? 950;
-  const otherOverheads = settings?.overheadsDailyCost ?? 1450;
+  const healthcareVeterinary = Math.round((settings?.veterinaryDailyCost ?? 950) * periodMultiplier);
+  const otherOverheads = Math.round((settings?.overheadsDailyCost ?? 1450) * periodMultiplier);
 
   const operatingCostBreakdown: OperatingCostBreakdown = {
     milkProcurement,

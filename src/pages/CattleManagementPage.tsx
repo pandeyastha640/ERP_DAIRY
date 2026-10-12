@@ -100,7 +100,6 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
 
     onAddCattle(newCattle);
     setIsAddModalOpen(false);
-    setActiveProfile(newCattle);
   };
 
   return (
@@ -184,19 +183,56 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
         />
 
         <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-xs">
-          {(['All', 'Milking', 'Dry', 'Pregnant', 'Sick'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                statusFilter === s
-                  ? 'bg-white text-slate-900 font-semibold shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
+          <button
+            onClick={() => setStatusFilter('All')}
+            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+              statusFilter === 'All'
+                ? 'bg-white text-slate-900 font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            All ({totalCattle})
+          </button>
+          <button
+            onClick={() => setStatusFilter('Milking')}
+            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+              statusFilter === 'Milking'
+                ? 'bg-white text-emerald-800 font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Milking ({milkingCount})
+          </button>
+          <button
+            onClick={() => setStatusFilter('Dry')}
+            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+              statusFilter === 'Dry'
+                ? 'bg-white text-amber-800 font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Dry ({dryCount})
+          </button>
+          <button
+            onClick={() => setStatusFilter('Pregnant')}
+            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+              statusFilter === 'Pregnant'
+                ? 'bg-white text-blue-800 font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Pregnant ({pregnantCount})
+          </button>
+          <button
+            onClick={() => setStatusFilter('Sick')}
+            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+              statusFilter === 'Sick'
+                ? 'bg-white text-rose-800 font-semibold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Sick ({sickCount})
+          </button>
         </div>
 
         <select
@@ -209,8 +245,13 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
           <option value="Sahiwal">Sahiwal</option>
           <option value="Murrah Buffalo">Murrah Buffalo</option>
           <option value="Red Sindhi">Red Sindhi</option>
+          <option value="HF Cross">HF Cross</option>
           <option value="Jersey">Jersey</option>
         </select>
+
+        <span className="text-xs text-slate-500 font-mono">
+          Showing <strong className="text-emerald-700">{filteredCattle.length}</strong> of {totalCattle}
+        </span>
       </FilterBar>
 
       {/* 4. Cattle Data Table */}

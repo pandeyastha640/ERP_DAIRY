@@ -62,6 +62,9 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
     { label: '06 Oct', value: todayRevenue },
   ];
 
+  const [paymentFilter, setPaymentFilter] = useState<'All' | 'Paid' | 'Partially Paid' | 'Pending'>('All');
+  const [dateFilter, setDateFilter] = useState('All');
+
   const displayOrders = localOrders.length > 0 ? localOrders : orders;
   const filteredOrders = displayOrders.filter((o) => {
     const matchesSearch =
@@ -69,7 +72,9 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
       o.customerName.toLowerCase().includes(search.toLowerCase()) ||
       o.product.toLowerCase().includes(search.toLowerCase());
     const matchesChan = channelFilter === 'All' || o.channel === channelFilter;
-    return matchesSearch && matchesChan;
+    const matchesPayment = paymentFilter === 'All' || o.paymentStatus === paymentFilter;
+    const matchesDate = dateFilter === 'All' || o.date === dateFilter;
+    return matchesSearch && matchesChan && matchesPayment && matchesDate;
   });
 
   const handleCreate = (e: React.FormEvent) => {
@@ -93,6 +98,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
     };
 
     onAddOrder(newOrder);
+    setLocalOrders((prev) => [newOrder, ...prev]);
     setIsCreateModalOpen(false);
   };
 
@@ -179,19 +185,66 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[#8b949e]">Channel:</span>
-          <select
-            value={channelFilter}
-            onChange={(e) => setChannelFilter(e.target.value)}
-            className="bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
-          >
-            <option value="All">All Channels</option>
-            <option value="Distributor">Distributor</option>
-            <option value="Retail Supermarket">Retail Supermarket</option>
-            <option value="Institutional / Horeca">Institutional / Horeca</option>
-            <option value="Direct Consumer">Direct Consumer</option>
-          </select>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-[#8b949e]">Channel:</span>
+            <select
+              value={channelFilter}
+              onChange={(e) => setChannelFilter(e.target.value)}
+              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+            >
+              <option value="All">All Channels</option>
+              <option value="Distributor">Distributor</option>
+              <option value="Retail Supermarket">Retail Supermarket</option>
+              <option value="Institutional / Horeca">Institutional / Horeca</option>
+              <option value="Direct Consumer">Direct Consumer</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-[#8b949e]">Payment:</span>
+            <select
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value as any)}
+              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+            >
+              <option value="All">All Payment Statuses</option>
+              <option value="Paid">Paid</option>
+              <option value="Partially Paid">Partially Paid</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-[#8b949e]">Date:</span>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+            >
+              <option value="All">All Dates</option>
+              <option value="2026-10-06">2026-10-06 (Today)</option>
+              <option value="2026-10-05">2026-10-05 (Yesterday)</option>
+            </select>
+          </div>
+
+          <span className="text-xs text-[#8b949e] font-mono ml-1">
+            Showing <strong className="text-[#58a6ff]">{filteredOrders.length}</strong> of {displayOrders.length}
+          </span>
+
+          {(search !== '' || channelFilter !== 'All' || paymentFilter !== 'All' || dateFilter !== 'All') && (
+            <button
+              onClick={() => {
+                setSearch('');
+                setChannelFilter('All');
+                setPaymentFilter('All');
+                setDateFilter('All');
+              }}
+              className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+            >
+              Reset
+            </button>
+          )}
         </div>
       </div>
 

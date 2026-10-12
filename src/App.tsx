@@ -127,6 +127,7 @@ function AppContent() {
     addRoute,
     addProduct,
     addQualityTest,
+    transferMilkBetweenTanks,
     dismissAlert,
   } = useDairyERP();
 
@@ -299,6 +300,7 @@ function AppContent() {
               <ChillingMilkPoolPage
                 tanks={tanksList}
                 reconciliation={reconciliation}
+                onTransferMilk={transferMilkBetweenTanks}
               />
             )}
 

@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Warehouse,
   Boxes,
+  Search,
 } from 'lucide-react';
 
 interface ProcessingPageProps {
@@ -36,6 +37,9 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
 
   const [activeBatch, setActiveBatch] = useState<ProcessingBatch | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [batchSearch, setBatchSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'In Progress'>('All');
+  const [lineFilter, setLineFilter] = useState('All');
 
   // New Batch Form State
   const [line, setLine] = useState('Continuous HTST Line 1 (3000 LPH)');
@@ -98,7 +102,6 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
 
     onCreateBatch(newBatch);
     setIsCreateModalOpen(false);
-    setActiveBatch(newBatch);
   };
 
   return (
@@ -150,11 +153,79 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
         </div>
       </div>
 
+      {/* Filter and Search Bar */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+          <input
+            type="text"
+            value={batchSearch}
+            onChange={(e) => setBatchSearch(e.target.value)}
+            placeholder="Search Batch ID, Line, or Operator..."
+            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-[#8b949e]">Status:</span>
+            <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
+              {(['All', 'In Progress', 'Completed'] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`px-2.5 py-1 rounded-md transition-colors ${
+                    statusFilter === s ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-[#8b949e]">Line:</span>
+            <select
+              value={lineFilter}
+              onChange={(e) => setLineFilter(e.target.value)}
+              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+            >
+              <option value="All">All Lines</option>
+              <option value="HTST Line 1">Continuous HTST Line 1</option>
+              <option value="Vat Pasteurizer 2">Batch Vat Pasteurizer 2</option>
+            </select>
+          </div>
+
+          {(batchSearch !== '' || statusFilter !== 'All' || lineFilter !== 'All') && (
+            <button
+              onClick={() => {
+                setBatchSearch('');
+                setStatusFilter('All');
+                setLineFilter('All');
+              }}
+              className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Batches Table */}
       <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
         <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
           <h3 className="text-sm font-semibold text-[#f0f6fc]">Production Batch Log</h3>
-          <span className="text-xs font-mono text-[#8b949e]">Click row to inspect output yield ledger</span>
+          <span className="text-xs font-mono text-[#8b949e]">
+            Showing {batches.filter((b) => {
+              const mSearch = b.batchId.toLowerCase().includes(batchSearch.toLowerCase()) ||
+                b.pasteurizerLine.toLowerCase().includes(batchSearch.toLowerCase()) ||
+                b.operator.toLowerCase().includes(batchSearch.toLowerCase());
+              const mStatus = statusFilter === 'All' || b.status === statusFilter;
+              const mLine = lineFilter === 'All' || b.pasteurizerLine.includes(lineFilter);
+              return mSearch && mStatus && mLine;
+            }).length} of {batches.length} batches
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -172,7 +243,14 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
               </tr>
             </thead>
             <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
-              {batches.map((batch) => (
+              {batches.filter((b) => {
+                const mSearch = b.batchId.toLowerCase().includes(batchSearch.toLowerCase()) ||
+                  b.pasteurizerLine.toLowerCase().includes(batchSearch.toLowerCase()) ||
+                  b.operator.toLowerCase().includes(batchSearch.toLowerCase());
+                const mStatus = statusFilter === 'All' || b.status === statusFilter;
+                const mLine = lineFilter === 'All' || b.pasteurizerLine.includes(lineFilter);
+                return mSearch && mStatus && mLine;
+              }).map((batch) => (
                 <tr
                   key={batch.id}
                   onClick={() => setActiveBatch(batch)}

@@ -36,6 +36,9 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
   onOpenMobileView,
 }) => {
   const [shiftFilter, setShiftFilter] = useState<'All' | 'Morning' | 'Evening'>('All');
+  const [qcFilter, setQcFilter] = useState<'All' | 'PASS' | 'WARNING' | 'FAIL'>('All');
+  const [centreFilter, setCentreFilter] = useState<string>('All');
+  const [dateFilter, setDateFilter] = useState<string>('All');
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isIotBridgeOpen, setIsIotBridgeOpen] = useState(false);
@@ -50,14 +53,25 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
   const avgFat = collections.length > 0 ? (collections.reduce((acc, c) => acc + c.fat, 0) / collections.length).toFixed(2) : '0';
   const avgSNF = collections.length > 0 ? (collections.reduce((acc, c) => acc + c.snf, 0) / collections.length).toFixed(2) : '0';
 
+  const morningCount = collections.filter((c) => c.shift === 'Morning').length;
+  const eveningCount = collections.filter((c) => c.shift === 'Evening').length;
+
+  const centres = Array.from(new Set(collections.map((c) => c.centre)));
+
   const filtered = collections.filter((c) => {
     const matchesShift = shiftFilter === 'All' || c.shift === shiftFilter;
+    const matchesQc = qcFilter === 'All' || c.quality === qcFilter;
+    const matchesCentre = centreFilter === 'All' || c.centre === centreFilter;
+    const matchesDate = dateFilter === 'All' || c.date === dateFilter;
     const matchesSearch =
       c.farmerName.toLowerCase().includes(search.toLowerCase()) ||
       c.farmerId.toLowerCase().includes(search.toLowerCase()) ||
-      c.centre.toLowerCase().includes(search.toLowerCase());
-    return matchesShift && matchesSearch;
+      c.centre.toLowerCase().includes(search.toLowerCase()) ||
+      c.collectionCode.toLowerCase().includes(search.toLowerCase());
+    return matchesShift && matchesQc && matchesCentre && matchesDate && matchesSearch;
   });
+
+  const isFiltered = shiftFilter !== 'All' || qcFilter !== 'All' || centreFilter !== 'All' || dateFilter !== 'All' || search !== '';
 
   return (
     <div className="space-y-6">
@@ -141,33 +155,113 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
         />
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search Farmer name, ID or Centre..."
-            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
-          />
-        </div>
+      {/* Comprehensive Filter and Search Bar */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 space-y-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search Farmer, ID, Centre, or CC#..."
+              className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+            />
+          </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[#8b949e]">Shift Filter:</span>
-          <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
-            {(['All', 'Morning', 'Evening'] as const).map((s) => (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-[#8b949e]">Shift:</span>
+            <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
               <button
-                key={s}
-                onClick={() => setShiftFilter(s)}
-                className={`px-3 py-1 rounded-md transition-colors ${
-                  shiftFilter === s ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                onClick={() => setShiftFilter('All')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  shiftFilter === 'All' ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
                 }`}
               >
-                {s}
+                All ({collections.length})
               </button>
-            ))}
+              <button
+                onClick={() => setShiftFilter('Morning')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  shiftFilter === 'Morning' ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                }`}
+              >
+                Morning ({morningCount})
+              </button>
+              <button
+                onClick={() => setShiftFilter('Evening')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  shiftFilter === 'Evening' ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                }`}
+              >
+                Evening ({eveningCount})
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#21262d] text-xs">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[#8b949e]">QC Status:</span>
+              <select
+                value={qcFilter}
+                onChange={(e) => setQcFilter(e.target.value as any)}
+                className="bg-[#0d1117] border border-[#30363d] rounded-md px-2 py-1 text-xs text-[#c9d1d9] outline-none"
+              >
+                <option value="All">All QC Results</option>
+                <option value="PASS">PASS Only</option>
+                <option value="WARNING">WARNING Only</option>
+                <option value="FAIL">FAIL (Rejected) Only</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-[#8b949e]">Centre:</span>
+              <select
+                value={centreFilter}
+                onChange={(e) => setCentreFilter(e.target.value)}
+                className="bg-[#0d1117] border border-[#30363d] rounded-md px-2 py-1 text-xs text-[#c9d1d9] outline-none"
+              >
+                <option value="All">All Centres</option>
+                {centres.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-[#8b949e]">Date:</span>
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="bg-[#0d1117] border border-[#30363d] rounded-md px-2 py-1 text-xs text-[#c9d1d9] outline-none"
+              >
+                <option value="All">All Dates</option>
+                <option value="2026-10-06">2026-10-06 (Today)</option>
+                <option value="2026-10-05">2026-10-05 (Yesterday)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[#8b949e] font-mono">
+              Showing <strong className="text-[#58a6ff]">{filtered.length}</strong> of {collections.length}
+            </span>
+            {isFiltered && (
+              <button
+                onClick={() => {
+                  setShiftFilter('All');
+                  setQcFilter('All');
+                  setCentreFilter('All');
+                  setDateFilter('All');
+                  setSearch('');
+                }}
+                className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
         </div>
       </div>

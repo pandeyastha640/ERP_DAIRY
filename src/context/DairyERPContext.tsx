@@ -100,6 +100,7 @@ interface DairyERPContextType {
   addRoute: (route: DistributionRoute) => void;
   addProduct: (product: ProductMaster) => void;
   addQualityTest: (test: QualityTestRecord) => void;
+  transferMilkBetweenTanks: (sourceId: string, targetId: string, litres: number) => void;
   dismissAlert: (id: string) => void;
 
   // System Settings & Reset
@@ -127,7 +128,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   overheadsDailyCost: 1450,
 };
 
-const STORAGE_PREFIX = 'dairy_erp_v2_';
+const STORAGE_PREFIX = 'dairy_erp_v3_';
 
 function loadStorage<T>(key: string, defaultValue: T): T {
   try {
@@ -465,9 +466,10 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       packagingList,
       routesList,
       reconciliation,
-      settings
+      settings,
+      currentDateFilter
     );
-  }, [salesOrdersList, collectionsList, cattleList, batchesList, packagingList, routesList, reconciliation, settings]);
+  }, [salesOrdersList, collectionsList, cattleList, batchesList, packagingList, routesList, reconciliation, settings, currentDateFilter]);
 
   // 5. DYNAMIC RULE-BASED ALERTS
   const alerts = useMemo(() => {
@@ -1035,6 +1037,36 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }).catch((err) => console.warn('Quality test sync notice:', err.message));
   };
 
+  /**
+   * 14. Inter-Tank Milk Transfer:
+   */
+  const transferMilkBetweenTanks = (sourceId: string, targetId: string, litres: number) => {
+    setTanksList((prev) =>
+      prev.map((t) => {
+        if (t.id === sourceId || t.name === sourceId) {
+          return { ...t, currentVolumeLitres: Math.max(0, t.currentVolumeLitres - litres) };
+        }
+        if (t.id === targetId || t.name === targetId) {
+          return { ...t, currentVolumeLitres: Math.min(t.capacityLitres, t.currentVolumeLitres + litres) };
+        }
+        return t;
+      })
+    );
+
+    logAudit({
+      module: 'Cold Silos',
+      action: 'INTER_TANK_TRANSFER',
+      recordId: `XFR-${Date.now().toString().slice(-4)}`,
+      description: `Transferred ${litres} L raw milk from ${sourceId} to ${targetId}`,
+      milkImpactLitres: litres,
+      severity: 'info',
+    });
+
+    api.chilling.transfer(sourceId, litres, targetId).catch((err) =>
+      console.warn('Backend transfer sync notice:', err.message)
+    );
+  };
+
   const dismissAlert = (id: string) => {
     setDismissedAlertIds((prev) => [...prev, id]);
   };
@@ -1121,6 +1153,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     addRoute,
     addProduct,
     addQualityTest,
+    transferMilkBetweenTanks,
     dismissAlert,
 
     settings,

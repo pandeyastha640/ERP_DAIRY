@@ -24,6 +24,8 @@ interface QualityManagementPageProps {
 export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ tests, onAddTest }) => {
   const [activeRecord, setActiveRecord] = useState<QualityTestRecord | null>(null);
   const [filterResult, setFilterResult] = useState<'All' | 'PASS' | 'WARNING' | 'FAIL'>('All');
+  const [sourceFilter, setSourceFilter] = useState('All');
+  const [search, setSearch] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [selectedCertRecord, setSelectedCertRecord] = useState<any>(null);
@@ -50,7 +52,15 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
   const avgFat = (tests.reduce((acc, t) => acc + t.fat, 0) / totalTests).toFixed(2);
   const avgSNF = (tests.reduce((acc, t) => acc + t.snf, 0) / totalTests).toFixed(2);
 
-  const filteredTests = tests.filter((t) => filterResult === 'All' || t.result === filterResult);
+  const filteredTests = tests.filter((t) => {
+    const matchesResult = filterResult === 'All' || t.result === filterResult;
+    const matchesSource = sourceFilter === 'All' || t.sourceType === sourceFilter;
+    const matchesSearch =
+      t.batchNumber.toLowerCase().includes(search.toLowerCase()) ||
+      t.sourceName.toLowerCase().includes(search.toLowerCase()) ||
+      t.tester.toLowerCase().includes(search.toLowerCase());
+    return matchesResult && matchesSource && matchesSearch;
+  });
 
   const handleSaveQuality = (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,21 +132,92 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
         />
       </div>
 
-      {/* Table Filter Bar */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex items-center justify-between">
-        <span className="text-xs text-[#8b949e]">Quality Assessment Filter:</span>
-        <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
-          {(['All', 'PASS', 'WARNING', 'FAIL'] as const).map((r) => (
-            <button
-              key={r}
-              onClick={() => setFilterResult(r)}
-              className={`px-3 py-1 rounded-md transition-colors ${
-                filterResult === r ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
-              }`}
+      {/* Comprehensive Quality Filter and Search Bar */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 space-y-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search Batch#, Source, or Analyst..."
+              className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-[#8b949e]">QC Decision:</span>
+            <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
+              <button
+                onClick={() => setFilterResult('All')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  filterResult === 'All' ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                }`}
+              >
+                All ({totalTests})
+              </button>
+              <button
+                onClick={() => setFilterResult('PASS')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  filterResult === 'PASS' ? 'bg-[#3fb950] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                }`}
+              >
+                PASS ({accepted})
+              </button>
+              <button
+                onClick={() => setFilterResult('WARNING')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  filterResult === 'WARNING' ? 'bg-[#f0883e] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                }`}
+              >
+                WARNING ({warning})
+              </button>
+              <button
+                onClick={() => setFilterResult('FAIL')}
+                className={`px-2.5 py-1 rounded-md transition-colors ${
+                  filterResult === 'FAIL' ? 'bg-[#f85149] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                }`}
+              >
+                FAIL ({rejected})
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#21262d] text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[#8b949e]">Sample Source:</span>
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
             >
-              {r}
-            </button>
-          ))}
+              <option value="All">All Sample Sources</option>
+              <option value="Own Cattle">Own Herd Parlour</option>
+              <option value="Farmer Procurement">Farmer Procurement</option>
+              <option value="Chilling Tank Pool">Chilling Tank Pool</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[#8b949e] font-mono">
+              Showing <strong className="text-[#58a6ff]">{filteredTests.length}</strong> of {totalTests}
+            </span>
+
+            {(search !== '' || filterResult !== 'All' || sourceFilter !== 'All') && (
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setFilterResult('All');
+                  setSourceFilter('All');
+                }}
+                className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

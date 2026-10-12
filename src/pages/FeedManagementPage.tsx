@@ -12,6 +12,7 @@ import {
   Layers,
   ArrowRight,
   TrendingUp,
+  Search,
 } from 'lucide-react';
 
 interface FeedManagementPageProps {
@@ -28,6 +29,9 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
   onRecordConsumption,
 }) => {
   const [activeTab, setActiveTab] = useState<'Inventory' | 'Formulation'>('Inventory');
+  const [feedSearch, setFeedSearch] = useState('');
+  const [feedCategoryFilter, setFeedCategoryFilter] = useState('All');
+  const [runwayFilter, setRunwayFilter] = useState<'All' | 'Low Stock' | 'Optimal'>('All');
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isConsumptionModalOpen, setIsConsumptionModalOpen] = useState(false);
   const [isFormulaModalOpen, setIsFormulaModalOpen] = useState(false);
@@ -189,10 +193,79 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       {/* INVENTORY TAB */}
       {activeTab === 'Inventory' && (
         <div className="space-y-4">
+          {/* Feed Filter and Search Bar */}
+          <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+              <input
+                type="text"
+                value={feedSearch}
+                onChange={(e) => setFeedSearch(e.target.value)}
+                placeholder="Search Feed Item or Supplier..."
+                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-[#8b949e]">Category:</span>
+                <select
+                  value={feedCategoryFilter}
+                  onChange={(e) => setFeedCategoryFilter(e.target.value)}
+                  className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+                >
+                  <option value="All">All Categories</option>
+                  <option value="Green Fodder">Green Fodder</option>
+                  <option value="Dry Fodder">Dry Fodder</option>
+                  <option value="Concentrate">Concentrate</option>
+                  <option value="Mineral Mixture">Mineral Mixture</option>
+                  <option value="Other">Other Supplements</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-[#8b949e]">Runway:</span>
+                <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
+                  {(['All', 'Low Stock', 'Optimal'] as const).map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => setRunwayFilter(r)}
+                      className={`px-2.5 py-1 rounded-md transition-colors ${
+                        runwayFilter === r ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {(feedSearch !== '' || feedCategoryFilter !== 'All' || runwayFilter !== 'All') && (
+                <button
+                  onClick={() => {
+                    setFeedSearch('');
+                    setFeedCategoryFilter('All');
+                    setRunwayFilter('All');
+                  }}
+                  className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
             <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
               <h3 className="text-sm font-semibold text-[#f0f6fc]">Feed Inventory Ledger</h3>
-              <span className="text-xs font-mono text-[#8b949e]">Units in Kilograms (Kg)</span>
+              <span className="text-xs font-mono text-[#8b949e]">
+                Showing {feeds.filter((f) => {
+                  const mSearch = f.name.toLowerCase().includes(feedSearch.toLowerCase()) || f.supplier.toLowerCase().includes(feedSearch.toLowerCase());
+                  const mCat = feedCategoryFilter === 'All' || f.type === feedCategoryFilter;
+                  const mRunway = runwayFilter === 'All' || (runwayFilter === 'Low Stock' ? f.daysRemaining <= 5.0 : f.daysRemaining > 5.0);
+                  return mSearch && mCat && mRunway;
+                }).length} of {feeds.length} items
+              </span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -211,7 +284,12 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
-                  {feeds.map((feed) => (
+                  {feeds.filter((f) => {
+                    const mSearch = f.name.toLowerCase().includes(feedSearch.toLowerCase()) || f.supplier.toLowerCase().includes(feedSearch.toLowerCase());
+                    const mCat = feedCategoryFilter === 'All' || f.type === feedCategoryFilter;
+                    const mRunway = runwayFilter === 'All' || (runwayFilter === 'Low Stock' ? f.daysRemaining <= 5.0 : f.daysRemaining > 5.0);
+                    return mSearch && mCat && mRunway;
+                  }).map((feed) => (
                     <tr key={feed.id} className="hover:bg-[#1f2937]/30 transition-colors">
                       <td className="px-4 py-3 font-sans font-semibold text-[#f0f6fc]">
                         {feed.name}

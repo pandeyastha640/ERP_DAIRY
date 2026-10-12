@@ -25,6 +25,8 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
   const onAddPayment = propOnAddPayment || recordPayment;
 
   const [filterType, setFilterType] = useState('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Processing' | 'Pending'>('All');
+  const [search, setSearch] = useState('');
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
   const [isBatchPayoutModalOpen, setIsBatchPayoutModalOpen] = useState(false);
 
@@ -46,7 +48,16 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
     .filter((o) => o.paymentStatus !== 'Paid')
     .reduce((acc, o) => acc + o.totalAmount, 0);
 
-  const filtered = payments.filter((p) => filterType === 'All' || p.partyType === filterType);
+  const filtered = payments.filter((p) => {
+    const mParty = filterType === 'All' || p.partyType === filterType;
+    const mStatus = statusFilter === 'All' || p.status === statusFilter;
+    const mSearch =
+      p.recipientName.toLowerCase().includes(search.toLowerCase()) ||
+      p.transactionRef.toLowerCase().includes(search.toLowerCase()) ||
+      p.paymentMethod.toLowerCase().includes(search.toLowerCase()) ||
+      (p.notes && p.notes.toLowerCase().includes(search.toLowerCase()));
+    return mParty && mStatus && mSearch;
+  });
 
   const handleRecord = (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,21 +117,71 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
         <MetricCard label="Pending Disbursements" value={`₹${totalPayablesPending.toLocaleString()}`} unit="" trend="neutral" changeText="Processing in bank queue" />
       </div>
 
-      {/* Filter Bar */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex items-center justify-between">
-        <span className="text-xs text-[#8b949e]">Filter Party Type:</span>
-        <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
-          {(['All', 'Farmer', 'Distributor', 'Feed Supplier'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setFilterType(t)}
-              className={`px-3 py-1 rounded-md transition-colors ${
-                filterType === t ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
-              }`}
+      {/* Comprehensive Filter and Search Bar */}
+      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 space-y-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search Recipient, Txn Ref, Method, Notes..."
+              className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-[#8b949e]">Party:</span>
+            <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs flex-wrap">
+              {(['All', 'Farmer', 'Distributor', 'Feed Supplier', 'Packaging Vendor'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setFilterType(t)}
+                  className={`px-2.5 py-1 rounded-md transition-colors ${
+                    filterType === t ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#21262d] text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[#8b949e]">Settlement Status:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
             >
-              {t}
-            </button>
-          ))}
+              <option value="All">All Settlement Statuses</option>
+              <option value="Completed">Completed Only</option>
+              <option value="Processing">Processing (Bank Queue)</option>
+              <option value="Pending">Pending Authorization</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[#8b949e] font-mono">
+              Showing <strong className="text-[#58a6ff]">{filtered.length}</strong> of {payments.length}
+            </span>
+
+            {(search !== '' || filterType !== 'All' || statusFilter !== 'All') && (
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setFilterType('All');
+                  setStatusFilter('All');
+                }}
+                className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
