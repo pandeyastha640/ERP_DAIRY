@@ -171,44 +171,44 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col antialiased">
+    <div className="min-h-screen bg-[#faf8f5] text-stone-900 flex flex-col antialiased">
       {/* Top Global Demo Environment Banner */}
-      <div className="bg-slate-100 border-b border-slate-200 px-4 py-1.5 flex items-center justify-between text-[11px] font-mono select-none text-slate-600">
+      <div className="bg-cream-100/70 border-b border-[#ede8df] px-4 py-1.5 flex items-center justify-between text-[11px] font-mono select-none text-stone-600">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-          <span className="text-emerald-800 font-semibold">CONNECTED DAIRY OPERATING SYSTEM</span>
-          <span className="text-slate-500 hidden sm:inline">
-            · Continuous Volumetric Mass Balance &amp; Real-time Margin Reconciliation Active
+          <span className="text-forest-900 font-bold">CONNECTED DAIRY OPERATING SYSTEM</span>
+          <span className="text-stone-500 hidden sm:inline">
+            &bull; Continuous Volumetric Mass Balance &amp; Real-time Margin Reconciliation Active
           </span>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsTracerOpen(true)}
-            className="text-emerald-700 hover:text-emerald-800 hover:underline flex items-center gap-1 cursor-pointer font-sans font-medium"
+            className="text-forest-800 hover:text-forest-950 hover:underline flex items-center gap-1 cursor-pointer font-sans font-medium"
           >
             <GitFork className="w-3.5 h-3.5" />
             <span>Trace Flow</span>
           </button>
-          <span className="text-slate-300">|</span>
+          <span className="text-stone-300">|</span>
           <button
             onClick={() => setIsAuditDrawerOpen(true)}
-            className="text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer font-sans"
+            className="text-stone-600 hover:text-stone-900 flex items-center gap-1 cursor-pointer font-sans"
           >
-            <FileClock className="w-3.5 h-3.5 text-slate-500" />
+            <FileClock className="w-3.5 h-3.5 text-stone-500" />
             <span>Audit Trail</span>
           </button>
-          <span className="text-slate-300">|</span>
+          <span className="text-stone-300">|</span>
           <button
             onClick={() => setIsMobileFieldOpen(true)}
-            className="text-emerald-700 hover:text-emerald-800 hover:underline flex items-center gap-1 cursor-pointer font-sans font-medium"
+            className="text-forest-800 hover:text-forest-950 hover:underline flex items-center gap-1 cursor-pointer font-sans font-medium"
           >
             <Smartphone className="w-3.5 h-3.5" />
             <span>Field Touch Mode</span>
           </button>
-          <span className="text-slate-300">|</span>
+          <span className="text-stone-300">|</span>
           <button
             onClick={handleLogout}
-            className="text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer font-sans"
+            className="text-stone-500 hover:text-stone-800 flex items-center gap-1 cursor-pointer font-sans"
           >
             <LogOut className="w-3 h-3" />
             <span>Sign Out</span>
@@ -255,24 +255,24 @@ function AppContent() {
           {/* Module Viewport */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-20 md:pb-8">
             {!ROLE_ALLOWED_MODULES[currentRole]?.includes(currentModule) ? (
-              <div className="p-8 bg-[#161b22] border border-[#30363d] rounded-xl text-center max-w-lg mx-auto my-12 space-y-4">
-                <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto">
+              <div className="p-8 bg-white border border-[#ede8df] rounded-2xl text-center max-w-lg mx-auto my-12 space-y-4 shadow-xs">
+                <div className="w-12 h-12 bg-amber-50 text-amber-700 border border-amber-200 rounded-2xl flex items-center justify-center mx-auto shadow-2xs">
                   <ShieldAlert className="w-6 h-6" />
                 </div>
-                <h2 className="text-base font-bold text-slate-100">Role-Based Access Control (RBAC) Notice</h2>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Your current session role <strong className="text-blue-400 font-mono">{currentRole}</strong> is restricted from accessing the <strong className="text-white font-mono">{currentModule}</strong> module under organizational food safety and audit guidelines.
+                <h2 className="text-base font-bold text-forest-950 font-sans">Role-Based Access Control (RBAC) Notice</h2>
+                <p className="text-xs text-stone-600 leading-relaxed font-sans">
+                  Your current session role <strong className="text-forest-900 font-mono font-bold">{currentRole}</strong> is restricted from accessing the <strong className="text-forest-950 font-mono font-bold">{currentModule}</strong> module under organizational food safety and audit guidelines.
                 </p>
                 <div className="flex items-center justify-center gap-3 pt-2">
                   <button
                     onClick={() => setCurrentRole('Operations Manager')}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors shadow-xs"
+                    className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs"
                   >
                     Switch to Operations Manager
                   </button>
                   <button
                     onClick={() => setCurrentModule(ROLE_ALLOWED_MODULES[currentRole]?.[0] || 'milk-collection')}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium cursor-pointer transition-colors"
+                    className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-800 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
                   >
                     Return to Permitted View
                   </button>
@@ -538,13 +538,18 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-6">
-          <div className="max-w-lg bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-xl text-center">
-            <h2 className="text-xl font-bold text-rose-400 mb-2">Something went wrong</h2>
-            <p className="text-sm text-slate-300 mb-4">{this.state.error?.message}</p>
+        <div className="min-h-screen flex items-center justify-center bg-[#faf8f5] text-stone-900 p-6">
+          <div className="max-w-lg bg-white border border-[#ede8df] rounded-3xl p-8 shadow-sm text-center space-y-4">
+            <div className="w-12 h-12 bg-rose-50 text-rose-700 border border-rose-200 rounded-2xl flex items-center justify-center mx-auto">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <h2 className="text-xl font-bold text-forest-950 font-sans">Application Exception Encountered</h2>
+            <p className="text-xs text-stone-600 font-mono bg-cream-50/70 p-3 rounded-xl border border-[#ede8df] text-left overflow-x-auto">
+              {this.state.error?.message}
+            </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+              className="px-5 py-2.5 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               Reload Application
             </button>

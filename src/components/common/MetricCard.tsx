@@ -36,31 +36,35 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs transition-all duration-150 flex flex-col justify-between ${
-        onClick ? 'cursor-pointer hover:border-emerald-600/40 hover:shadow-sm' : ''
+      className={`bg-white border border-[#ede8df] rounded-2xl p-4 shadow-[0_2px_10px_-2px_rgba(27,67,50,0.04)] transition-all duration-200 flex flex-col justify-between group ${
+        onClick ? 'cursor-pointer hover:border-[#52b788] hover:shadow-[0_8px_24px_-4px_rgba(27,67,50,0.08)] hover:-translate-y-0.5' : ''
       } ${className}`}
     >
-      <div className="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
-        <span className="truncate">{label}</span>
-        {icon && <span className="text-slate-400 shrink-0 ml-1">{icon}</span>}
+      <div className="flex items-center justify-between text-xs text-stone-500 mb-2.5 font-medium">
+        <span className="truncate tracking-wide font-medium text-stone-600">{label}</span>
+        {icon && (
+          <span className="w-8 h-8 rounded-xl bg-[#f0f7f2] text-[#1b4332] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+            {icon}
+          </span>
+        )}
       </div>
 
-      <div className="flex items-baseline gap-1.5 mb-2">
-        <span className="text-2xl font-bold tracking-tight text-slate-900 font-mono tabular-nums">
+      <div className="flex items-baseline gap-1.5 mb-2.5">
+        <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0f2319] font-mono tabular-nums">
           {value}
         </span>
-        {unit && <span className="text-xs text-slate-500 font-sans font-medium">{unit}</span>}
+        {unit && <span className="text-xs text-stone-400 font-sans font-medium">{unit}</span>}
       </div>
 
-      <div className="flex items-center justify-between gap-1 text-[11px] pt-1 border-t border-slate-100">
+      <div className="flex items-center justify-between gap-1.5 text-[11px] pt-2 border-t border-[#f4f1ea]">
         {trend && (
           <span
-            className={`inline-flex items-center gap-0.5 font-mono tabular-nums font-semibold px-1.5 py-0.5 rounded text-[10px] ${
+            className={`inline-flex items-center gap-0.5 font-mono tabular-nums font-semibold px-2 py-0.5 rounded-full text-[10px] ${
               isGood
-                ? 'text-emerald-700 bg-emerald-50 border border-emerald-100'
+                ? 'text-[#1b4332] bg-[#eef6f0] border border-[#cbe5d4]'
                 : trend === 'neutral'
-                ? 'text-slate-600 bg-slate-100 border border-slate-200'
-                : 'text-rose-700 bg-rose-50 border border-rose-100'
+                ? 'text-stone-600 bg-stone-100 border border-stone-200'
+                : 'text-rose-800 bg-rose-50 border border-rose-200'
             }`}
           >
             {isPositive && <ArrowUpRight className="w-3 h-3 shrink-0" />}
@@ -71,7 +75,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         )}
 
         {(changeText || subtext) && (
-          <span className="text-slate-500 truncate text-[11px] ml-auto">
+          <span className="text-stone-400 truncate text-[11px] ml-auto">
             {changeText || subtext}
           </span>
         )}

@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+@theme {
+  --color-forest-900: #0d2818;
+  --color-forest-800: #1b4332;
+  --color-forest-700: #2d6a4f;
+  --color-forest-600: #40916c;
+  --color-forest-500: #52b788;
+  
+  --color-sage-50: #f5f9f6;
+  --color-sage-100: #e4f1e8;
+  --color-sage-200: #c8e4d2;
+  --color-sage-500: #74c69d;
+  
+  --color-cream-50: #fdfcfb;
+  --color-cream-100: #faf8f4;
+  --color-cream-200: #f3efe6;
+  --color-cream-300: #ede8df;
+  
+  --color-gold-50: #fcf9f0;
+  --color-gold-100: #f6eed6;
+  --color-gold-500: #c59b27;
+  --color-gold-600: #a47d1b;
+}
+
 @layer base {
   :root {
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -8,8 +31,8 @@
 
   body {
     font-family: var(--font-sans);
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: #faf8f5;
+    color: #17231c;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -19,18 +42,47 @@
   }
 }
 
-/* Crisp scrollbars for enterprise data tables and compact sidebars */
+/* Custom refined dairy surface elevations */
+.dairy-card {
+  background-color: #ffffff;
+  border: 1px solid #ede8df;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(27, 67, 50, 0.03), 0 6px 16px -2px rgba(27, 67, 50, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dairy-card:hover {
+  border-color: #dbe4dc;
+  box-shadow: 0 4px 6px -1px rgba(27, 67, 50, 0.05), 0 12px 24px -4px rgba(27, 67, 50, 0.07);
+}
+
+.dairy-card-interactive {
+  background-color: #ffffff;
+  border: 1px solid #ede8df;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(27, 67, 50, 0.03), 0 4px 12px -2px rgba(27, 67, 50, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.dairy-card-interactive:hover {
+  border-color: #52b788;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(27, 67, 50, 0.08), 0 2px 6px -1px rgba(27, 67, 50, 0.03);
+}
+
+/* Crisp scrollbars with dairy sage track */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
-  border-radius: 3px;
+  background: rgba(45, 106, 79, 0.2);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.6);
+  background: rgba(27, 67, 50, 0.4);
 }

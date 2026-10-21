@@ -30,20 +30,30 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
-            Packaging Material Inventory
-          </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
-            Roll films, bottles, cups, cartons, and seal liners with real-time consumption and stockout warnings.
-          </p>
+      {/* Page Header */}
+      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-700 shadow-xs">
+            <Box className="w-5 h-5 text-forest-700" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-forest-950 font-sans">
+                Packaging Material Inventory
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sage-50 text-forest-800 border border-sage-200">
+                Pouch Film & Bottle Buffer
+              </span>
+            </div>
+            <p className="text-xs text-stone-500 mt-0.5 font-sans">
+              Roll films, bottles, cups, cartons, and seal liners with real-time consumption and stockout warnings.
+            </p>
+          </div>
         </div>
 
         <button
           onClick={() => setIsRestockModalOpen(true)}
-          className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+          className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 self-start md:self-auto cursor-pointer"
         >
           <ShoppingCart className="w-4 h-4" />
           <span>Restock Purchase Order</span>
@@ -51,7 +61,7 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
       </div>
 
       {/* KPI Ribbon */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3.5">
         <MetricCard label="Opening Stock" value={`${(totalOpening / 1000).toFixed(1)}k`} unit="units" trend="neutral" changeText="Start of day" />
         <MetricCard label="Purchased Inward" value={`${(totalPurchased / 1000).toFixed(1)}k`} unit="units" trend="up" changeText="Delivered" />
         <MetricCard label="Consumed Today" value={`${(totalConsumed / 1000).toFixed(1)}k`} unit="units" trend="neutral" changeText="Pack line used" />
@@ -69,12 +79,14 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
 
       {/* CRITICAL ALERT BANNER */}
       {lowStockCount > 0 && (
-        <div className="p-4 bg-[#f85149]/10 border border-[#f85149]/30 rounded-lg flex items-center justify-between">
+        <div className="p-4 bg-rose-50/70 border border-rose-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-[#f85149] shrink-0" />
+            <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-700 shrink-0">
+              <AlertTriangle className="w-5 h-5 text-rose-700" />
+            </div>
             <div>
-              <div className="text-xs font-bold text-[#f85149]">CRITICAL PACKAGING BUFFER WARNING</div>
-              <div className="text-xs text-[#c9d1d9] mt-0.5">
+              <div className="text-xs font-bold text-rose-900 font-sans">CRITICAL PACKAGING BUFFER WARNING</div>
+              <div className="text-xs text-rose-800/90 mt-0.5 font-sans">
                 500ml LDPE Multilayer Milk Pouch Film has only 1.9 days remaining before line stoppage. Reorder level is 20,000 units.
               </div>
             </div>
@@ -85,7 +97,7 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
               setRestockQty('40000');
               setIsRestockModalOpen(true);
             }}
-            className="px-3.5 py-1.5 bg-[#f85149] hover:bg-[#ff6b64] text-white text-xs font-bold rounded shrink-0 transition-colors"
+            className="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold rounded-xl shrink-0 transition-all shadow-xs cursor-pointer"
           >
             Create Emergency PO
           </button>
@@ -93,57 +105,70 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
       )}
 
       {/* Packaging Table */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
-        <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#f0f6fc]">Packaging Material Stock Ledger</h3>
-          <span className="text-xs font-mono text-[#8b949e]">Units in Individual Pieces / Pouches</span>
+      <div className="bg-white border border-[#ede8df] rounded-2xl shadow-xs overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-[#ede8df] bg-cream-50/50 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-forest-950 font-sans">Packaging Material Stock Ledger</h3>
+            <p className="text-[11px] text-stone-500">Roll films, bottle caps, pouches and corrugated cartons</p>
+          </div>
+          <span className="text-xs font-mono font-medium text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-0.5 rounded-full">
+            Units in Individual Pieces / Pouches
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+            <thead className="bg-[#fcfbf9] text-stone-500 font-mono border-b border-[#ede8df]">
               <tr>
-                <th className="px-4 py-2.5 font-medium">Material Name</th>
-                <th className="px-4 py-2.5 font-medium">Type</th>
-                <th className="px-4 py-2.5 font-medium">Opening</th>
-                <th className="px-4 py-2.5 font-medium">Purchased</th>
-                <th className="px-4 py-2.5 font-medium">Consumed</th>
-                <th className="px-4 py-2.5 font-medium">Damaged</th>
-                <th className="px-4 py-2.5 font-medium">Closing Stock</th>
-                <th className="px-4 py-2.5 font-medium">Unit Cost</th>
-                <th className="px-4 py-2.5 font-medium">Runway</th>
-                <th className="px-4 py-2.5 font-medium">Status</th>
-                <th className="px-4 py-2.5 font-medium text-right">Action</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Material Name</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Type</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Opening</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Purchased</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Consumed</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Damaged</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Closing Stock</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Unit Cost</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Runway</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Status</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px] text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
+            <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
               {packaging.map((item) => (
-                <tr key={item.id} className="hover:bg-[#1f2937]/30 transition-colors">
-                  <td className="px-4 py-3 font-sans font-semibold text-[#f0f6fc]">{item.name}</td>
-                  <td className="px-4 py-3 font-sans text-[#8b949e]">{item.materialType}</td>
-                  <td className="px-4 py-3">{item.openingStock.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-[#3fb950]">
-                    {item.purchased > 0 ? `+${item.purchased.toLocaleString()}` : '-'}
+                <tr key={item.id} className="hover:bg-cream-50/60 transition-colors">
+                  <td className="px-4 py-3.5 font-sans font-bold text-forest-950">{item.name}</td>
+                  <td className="px-4 py-3.5 font-sans">
+                    <span className="px-2 py-0.5 bg-cream-100/70 border border-[#ede8df] text-stone-700 rounded-md text-[11px]">
+                      {item.materialType}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 text-[#f0883e]">-{item.consumed.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-[#f85149]">{item.damaged}</td>
-                  <td className="px-4 py-3 font-bold text-[#f0f6fc]">{item.closingStock.toLocaleString()}</td>
-                  <td className="px-4 py-3">₹{item.unitCost.toFixed(2)}</td>
-                  <td className="px-4 py-3 font-bold">
-                    <span className={item.daysRemaining <= 2.5 ? 'text-[#f85149]' : 'text-[#3fb950]'}>
+                  <td className="px-4 py-3.5">{item.openingStock.toLocaleString()}</td>
+                  <td className="px-4 py-3.5 font-bold text-emerald-700">
+                    {item.purchased > 0 ? `+${item.purchased.toLocaleString()}` : '—'}
+                  </td>
+                  <td className="px-4 py-3.5 text-stone-600">-{item.consumed.toLocaleString()}</td>
+                  <td className="px-4 py-3.5 text-rose-700 font-medium">{item.damaged}</td>
+                  <td className="px-4 py-3.5 font-bold text-forest-950 text-sm">{item.closingStock.toLocaleString()}</td>
+                  <td className="px-4 py-3.5">₹{item.unitCost.toFixed(2)}</td>
+                  <td className="px-4 py-3.5 font-bold">
+                    <span className={`px-2 py-0.5 rounded-md font-mono text-[11px] ${
+                      item.daysRemaining <= 2.5
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    }`}>
                       {item.daysRemaining} days
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-sans">
+                  <td className="px-4 py-3.5 font-sans">
                     <StatusBadge status={item.status} size="sm" />
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3.5 text-right font-sans">
                     <button
                       onClick={() => {
                         setSelectedId(item.id);
                         setRestockQty('20000');
                         setIsRestockModalOpen(true);
                       }}
-                      className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] rounded text-[11px] font-sans"
+                      className="px-2.5 py-1 bg-cream-100 hover:bg-cream-200 text-forest-900 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
                     >
                       Inward PO
                     </button>
@@ -163,41 +188,41 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
         subtitle="Credit received packaging goods to dry inventory balance"
         maxWidth="md"
       >
-        <form onSubmit={handleRestock} className="space-y-3.5">
+        <form onSubmit={handleRestock} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Packaging Material</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Packaging Material</label>
             <select
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs text-[#f0f6fc]"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
             >
               {packaging.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} (Closing: {p.closingStock})
+                  {p.name} (Closing Stock: {p.closingStock})
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Quantity Received (Units)</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Quantity Received (Units)</label>
             <input
               type="number"
               value={restockQty}
               onChange={(e) => setRestockQty(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono text-[#f0f6fc]"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
             />
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsRestockModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded text-xs font-semibold"
+              className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-all"
             >
               Confirm Delivery
             </button>
@@ -207,3 +232,5 @@ export const PackagingManagementPage: React.FC<PackagingManagementPageProps> = (
     </div>
   );
 };
+
+export default PackagingManagementPage;

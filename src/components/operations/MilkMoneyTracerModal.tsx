@@ -51,15 +51,15 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
     >
       <div className="space-y-6 text-xs">
         {/* Direction & Stream Selectors */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-[#faf8f5] rounded-2xl border border-[#ede8df]">
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 font-medium">Trace Vector:</span>
-            <div className="flex bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
+            <span className="text-slate-600 font-medium">Trace Vector:</span>
+            <div className="flex bg-white border border-[#e2dcd2] rounded-xl p-0.5 shadow-2xs">
               <button
                 onClick={() => setDirection('forward')}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
                   direction === 'forward'
-                    ? 'bg-emerald-700 text-white'
+                    ? 'bg-[#1b4332] text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -67,9 +67,9 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
               </button>
               <button
                 onClick={() => setDirection('reverse')}
-                className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
                   direction === 'reverse'
-                    ? 'bg-emerald-700 text-white'
+                    ? 'bg-[#1b4332] text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -79,11 +79,11 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 font-medium">Stream Filter:</span>
+            <span className="text-slate-600 font-medium">Stream Filter:</span>
             <select
               value={selectedStream}
               onChange={(e) => setSelectedStream(e.target.value as 'both' | 'own' | 'farmer')}
-              className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-700 outline-none shadow-2xs cursor-pointer"
+              className="bg-white border border-[#e2dcd2] rounded-xl px-3 py-1.5 text-xs text-slate-800 outline-none shadow-2xs cursor-pointer focus:border-[#1b4332]"
             >
               <option value="both">Merged Milk Pool</option>
               <option value="own">Source 1: Own Herd</option>
@@ -93,15 +93,15 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
         </div>
 
         {/* Step-by-Step Connected Trace Nodes */}
-        <div className="relative border-l-2 border-slate-200 ml-4 pl-6 space-y-6">
+        <div className="relative border-l-2 border-[#e2dcd2] ml-4 pl-6 space-y-6">
           {direction === 'forward' ? (
             <>
               {/* Step 1: Milk Source */}
               <div className="relative group">
-                <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-emerald-600 ring-4 ring-white" />
-                <div className="p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs hover:border-emerald-600/40 transition-colors">
+                <span className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-[#1b4332] ring-4 ring-[#faf8f5]" />
+                <div className="p-4 bg-white rounded-2xl border border-[#ede8df] shadow-xs hover:border-[#1b4332]/40 transition-colors">
                   <div className="flex justify-between items-center text-xs font-bold mb-1">
-                    <span className="text-emerald-800 flex items-center gap-1.5">
+                    <span className="text-[#1b4332] flex items-center gap-1.5">
                       <Warehouse className="w-3.5 h-3.5" /> 1. Upstream Production & Procurement
                     </span>
                     <button
@@ -109,7 +109,7 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
                         onNavigateModule('milk-ops');
                         onClose();
                       }}
-                      className="text-emerald-700 hover:text-emerald-800 font-semibold underline text-[11px] cursor-pointer"
+                      className="text-[#1b4332] hover:text-[#2d6a4f] font-semibold underline text-[11px] cursor-pointer"
                     >
                       Inspect Inward
                     </button>
@@ -117,7 +117,7 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
                   <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-700 mt-2">
                     <div>
                       Own Herd:{' '}
-                      <strong className="text-emerald-800 font-bold">
+                      <strong className="text-[#1b4332] font-bold">
                         {reconciliation.ownProductionLitres} L
                       </strong>{' '}
                       (@ ₹{herdEconomics.feedCostPerLitre}/L feed cost)
@@ -135,8 +135,8 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
 
               {/* Step 2: Quality & Chilling Pool */}
               <div className="relative group">
-                <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-blue-600 ring-4 ring-white" />
-                <div className="p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs hover:border-blue-500/40 transition-colors">
+                <span className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-blue-600 ring-4 ring-[#faf8f5]" />
+                <div className="p-4 bg-white rounded-2xl border border-[#ede8df] shadow-xs hover:border-blue-500/40 transition-colors">
                   <div className="flex justify-between items-center text-xs font-bold mb-1">
                     <span className="text-blue-800 flex items-center gap-1.5">
                       <Snowflake className="w-3.5 h-3.5" /> 2. Quality Clearance & Cold Pool Silos
@@ -172,8 +172,8 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
 
               {/* Step 3: HTST Processing */}
               <div className="relative group">
-                <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-amber-500 ring-4 ring-white" />
-                <div className="p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs hover:border-amber-500/40 transition-colors">
+                <span className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-amber-500 ring-4 ring-[#faf8f5]" />
+                <div className="p-4 bg-white rounded-2xl border border-[#ede8df] shadow-xs hover:border-amber-500/40 transition-colors">
                   <div className="flex justify-between items-center text-xs font-bold mb-1">
                     <span className="text-amber-800 flex items-center gap-1.5">
                       <Factory className="w-3.5 h-3.5" /> 3. Processing Pasteurization Lines
@@ -202,10 +202,10 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
 
               {/* Step 4: Finished Goods & Commercial Sales */}
               <div className="relative group">
-                <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-emerald-600 ring-4 ring-white" />
-                <div className="p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs hover:border-emerald-600/40 transition-colors">
+                <span className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-[#1b4332] ring-4 ring-[#faf8f5]" />
+                <div className="p-4 bg-white rounded-2xl border border-[#ede8df] shadow-xs hover:border-[#1b4332]/40 transition-colors">
                   <div className="flex justify-between items-center text-xs font-bold mb-1">
-                    <span className="text-emerald-800 flex items-center gap-1.5">
+                    <span className="text-[#1b4332] flex items-center gap-1.5">
                       <ShoppingCart className="w-3.5 h-3.5" /> 4. Commercial Dispatches & Invoicing
                     </span>
                     <button
@@ -213,14 +213,14 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
                         onNavigateModule('sales');
                         onClose();
                       }}
-                      className="text-emerald-700 hover:text-emerald-800 font-semibold underline text-[11px] cursor-pointer"
+                      className="text-[#1b4332] hover:text-[#2d6a4f] font-semibold underline text-[11px] cursor-pointer"
                     >
                       View Invoices
                     </button>
                   </div>
                   <div className="text-[11px] text-slate-700 font-mono mt-1">
                     Total Invoiced:{' '}
-                    <strong className="text-emerald-800 font-bold">
+                    <strong className="text-[#1b4332] font-bold">
                       ₹{profitability.todayRevenue.toLocaleString()}
                     </strong>{' '}
                     across 4 commercial channels
@@ -230,18 +230,17 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
 
               {/* Step 5: Net Profitability */}
               <div className="relative group">
-                <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-emerald-700 ring-4 ring-white" />
-                <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                <span className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-[#1b4332] ring-4 ring-[#faf8f5]" />
+                <div className="p-4 bg-[#f0f7f2] rounded-2xl border border-[#cbe5d4]">
                   <div className="flex justify-between items-center text-xs font-bold mb-1">
-                    <span className="text-emerald-900 flex items-center gap-1.5">
-                      <TrendingUp className="w-3.5 h-3.5" /> 5. Operating Profit & Unit Spread
-                      Realization
+                    <span className="text-[#1b4332] flex items-center gap-1.5">
+                      <TrendingUp className="w-3.5 h-3.5" /> 5. Operating Profit & Unit Spread Realization
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 font-mono text-xs mt-2 text-slate-800">
                     <div>
                       Gross Profit:{' '}
-                      <strong className="text-emerald-800 font-bold">
+                      <strong className="text-[#1b4332] font-bold">
                         ₹{profitability.grossProfit.toLocaleString()}
                       </strong>
                     </div>
@@ -253,7 +252,7 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
                     </div>
                     <div>
                       Net Spread:{' '}
-                      <strong className="text-emerald-800 font-bold">
+                      <strong className="text-[#1b4332] font-bold">
                         +₹{profitability.profitPerLitre} / L
                       </strong>
                     </div>
@@ -265,9 +264,9 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
             <>
               {/* Reverse Step 1: Profit */}
               <div className="relative group">
-                <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-emerald-600 ring-4 ring-white" />
-                <div className="p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
-                  <span className="text-xs font-bold text-emerald-800">
+                <span className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-[#1b4332] ring-4 ring-[#faf8f5]" />
+                <div className="p-4 bg-white rounded-2xl border border-[#ede8df] shadow-xs">
+                  <span className="text-xs font-bold text-[#1b4332]">
                     1. Target Operating Contribution (₹{profitability.grossProfit.toLocaleString()})
                   </span>
                   <div className="text-[11px] text-slate-600 mt-1 font-mono">
@@ -279,8 +278,8 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
 
               {/* Reverse Step 2: Commercial Orders */}
               <div className="relative group">
-                <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-blue-600 ring-4 ring-white" />
-                <div className="p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
+                <span className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-blue-600 ring-4 ring-[#faf8f5]" />
+                <div className="p-4 bg-white rounded-2xl border border-[#ede8df] shadow-xs">
                   <span className="text-xs font-bold text-blue-800">
                     2. Supported by {salesOrdersList.length} Commercial Orders
                   </span>
@@ -292,8 +291,8 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
 
               {/* Reverse Step 3: Raw Milk Origins */}
               <div className="relative group">
-                <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-slate-600 ring-4 ring-white" />
-                <div className="p-3.5 bg-white rounded-lg border border-slate-200 shadow-2xs">
+                <span className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-slate-600 ring-4 ring-[#faf8f5]" />
+                <div className="p-4 bg-white rounded-2xl border border-[#ede8df] shadow-xs">
                   <span className="text-xs font-bold text-slate-900">
                     3. Backtraced to 4,100 L Milk Inflow
                   </span>
@@ -306,11 +305,11 @@ export const MilkMoneyTracerModal: React.FC<MilkMoneyTracerModalProps> = ({
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-slate-200 text-[11px] text-slate-500">
+        <div className="flex items-center justify-between pt-3 border-t border-[#ede8df] text-[11px] text-slate-500">
           <span>Trace status: Continuous mass-balance verification active</span>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium rounded-lg cursor-pointer"
+            className="px-4 py-2 bg-[#f4efe6] hover:bg-[#ede8df] text-slate-800 font-semibold rounded-xl cursor-pointer transition-colors"
           >
             Close Tracer
           </button>

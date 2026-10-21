@@ -96,19 +96,19 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-[#ede8df] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-forest-950 font-sans">
             Quality Assurance & Lab Analytics
           </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
+          <p className="text-xs text-stone-500 mt-1 font-medium">
             Adulteration screening, MBRT microbial count, temperature compliance and fat/SNF standardization.
           </p>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+          className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 self-start sm:self-auto cursor-pointer shadow-forest-950/20 active:scale-98"
         >
           <Plus className="w-4 h-4" />
           <span>New Quality Test</span>
@@ -133,50 +133,50 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
       </div>
 
       {/* Comprehensive Quality Filter and Search Bar */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 space-y-3">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-4 space-y-3.5 shadow-xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3.5 top-3" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search Batch#, Source, or Analyst..."
-              className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+              className="w-full bg-[#faf8f5] border border-[#ede8df] focus:border-forest-600 focus:bg-white rounded-xl pl-9 pr-3.5 py-2 text-xs text-stone-800 placeholder-stone-400 outline-none transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-[#8b949e]">QC Decision:</span>
-            <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="text-xs font-semibold text-stone-500">QC Decision:</span>
+            <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs">
               <button
                 onClick={() => setFilterResult('All')}
-                className={`px-2.5 py-1 rounded-md transition-colors ${
-                  filterResult === 'All' ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  filterResult === 'All' ? 'bg-white text-forest-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 All ({totalTests})
               </button>
               <button
                 onClick={() => setFilterResult('PASS')}
-                className={`px-2.5 py-1 rounded-md transition-colors ${
-                  filterResult === 'PASS' ? 'bg-[#3fb950] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  filterResult === 'PASS' ? 'bg-white text-forest-900 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 PASS ({accepted})
               </button>
               <button
                 onClick={() => setFilterResult('WARNING')}
-                className={`px-2.5 py-1 rounded-md transition-colors ${
-                  filterResult === 'WARNING' ? 'bg-[#f0883e] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  filterResult === 'WARNING' ? 'bg-white text-amber-900 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 WARNING ({warning})
               </button>
               <button
                 onClick={() => setFilterResult('FAIL')}
-                className={`px-2.5 py-1 rounded-md transition-colors ${
-                  filterResult === 'FAIL' ? 'bg-[#f85149] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  filterResult === 'FAIL' ? 'bg-white text-rose-900 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 FAIL ({rejected})
@@ -185,13 +185,13 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#21262d] text-xs">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[#8b949e]">Sample Source:</span>
+        <div className="flex items-center justify-between gap-2.5 pt-3 border-t border-[#ede8df]/70 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-stone-500 font-medium">Sample Source:</span>
             <select
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value)}
-              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+              className="bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3 py-1.5 text-xs text-stone-800 outline-none cursor-pointer focus:border-forest-600"
             >
               <option value="All">All Sample Sources</option>
               <option value="Own Cattle">Own Herd Parlour</option>
@@ -200,9 +200,9 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-[#8b949e] font-mono">
-              Showing <strong className="text-[#58a6ff]">{filteredTests.length}</strong> of {totalTests}
+          <div className="flex items-center gap-2.5">
+            <span className="text-stone-500 font-mono text-xs">
+              Showing <strong className="text-forest-900 font-bold">{filteredTests.length}</strong> of {totalTests}
             </span>
 
             {(search !== '' || filterResult !== 'All' || sourceFilter !== 'All') && (
@@ -212,7 +212,7 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
                   setFilterResult('All');
                   setSourceFilter('All');
                 }}
-                className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-lg text-[11px] font-semibold border border-rose-200 transition-colors cursor-pointer"
               >
                 Reset
               </button>
@@ -222,52 +222,52 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
       </div>
 
       {/* Quality Records Table */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+            <thead className="bg-[#faf8f5] text-stone-600 font-mono border-b border-[#ede8df] uppercase text-[11px] tracking-wider font-semibold">
               <tr>
-                <th className="px-4 py-2.5 font-medium">Batch / Ref</th>
-                <th className="px-4 py-2.5 font-medium">Source</th>
-                <th className="px-4 py-2.5 font-medium">Volume</th>
-                <th className="px-4 py-2.5 font-medium">Fat %</th>
-                <th className="px-4 py-2.5 font-medium">SNF %</th>
-                <th className="px-4 py-2.5 font-medium">Temp (°C)</th>
-                <th className="px-4 py-2.5 font-medium">Adulteration</th>
-                <th className="px-4 py-2.5 font-medium">Acidity</th>
-                <th className="px-4 py-2.5 font-medium">Decision</th>
-                <th className="px-4 py-2.5 font-medium">Analyst</th>
-                <th className="px-4 py-2.5 font-medium text-right">Certificate</th>
+                <th className="px-4 py-3">Batch / Ref</th>
+                <th className="px-4 py-3 font-sans">Source</th>
+                <th className="px-4 py-3">Volume</th>
+                <th className="px-4 py-3">Fat %</th>
+                <th className="px-4 py-3">SNF %</th>
+                <th className="px-4 py-3">Temp (°C)</th>
+                <th className="px-4 py-3 font-sans">Adulteration</th>
+                <th className="px-4 py-3">Acidity</th>
+                <th className="px-4 py-3 font-sans">Decision</th>
+                <th className="px-4 py-3 font-sans">Analyst</th>
+                <th className="px-4 py-3 text-right font-sans">Certificate</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
+            <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
               {filteredTests.map((test) => (
                 <tr
                   key={test.id}
                   onClick={() => setActiveRecord(test)}
-                  className="hover:bg-[#1f2937]/30 cursor-pointer transition-colors"
+                  className="hover:bg-cream-50/70 cursor-pointer transition-colors"
                 >
-                  <td className="px-4 py-3 font-bold text-[#58a6ff]">{test.batchNumber}</td>
+                  <td className="px-4 py-3 font-bold text-forest-900">{test.batchNumber}</td>
                   <td className="px-4 py-3 font-sans">
-                    <div className="font-semibold text-[#f0f6fc]">{test.sourceName}</div>
-                    <div className="text-[11px] text-[#8b949e]">{test.sourceType}</div>
+                    <div className="font-bold text-forest-950">{test.sourceName}</div>
+                    <div className="text-[11px] text-stone-500">{test.sourceType}</div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-[#f0f6fc]">{test.quantityLitres.toLocaleString()} L</td>
-                  <td className="px-4 py-3 text-[#3fb950] font-semibold">{test.fat.toFixed(2)}%</td>
+                  <td className="px-4 py-3 font-bold text-stone-900">{test.quantityLitres.toLocaleString()} L</td>
+                  <td className="px-4 py-3 text-forest-800 font-semibold">{test.fat.toFixed(2)}%</td>
                   <td className="px-4 py-3">{test.snf.toFixed(2)}%</td>
                   <td className="px-4 py-3">
-                    <span className={test.temperatureC > 6.0 ? 'text-[#f0883e] font-bold' : 'text-[#c9d1d9]'}>
+                    <span className={test.temperatureC > 6.0 ? 'text-amber-800 font-bold' : 'text-stone-700'}>
                       {test.temperatureC.toFixed(1)}°C
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-sans">
+                  <td className="px-4 py-3 font-sans font-medium">
                     <span
                       className={
                         test.adulterationTest === 'Negative'
-                          ? 'text-[#3fb950]'
+                          ? 'text-forest-700'
                           : test.adulterationTest === 'Trace'
-                          ? 'text-[#d29922]'
-                          : 'text-[#f85149] font-bold'
+                          ? 'text-amber-700 font-bold'
+                          : 'text-rose-700 font-bold'
                       }
                     >
                       {test.adulterationTest}
@@ -277,7 +277,7 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
                   <td className="px-4 py-3 font-sans">
                     <StatusBadge status={test.result} size="sm" />
                   </td>
-                  <td className="px-4 py-3 font-sans text-[#8b949e] text-[11px]">{test.tester}</td>
+                  <td className="px-4 py-3 font-sans text-stone-600 text-[11px]">{test.tester}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <button
@@ -286,10 +286,10 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
                           setSelectedCertRecord(test);
                           setIsCertModalOpen(true);
                         }}
-                        className="px-2 py-1 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 rounded text-[11px] font-mono inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                        className="px-2.5 py-1 bg-sage-50 hover:bg-sage-100 border border-sage-200 text-forest-900 rounded-lg text-[11px] font-mono inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs font-semibold"
                         title="View Official FSSAI Tanker Lab Clearance Certificate"
                       >
-                        <FileCheck2 className="w-3 h-3 text-emerald-400" />
+                        <FileCheck2 className="w-3 h-3 text-forest-700" />
                         <span>FSSAI Cert</span>
                       </button>
                       <button
@@ -297,7 +297,7 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
                           e.stopPropagation();
                           setActiveRecord(test);
                         }}
-                        className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] rounded text-[11px] font-sans transition-colors cursor-pointer"
+                        className="px-2.5 py-1 bg-[#fdfcfb] hover:bg-cream-100 border border-[#ede8df] text-stone-700 rounded-lg text-[11px] font-sans transition-colors cursor-pointer shadow-2xs font-medium"
                       >
                         View Report
                       </button>
@@ -320,53 +320,53 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
           maxWidth="lg"
         >
           <div className="space-y-4 text-xs font-mono">
-            <div className="p-3 bg-[#0d1117] rounded-lg border border-[#30363d] flex items-center justify-between">
+            <div className="p-4 bg-cream-50/70 rounded-2xl border border-[#ede8df] flex items-center justify-between">
               <div>
-                <div className="text-[11px] text-[#8b949e] font-sans">QC Laboratory Determination</div>
+                <div className="text-[11px] text-stone-500 font-sans font-medium">QC Laboratory Determination</div>
                 <div className="text-lg font-bold mt-1">
-                  {activeRecord.result === 'PASS' && <span className="text-[#3fb950]">CLEARED FOR COLD POOL</span>}
-                  {activeRecord.result === 'WARNING' && <span className="text-[#d29922]">FLASH CHILL & MONITOR</span>}
-                  {activeRecord.result === 'FAIL' && <span className="text-[#f85149]">REJECTED AT WEIGHBRIDGE</span>}
+                  {activeRecord.result === 'PASS' && <span className="text-forest-800">CLEARED FOR COLD POOL</span>}
+                  {activeRecord.result === 'WARNING' && <span className="text-amber-800">FLASH CHILL & MONITOR</span>}
+                  {activeRecord.result === 'FAIL' && <span className="text-rose-800">REJECTED AT WEIGHBRIDGE</span>}
                 </div>
               </div>
               <StatusBadge status={activeRecord.result} />
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] font-sans">Fat Content</div>
-                <div className="text-base font-bold text-[#f0f6fc] mt-1">{activeRecord.fat}%</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">Standard: 3.5% Min</div>
+              <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 font-sans font-medium">Fat Content</div>
+                <div className="text-base font-bold text-forest-950 mt-1">{activeRecord.fat}%</div>
+                <div className="text-[10px] text-stone-500 font-sans mt-0.5">Standard: 3.5% Min</div>
               </div>
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] font-sans">SNF Content</div>
-                <div className="text-base font-bold text-[#f0f6fc] mt-1">{activeRecord.snf}%</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">Standard: 8.5% Min</div>
+              <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 font-sans font-medium">SNF Content</div>
+                <div className="text-base font-bold text-forest-950 mt-1">{activeRecord.snf}%</div>
+                <div className="text-[10px] text-stone-500 font-sans mt-0.5">Standard: 8.5% Min</div>
               </div>
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] font-sans">Arrival Temperature</div>
-                <div className="text-base font-bold text-[#f0f6fc] mt-1">{activeRecord.temperatureC}°C</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">Threshold: &le; 4.5°C</div>
+              <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 font-sans font-medium">Arrival Temperature</div>
+                <div className="text-base font-bold text-stone-900 mt-1">{activeRecord.temperatureC}°C</div>
+                <div className="text-[10px] text-stone-500 font-sans mt-0.5">Threshold: &le; 4.5°C</div>
               </div>
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] font-sans">MBRT Microbial Reduction</div>
-                <div className="text-base font-bold text-[#3fb950] mt-1">{activeRecord.mbrtHours} Hours</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">&ge; 4.0 Hours (Grade A)</div>
+              <div className="p-3.5 bg-sage-50/80 rounded-xl border border-sage-200">
+                <div className="text-forest-900 font-sans font-bold">MBRT Microbial Reduction</div>
+                <div className="text-base font-bold text-forest-900 mt-1">{activeRecord.mbrtHours} Hours</div>
+                <div className="text-[10px] text-forest-700 font-sans mt-0.5 font-medium">&ge; 4.0 Hours (Grade A)</div>
               </div>
             </div>
 
             {activeRecord.rejectionReason && (
-              <div className="p-3 bg-[#f85149]/10 border border-[#f85149]/30 rounded text-[#f85149] font-sans text-xs">
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 font-sans text-xs">
                 <span className="font-bold">Deviation Notice: </span>
                 {activeRecord.rejectionReason}
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-2 border-t border-[#30363d] text-[11px] text-[#8b949e] font-sans">
+            <div className="flex items-center justify-between pt-3 border-t border-[#ede8df] text-[11px] text-stone-500 font-sans">
               <span>Tested by: {activeRecord.tester}</span>
               <button
                 onClick={() => setActiveRecord(null)}
-                className="px-3 py-1.5 bg-[#21262d] text-[#f0f6fc] rounded hover:bg-[#30363d]"
+                className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-800 rounded-xl font-semibold transition-colors cursor-pointer"
               >
                 Close Certificate
               </button>
@@ -383,23 +383,23 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
         subtitle="Log analytical chemistry and microbiological test parameters"
         maxWidth="lg"
       >
-        <form onSubmit={handleSaveQuality} className="space-y-3.5">
+        <form onSubmit={handleSaveQuality} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Batch #</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Batch #</label>
               <input
                 type="text"
                 value={batchNo}
                 onChange={(e) => setBatchNo(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs font-mono text-[#f0f6fc]"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Source Type</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Source Type</label>
               <select
                 value={sourceType}
                 onChange={(e) => setSourceType(e.target.value as any)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs text-[#f0f6fc]"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
               >
                 <option value="Own Cattle">Own Cattle Parlour</option>
                 <option value="Farmer Procurement">Farmer Procurement</option>
@@ -409,64 +409,64 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Source Name / Location</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">Source Name / Location</label>
             <input
               type="text"
               value={sourceName}
               onChange={(e) => setSourceName(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs text-[#f0f6fc]"
+              className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
             />
           </div>
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-2.5">
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Litres</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Litres</label>
               <input
                 type="number"
                 value={litres}
                 onChange={(e) => setLitres(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded p-1.5 text-xs font-mono text-[#f0f6fc]"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Fat %</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Fat %</label>
               <input
                 type="number"
                 step="0.1"
                 value={fat}
                 onChange={(e) => setFat(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded p-1.5 text-xs font-mono text-[#f0f6fc]"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">SNF %</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">SNF %</label>
               <input
                 type="number"
                 step="0.1"
                 value={snf}
                 onChange={(e) => setSnf(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded p-1.5 text-xs font-mono text-[#f0f6fc]"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Temp (°C)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Temp (°C)</label>
               <input
                 type="number"
                 step="0.1"
                 value={temp}
                 onChange={(e) => setTemp(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded p-1.5 text-xs font-mono text-[#f0f6fc]"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Adulteration Strip Test</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Adulteration Strip Test</label>
               <select
                 value={adulteration}
                 onChange={(e) => setAdulteration(e.target.value as any)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs text-[#f0f6fc]"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
               >
                 <option value="Negative">Negative (Pure Milk)</option>
                 <option value="Trace">Trace Suspected</option>
@@ -474,27 +474,27 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Analyst</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Analyst</label>
               <input
                 type="text"
                 value={tester}
                 onChange={(e) => setTester(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs text-[#f0f6fc]"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsAddModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 text-xs text-stone-600 hover:text-stone-900 cursor-pointer font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded text-xs font-semibold"
+              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
             >
               Save QC Record
             </button>

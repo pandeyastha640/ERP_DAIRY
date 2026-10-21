@@ -22,6 +22,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -77,7 +78,7 @@ export const NAV_GROUPS: Array<{
   {
     group: 'INTELLIGENCE',
     items: [
-      { id: 'ai-intelligence', number: '18', label: 'AI Intelligence', icon: BrainCircuit, badge: 'Demo', group: 'INTELLIGENCE' },
+      { id: 'ai-intelligence', number: '18', label: 'AI Intelligence', icon: BrainCircuit, badge: 'Neural', group: 'INTELLIGENCE' },
       { id: 'control-tower', number: '19', label: 'Control Tower', icon: Radio, group: 'INTELLIGENCE' },
     ],
   },
@@ -104,37 +105,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <aside
-      className={`fixed top-0 bottom-0 left-0 z-30 flex flex-col bg-white border-r border-slate-200 transition-all duration-200 select-none shadow-2xs ${
-        collapsed ? 'w-16' : 'w-64'
+      className={`fixed top-0 bottom-0 left-0 z-30 flex flex-col bg-[#fcfbf9] border-r border-[#ede8df] transition-all duration-300 select-none shadow-[2px_0_12px_rgba(27,67,50,0.03)] ${
+        collapsed ? 'w-18' : 'w-64'
       }`}
     >
       {/* Brand Header */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200 shrink-0 bg-white">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-[#ede8df] shrink-0 bg-[#fcfbf9]">
         {!collapsed ? (
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-emerald-700 flex items-center justify-center text-white font-bold text-sm shadow-2xs shrink-0">
-              <Milk className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-9 h-9 rounded-xl bg-[#1b4332] flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_8px_rgba(27,67,50,0.25)] shrink-0">
+              <Milk className="w-5 h-5 text-white" />
             </div>
             <div className="truncate">
-              <div className="text-sm font-bold text-slate-900 tracking-tight leading-none">
-                DairyOS
+              <div className="text-base font-bold text-[#0f2319] tracking-tight leading-none flex items-center gap-1.5">
+                <span>DairyOS</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#52b788]" />
               </div>
-              <div className="text-[10px] text-slate-500 font-mono mt-0.5 tracking-wider uppercase font-medium">
-                Enterprise ERP
+              <div className="text-[10px] text-stone-500 font-mono mt-0.5 tracking-wider uppercase font-semibold">
+                Enterprise Cloud
               </div>
             </div>
           </div>
         ) : (
           <div className="mx-auto">
-            <div className="w-8 h-8 rounded-lg bg-emerald-700 flex items-center justify-center text-white font-bold text-sm shadow-2xs">
-              <Milk className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-[#1b4332] flex items-center justify-center text-white font-bold text-sm shadow-xs">
+              <Milk className="w-5 h-5" />
             </div>
           </div>
         )}
 
         <button
           onClick={onToggleCollapse}
-          className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-stone-400 hover:text-[#1b4332] hover:bg-[#ede8df]/60 transition-colors cursor-pointer"
           title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
@@ -143,11 +145,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation Groups */}
-      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+      <nav className="flex-1 overflow-y-auto py-4 px-2.5 space-y-4">
         {NAV_GROUPS.map((grp) => (
           <div key={grp.group} className="space-y-0.5">
             {!collapsed && (
-              <div className="px-2.5 py-1 text-[10px] font-semibold tracking-wider text-slate-400 uppercase font-mono">
+              <div className="px-3 py-1 text-[10px] font-bold tracking-wider text-stone-400 uppercase font-mono">
                 {grp.group}
               </div>
             )}
@@ -160,28 +162,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   key={item.id}
                   onClick={() => onSelectModule(item.id)}
                   title={collapsed ? `${item.number} ${item.label}` : undefined}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all text-left relative group cursor-pointer ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-all text-left relative group cursor-pointer ${
                     isActive
-                      ? 'bg-emerald-50 text-emerald-900 font-semibold border-r-2 border-emerald-700'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? 'bg-[#eef6f0] text-[#1b4332] font-bold shadow-xs border border-[#cde6d5]'
+                      : 'text-stone-600 hover:text-[#0f2319] hover:bg-white/80'
                   }`}
                 >
                   <Icon
                     className={`w-4 h-4 shrink-0 transition-colors ${
-                      isActive ? 'text-emerald-700' : 'text-slate-400 group-hover:text-slate-700'
+                      isActive ? 'text-[#1b4332]' : 'text-stone-400 group-hover:text-[#2d6a4f]'
                     }`}
                   />
 
                   {!collapsed && (
                     <div className="flex-1 flex items-center justify-between min-w-0">
                       <div className="flex items-center gap-2 truncate">
-                        <span className="text-[10px] font-mono text-slate-400 shrink-0">
+                        <span className={`text-[10px] font-mono shrink-0 ${isActive ? 'text-[#2d6a4f] font-semibold' : 'text-stone-400'}`}>
                           {item.number}
                         </span>
                         <span className="truncate">{item.label}</span>
                       </div>
                       {item.badge && (
-                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded font-semibold shrink-0 bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full font-semibold shrink-0 bg-[#fbf7ec] text-[#855e16] border border-[#f0e2bd]">
                           {item.badge}
                         </span>
                       )}
@@ -196,19 +198,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Footer Info */}
       {!collapsed ? (
-        <div className="p-3 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-500">
-          <div className="flex items-center justify-between font-mono text-[10px] text-slate-500 mb-0.5">
-            <span className="font-semibold text-slate-700">DAIRYOS v3.2</span>
-            <span className="text-emerald-700 flex items-center gap-1 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+        <div className="p-3.5 border-t border-[#ede8df] bg-[#faf8f4] text-xs text-stone-500">
+          <div className="flex items-center justify-between font-mono text-[10px] mb-1">
+            <span className="font-bold text-[#0f2319] flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#2d6a4f]" />
+              FSSAI Grade A
+            </span>
+            <span className="text-[#1b4332] flex items-center gap-1 font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2d6a4f] animate-pulse" />
               ONLINE
             </span>
           </div>
-          <div className="truncate text-slate-400 text-[10px]">Continuous Mass Balance Engine</div>
+          <div className="truncate text-stone-400 text-[10px]">Mass Balance Reconciliation Nominal</div>
         </div>
       ) : (
-        <div className="p-2 border-t border-slate-200 flex justify-center bg-slate-50">
-          <span className="w-2 h-2 rounded-full bg-emerald-600" title="Operational Online" />
+        <div className="p-2.5 border-t border-[#ede8df] flex justify-center bg-[#faf8f4]">
+          <span className="w-2 h-2 rounded-full bg-[#2d6a4f]" title="Operational Online" />
         </div>
       )}
     </aside>

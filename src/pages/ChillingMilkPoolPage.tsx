@@ -181,12 +181,12 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-[#ede8df] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-forest-950 font-sans">
             Chilling Centre & Bulk Milk Pool
           </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
+          <p className="text-xs text-stone-500 mt-1 font-medium">
             Silo cold-chain thermal control, continuous agitator monitoring, and closed-loop volumetric mass balance reconciliation.
           </p>
         </div>
@@ -194,24 +194,24 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={handleOpenIotDevices}
-            className="px-3 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-emerald-400 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-2 bg-sage-50 hover:bg-sage-100 border border-sage-200 text-xs font-semibold text-forest-900 rounded-xl transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-xs active:scale-98"
           >
-            <Cpu className="w-4 h-4 text-emerald-400" />
+            <Cpu className="w-4 h-4 text-forest-700" />
             <span>Connected Peripherals (IoT)</span>
           </button>
 
           <button
             onClick={handleRunServerAudit}
             disabled={isAuditing}
-            className="px-3 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-[#58a6ff] rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="px-3.5 py-2 bg-[#fdfcfb] hover:bg-cream-100 border border-[#ede8df] text-xs font-semibold text-stone-700 rounded-xl transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50 active:scale-98"
           >
-            {isAuditing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {isAuditing ? <Loader2 className="w-4 h-4 animate-spin text-forest-700" /> : <Sparkles className="w-4 h-4 text-gold-600" />}
             <span>Server Mass-Balance Audit</span>
           </button>
 
           <button
             onClick={() => setIsTransferModalOpen(true)}
-            className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-forest-950/20 active:scale-98"
           >
             <ArrowRightLeft className="w-4 h-4" />
             <span>Transfer Milk</span>
@@ -221,14 +221,14 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
 
       {/* Critical Cold-Chain Thermal Alert Banner */}
       {breachedTanks.length > 0 && (
-        <div className="p-4 rounded-xl border bg-rose-950/50 border-rose-500/50 text-rose-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-pulse">
+        <div className="p-4 rounded-2xl border bg-rose-50 border-rose-200 text-rose-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 shrink-0 text-rose-400" />
+            <AlertTriangle className="w-5 h-5 shrink-0 text-rose-600" />
             <div>
-              <div className="text-xs font-bold font-mono text-rose-300">
+              <div className="text-xs font-bold font-mono text-rose-950">
                 CRITICAL COLD-CHAIN BREACH: {breachedTanks.map((t) => `${t.name} (${t.temperatureC}°C)`).join(', ')} EXCEEDS 4.5°C FSSAI LIMIT
               </div>
-              <div className="text-[11px] text-rose-300/80 mt-0.5">
+              <div className="text-[11px] text-rose-800 mt-0.5 font-medium">
                 Bacterial proliferation hazard detected. Primary glycol chiller circuit requires immediate thermal pull-down.
               </div>
             </div>
@@ -239,7 +239,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
                 key={bt.id}
                 onClick={() => handleBoostChiller(bt.id)}
                 disabled={boostingTankId === bt.id}
-                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded text-xs font-bold font-mono flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                className="px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-bold font-mono flex items-center gap-1.5 cursor-pointer shadow-xs transition-all active:scale-98"
               >
                 {boostingTankId === bt.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
                 <span>Cool {bt.id} to 3.8°C</span>
@@ -252,24 +252,24 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
       {/* Live Server Audit Banner if fetched */}
       {serverReconciliation && (
         <div
-          className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+          className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs ${
             serverReconciliation.data?.isWithinTolerance
-              ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300'
-              : 'bg-amber-950/20 border-amber-500/30 text-amber-300'
+              ? 'bg-sage-50/80 border-sage-200 text-forest-950'
+              : 'bg-amber-50 border-amber-200 text-amber-950'
           }`}
         >
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 text-forest-700" />
             <div>
-              <div className="text-xs font-bold font-mono">
+              <div className="text-xs font-bold font-mono text-forest-900">
                 ISO 22000 MASS-BALANCE VERDICT: {serverReconciliation.status} ({serverReconciliation.data?.variancePercentage}% VARIANCE)
               </div>
-              <div className="text-[11px] text-slate-300 mt-0.5">
+              <div className="text-[11px] text-stone-600 mt-0.5 font-medium">
                 {serverReconciliation.data?.auditAlert}
               </div>
             </div>
           </div>
-          <div className="text-right font-mono text-xs text-slate-400">
+          <div className="text-right font-mono text-xs text-stone-500 font-semibold">
             Physical: {serverReconciliation.data?.physicalStockL}L | Theoretical: {serverReconciliation.data?.theoreticalStockL}L
           </div>
         </div>
@@ -286,7 +286,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
 
       {/* TANK CARDS GRID */}
       <div>
-        <h2 className="text-sm font-semibold text-[#f0f6fc] mb-3">Live Silo Storage Vats & Agitator Telemetry</h2>
+        <h2 className="text-sm font-bold text-forest-950 mb-3.5">Live Silo Storage Vats & Agitator Telemetry</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {displayTanks.map((tank) => {
             const fillPct = Math.round((tank.currentVolumeLitres / tank.capacityLitres) * 100);
@@ -294,89 +294,89 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
             return (
               <div
                 key={tank.id}
-                className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 flex flex-col justify-between space-y-4"
+                className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xs hover:shadow-sm transition-shadow duration-150"
               >
                 <div>
                   <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="font-mono font-bold text-[#58a6ff]">{tank.id}</span>
+                    <span className="font-mono font-bold text-forest-900 bg-cream-100 px-2.5 py-0.5 rounded-md border border-[#ede8df]">{tank.id}</span>
                     <StatusBadge status={tank.status} size="sm" />
                   </div>
-                  <h3 className="text-xs font-semibold text-[#f0f6fc] leading-tight">{tank.name}</h3>
+                  <h3 className="text-xs font-bold text-forest-950 leading-tight">{tank.name}</h3>
                 </div>
 
                 {/* Level Indicator Graphic */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex justify-between text-xs font-mono">
-                    <span className="text-[#8b949e]">Level:</span>
-                    <span className="font-bold text-[#f0f6fc]">
+                    <span className="text-stone-500 font-sans font-medium">Level:</span>
+                    <span className="font-bold text-stone-900">
                       {tank.currentVolumeLitres.toLocaleString()} / {tank.capacityLitres.toLocaleString()} L
                     </span>
                   </div>
 
                   {/* Visual Bar */}
-                  <div className="w-full h-3 bg-[#0d1117] rounded-full overflow-hidden border border-[#30363d]">
+                  <div className="w-full h-3 bg-cream-100 rounded-full overflow-hidden border border-[#ede8df]">
                     <div
                       className={`h-full transition-all duration-300 ${
                         tank.status === 'CIP Cleaning'
-                          ? 'bg-[#8957e5]'
+                          ? 'bg-purple-600'
                           : tank.temperatureC > 4.5
-                          ? 'bg-[#f0883e]'
-                          : 'bg-[#58a6ff]'
+                          ? 'bg-amber-600'
+                          : 'bg-forest-700'
                       }`}
                       style={{ width: `${fillPct}%` }}
                     />
                   </div>
-                  <div className="text-right text-[11px] font-mono text-[#8b949e]">{fillPct}% full</div>
+                  <div className="text-right text-[11px] font-mono text-stone-500 font-medium">{fillPct}% full</div>
                 </div>
 
                 {/* Sensors */}
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-[#0d1117] p-2.5 rounded border border-[#30363d]">
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-cream-50/70 p-3 rounded-xl border border-[#ede8df]">
                   <div>
-                    <div className="text-[10px] text-[#8b949e] font-sans flex items-center gap-1">
-                      <Thermometer className="w-3 h-3 text-[#58a6ff]" /> Temp
+                    <div className="text-[10px] text-stone-500 font-sans font-medium flex items-center gap-1">
+                      <Thermometer className="w-3 h-3 text-forest-700" /> Temp
                     </div>
                     <div
-                      className={`font-bold mt-0.5 ${
-                        tank.temperatureC > 6.0 ? 'text-[#f85149]' : 'text-[#f0f6fc]'
+                      className={`font-bold mt-1 ${
+                        tank.temperatureC > 6.0 ? 'text-rose-700' : 'text-forest-950'
                       }`}
                     >
                       {tank.temperatureC}°C
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-[#8b949e] font-sans flex items-center gap-1">
-                      <RotateCw className="w-3 h-3 text-[#3fb950]" /> Agitator
+                    <div className="text-[10px] text-stone-500 font-sans font-medium flex items-center gap-1">
+                      <RotateCw className="w-3 h-3 text-forest-700" /> Agitator
                     </div>
-                    <div className="font-bold mt-0.5 text-[#3fb950]">
+                    <div className="font-bold mt-1 text-forest-800">
                       {tank.agitatorOn ? 'ACTIVE' : 'IDLE'}
                     </div>
                   </div>
                 </div>
 
-                <div className="text-[11px] text-[#8b949e] flex items-center justify-between pt-1 border-t border-[#21262d]">
+                <div className="text-[11px] text-stone-500 flex items-center justify-between pt-2 border-t border-[#ede8df]/70 font-medium">
                   <span>Holding: {tank.holdingTimeHours} hrs</span>
-                  <div className="flex items-center gap-1">
-                    <Radio className="w-3 h-3 text-emerald-400" />
-                    <span className="font-mono text-[10px] text-emerald-400">RTD-{tank.id.replace('TANK-', '')}</span>
+                  <div className="flex items-center gap-1.5">
+                    <Radio className="w-3 h-3 text-forest-600 animate-pulse" />
+                    <span className="font-mono text-[10px] text-forest-800 font-semibold">RTD-{tank.id.replace('TANK-', '')}</span>
                   </div>
                 </div>
 
                 {/* IoT Telemetry & Controls */}
-                <div className="flex items-center justify-between gap-1 pt-1 border-t border-[#21262d] text-[11px]">
-                  <span className="text-[10px] text-[#8b949e]">Chiller:</span>
+                <div className="flex items-center justify-between gap-1 pt-2 border-t border-[#ede8df]/70 text-[11px]">
+                  <span className="text-[10px] text-stone-500 font-semibold">Chiller:</span>
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleBoostChiller(tank.id)}
                       disabled={boostingTankId === tank.id}
-                      className="px-2 py-0.5 bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] rounded text-[10px] font-mono cursor-pointer transition-colors flex items-center gap-1"
+                      className="px-2.5 py-1 bg-sage-50 hover:bg-sage-100 text-forest-900 border border-sage-200 rounded-lg text-[10px] font-mono cursor-pointer transition-colors flex items-center gap-1 font-semibold"
                       title="Engage Glycol Chiller to stabilize at 3.8°C"
                     >
-                      <Zap className="w-2.5 h-2.5 text-amber-400" />
+                      <Zap className="w-2.5 h-2.5 text-gold-600" />
                       <span>{boostingTankId === tank.id ? 'Cooling...' : 'Boost 3.8°C'}</span>
                     </button>
                     <button
                       onClick={() => handleSimulateHeatSpike(tank.id)}
-                      className="px-1.5 py-0.5 bg-[#21262d] hover:bg-[#30363d] text-amber-400 rounded text-[10px] font-mono cursor-pointer transition-colors"
+                      className="px-2 py-1 bg-cream-100 hover:bg-cream-200 text-amber-900 border border-amber-200/60 rounded-lg text-[10px] font-mono cursor-pointer transition-colors font-semibold"
                       title="Simulate heat excursion for alarm testing"
                     >
                       +Spike
@@ -390,18 +390,18 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
       </div>
 
       {/* CLOSED-LOOP MILK POOL RECONCILIATION */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-[#30363d] pb-3">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-[#ede8df]/70 pb-3">
           <div>
-            <h2 className="text-base font-bold text-[#f0f6fc]">
+            <h2 className="text-base font-bold text-forest-950 font-sans">
               Milk Pool Volumetric Mass Reconciliation
             </h2>
-            <p className="text-xs text-[#8b949e]">
+            <p className="text-xs text-stone-500 font-medium">
               Rigorous arithmetic equation balancing raw milk inward against pasteurizer dispatch and losses.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono text-[#3fb950]">
-            <CheckCircle2 className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-forest-900 bg-sage-50 px-3 py-1 rounded-full border border-sage-200">
+            <CheckCircle2 className="w-4 h-4 text-forest-700" />
             <span>Balance Verification: EXACT (Zero Unaccounted Variance)</span>
           </div>
         </div>
@@ -409,75 +409,75 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
         {/* Visual Formula Chain */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 items-center font-mono">
           {/* 1. Opening */}
-          <div className="p-3 bg-[#0d1117] rounded-lg border border-[#30363d] text-center">
-            <div className="text-[10px] text-[#8b949e] font-sans">Opening Milk</div>
-            <div className="text-base font-bold text-[#f0f6fc] mt-1">
+          <div className="p-3 bg-cream-50/80 rounded-xl border border-[#ede8df] text-center shadow-2xs">
+            <div className="text-[10px] text-stone-500 font-sans uppercase tracking-wider">Opening Milk</div>
+            <div className="text-base font-bold text-stone-900 mt-1">
               {reconciliation.openingStockLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-[#8b949e] font-sans mt-0.5">Prior Day Silo</div>
+            <div className="text-[10px] text-stone-400 font-sans mt-0.5">Prior Day Silo</div>
           </div>
 
           {/* 2. + Own Production */}
-          <div className="p-3 bg-[#0d1117] rounded-lg border border-[#388bfd]/30 text-center relative">
-            <span className="text-[11px] font-sans text-[#58a6ff] block font-semibold">+ Own Production</span>
-            <div className="text-base font-bold text-[#58a6ff] mt-1">
+          <div className="p-3 bg-sage-50/70 rounded-xl border border-sage-200/70 text-center relative shadow-2xs">
+            <span className="text-[11px] font-sans text-forest-800 block font-bold">+ Own Production</span>
+            <div className="text-base font-bold text-forest-900 mt-1">
               +{reconciliation.ownProductionLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-[#8b949e] font-sans mt-0.5">Herd Milking</div>
+            <div className="text-[10px] text-forest-700 font-sans mt-0.5">Herd Milking</div>
           </div>
 
           {/* 3. + Farmer Procurement */}
-          <div className="p-3 bg-[#0d1117] rounded-lg border border-[#3fb950]/30 text-center relative">
-            <span className="text-[11px] font-sans text-[#3fb950] block font-semibold">+ Farmer Milk</span>
-            <div className="text-base font-bold text-[#3fb950] mt-1">
+          <div className="p-3 bg-forest-50/60 rounded-xl border border-forest-200/70 text-center relative shadow-2xs">
+            <span className="text-[11px] font-sans text-forest-800 block font-bold">+ Farmer Milk</span>
+            <div className="text-base font-bold text-forest-950 mt-1">
               +{reconciliation.farmerProcurementLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-[#8b949e] font-sans mt-0.5">32 Farmers Inward</div>
+            <div className="text-[10px] text-forest-700 font-sans mt-0.5">32 Farmers Inward</div>
           </div>
 
           {/* 4. - Quality Rejection */}
-          <div className="p-3 bg-[#0d1117] rounded-lg border border-[#f85149]/30 text-center relative">
-            <span className="text-[11px] font-sans text-[#f85149] block font-semibold">- Quality Rejection</span>
-            <div className="text-base font-bold text-[#f85149] mt-1">
+          <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/70 text-center relative shadow-2xs">
+            <span className="text-[11px] font-sans text-amber-900 block font-bold">- Quality Rejection</span>
+            <div className="text-base font-bold text-amber-900 mt-1">
               -{reconciliation.qualityRejectedLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-[#8b949e] font-sans mt-0.5">Diluted Inward</div>
+            <div className="text-[10px] text-amber-700 font-sans mt-0.5">Diluted Inward</div>
           </div>
 
           {/* 5. - Processing Consumption */}
-          <div className="p-3 bg-[#0d1117] rounded-lg border border-[#bc8cff]/30 text-center relative">
-            <span className="text-[11px] font-sans text-[#bc8cff] block font-semibold">- Processing HTST</span>
-            <div className="text-base font-bold text-[#bc8cff] mt-1">
+          <div className="p-3 bg-stone-50 rounded-xl border border-[#ede8df] text-center relative shadow-2xs">
+            <span className="text-[11px] font-sans text-stone-600 block font-bold">- Processing HTST</span>
+            <div className="text-base font-bold text-stone-900 mt-1">
               -{reconciliation.processingConsumptionLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-[#8b949e] font-sans mt-0.5">Finished Goods Batches</div>
+            <div className="text-[10px] text-stone-500 font-sans mt-0.5">Finished Goods Batches</div>
           </div>
 
           {/* 6. - Wastage / Spillage */}
-          <div className="p-3 bg-[#0d1117] rounded-lg border border-[#f0883e]/30 text-center relative">
-            <span className="text-[11px] font-sans text-[#f0883e] block font-semibold">- Spillage / Loss</span>
-            <div className="text-base font-bold text-[#f0883e] mt-1">
+          <div className="p-3 bg-rose-50/60 rounded-xl border border-rose-200/70 text-center relative shadow-2xs">
+            <span className="text-[11px] font-sans text-rose-900 block font-bold">- Spillage / Loss</span>
+            <div className="text-base font-bold text-rose-900 mt-1">
               -{reconciliation.spillageWastageLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-[#8b949e] font-sans mt-0.5">Line rinse & pipe loss</div>
+            <div className="text-[10px] text-rose-700 font-sans mt-0.5">Line rinse & pipe loss</div>
           </div>
 
           {/* 7. = Closing Balance */}
-          <div className="p-3 bg-[#238636]/15 rounded-lg border-2 border-[#3fb950] text-center">
-            <span className="text-[11px] font-sans text-[#3fb950] block font-bold">= Closing Pool Balance</span>
-            <div className="text-lg font-bold text-[#3fb950] mt-1">
+          <div className="p-3 bg-sage-100/70 rounded-xl border-2 border-forest-600 text-center shadow-xs">
+            <span className="text-[11px] font-sans text-forest-950 block font-bold">= Closing Pool Balance</span>
+            <div className="text-lg font-bold text-forest-950 mt-1">
               {computedClosing.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-[#8b949e] font-sans mt-0.5">Verified in Tank A/B</div>
+            <div className="text-[10px] text-forest-800 font-sans mt-0.5">Verified in Tank A/B</div>
           </div>
         </div>
 
         {/* Formula Explainer Footnote */}
-        <div className="mt-4 p-3 bg-[#0d1117] rounded border border-[#30363d] text-xs font-mono text-[#8b949e] flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="mt-4 p-3 bg-cream-50/70 rounded-xl border border-[#ede8df] text-xs font-mono text-stone-600 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>
-            Equation: 1,480 + 1,240 + 2,860 - 42 - 3,860 - 78 = <strong className="text-[#3fb950]">1,600 Litres</strong>
+            Equation: 1,480 + 1,240 + 2,860 - 42 - 3,860 - 78 = <strong className="text-forest-900 font-bold">1,600 Litres</strong>
           </span>
-          <span className="text-[#3fb950] font-sans text-[11px]">Audit Hash: RECON-2026-10-06-OK</span>
+          <span className="text-forest-800 font-sans font-bold text-[11px] bg-sage-50 px-2 py-0.5 rounded-md border border-sage-200">Audit Hash: RECON-2026-10-06-OK</span>
         </div>
       </div>
 
@@ -491,11 +491,11 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
       >
         <form onSubmit={handleTransfer} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Source Silo Tank</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">Source Silo Tank</label>
             <select
               value={sourceTankId}
               onChange={(e) => setSourceTankId(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none"
+              className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
             >
               {displayTanks.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -506,11 +506,11 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Destination Silo Tank</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">Destination Silo Tank</label>
             <select
               value={targetTankId}
               onChange={(e) => setTargetTankId(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none"
+              className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
             >
               {displayTanks.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -521,28 +521,28 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Transfer Volume (Litres)</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">Transfer Volume (Litres)</label>
             <input
               type="number"
               min="1"
               value={transferLitres}
               onChange={(e) => setTransferLitres(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none"
+              className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsTransferModalOpen(false)}
-              className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800"
+              className="px-4 py-2 text-xs text-stone-600 hover:text-stone-900 font-medium cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isTransferring}
-              className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs shadow-forest-950/20 disabled:opacity-50 active:scale-98"
             >
               {isTransferring ? (
                 <>
@@ -570,8 +570,8 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
       >
         <div className="space-y-4">
           {isLoadingDevices ? (
-            <div className="p-8 flex flex-col items-center justify-center gap-2 text-xs text-[#8b949e]">
-              <Loader2 className="w-5 h-5 animate-spin text-[#58a6ff]" />
+            <div className="p-8 flex flex-col items-center justify-center gap-2 text-xs text-stone-500 font-medium">
+              <Loader2 className="w-5 h-5 animate-spin text-forest-700" />
               <span>Interrogating local IoT gateway bus...</span>
             </div>
           ) : (
@@ -620,24 +620,24 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
               ]).map((dev) => (
                 <div
                   key={dev.id}
-                  className="p-3 bg-[#0d1117] border border-[#30363d] rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                  className="p-3.5 bg-cream-50/70 border border-[#ede8df] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-[#58a6ff]">{dev.id}</span>
-                      <span className="px-1.5 py-0.5 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 rounded font-mono text-[10px]">
+                      <span className="font-mono font-bold text-forest-900">{dev.id}</span>
+                      <span className="px-2 py-0.5 bg-sage-50 border border-sage-200 text-forest-800 rounded-md font-mono text-[10px] font-bold">
                         {dev.status}
                       </span>
                     </div>
-                    <div className="font-semibold text-[#f0f6fc]">{dev.name}</div>
-                    <div className="text-[11px] text-[#8b949e]">
-                      {dev.type} &bull; <span className="font-mono text-[#c9d1d9]">{dev.interface || dev.port}</span>
+                    <div className="font-bold text-forest-950 font-sans">{dev.name}</div>
+                    <div className="text-[11px] text-stone-500 font-sans">
+                      {dev.type} &bull; <span className="font-mono text-stone-700">{dev.interface || dev.port}</span>
                     </div>
                   </div>
 
-                  <div className="text-right font-mono text-[11px] text-[#8b949e]">
+                  <div className="text-right font-mono text-[11px] text-stone-500">
                     {dev.currentReading && (
-                      <div className="text-[#3fb950] font-bold text-xs">{dev.currentReading}</div>
+                      <div className="text-forest-900 font-bold text-xs">{dev.currentReading}</div>
                     )}
                     <div>Heartbeat: {dev.lastHeartbeat || 'Active'}</div>
                   </div>
@@ -646,16 +646,16 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
             </div>
           )}
 
-          <div className="p-3 bg-[#161b22] border border-[#30363d] rounded-lg flex items-center justify-between text-xs text-[#8b949e]">
+          <div className="p-3.5 bg-cream-50/70 border border-[#ede8df] rounded-xl flex items-center justify-between text-xs text-stone-600 font-medium">
             <span>Gateway Protocol: MQTT v5.0 / Web Serial Bridge v1.2</span>
-            <span className="text-[#3fb950] font-mono">ALL 4 PERIPHERALS SYNCED</span>
+            <span className="text-forest-800 font-mono font-bold">ALL 4 PERIPHERALS SYNCED</span>
           </div>
 
-          <div className="flex justify-end pt-2 border-t border-[#30363d]">
+          <div className="flex justify-end pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsIotDevicesModalOpen(false)}
-              className="px-4 py-2 bg-[#21262d] hover:bg-[#30363d] text-[#f0f6fc] rounded text-xs font-semibold cursor-pointer"
+              className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-800 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
             >
               Close
             </button>
@@ -665,4 +665,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
     </div>
   );
 };
+
+export default ChillingMilkPoolPage;
+
 

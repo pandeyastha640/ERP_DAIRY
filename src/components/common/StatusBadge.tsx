@@ -32,8 +32,8 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' }) => {
-  let dotColor = 'bg-slate-400';
-  let badgeClasses = 'bg-slate-50 text-slate-700 border-slate-200';
+  let dotColor = 'bg-stone-400';
+  let badgeClasses = 'bg-[#f8f7f4] text-stone-700 border-[#ede8df]';
 
   const s = (status || '').toUpperCase();
 
@@ -47,8 +47,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     s === 'SUFFICIENT' ||
     s === 'RECONCILED'
   ) {
-    dotColor = 'bg-emerald-600';
-    badgeClasses = 'bg-emerald-50 text-emerald-800 border-emerald-200';
+    dotColor = 'bg-[#2d6a4f]';
+    badgeClasses = 'bg-[#f0f7f2] text-[#1b4332] border-[#cde6d5]';
   } else if (
     s === 'WARNING' ||
     s === 'UNDER REVIEW' ||
@@ -59,8 +59,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     s === 'PENDING' ||
     s === 'VARIANCE DETECTED'
   ) {
-    dotColor = 'bg-amber-500';
-    badgeClasses = 'bg-amber-50 text-amber-800 border-amber-200';
+    dotColor = 'bg-[#c59b27]';
+    badgeClasses = 'bg-[#fbf7ec] text-[#855e16] border-[#f2e5c4]';
   } else if (
     s === 'FAIL' ||
     s === 'SICK' ||
@@ -71,7 +71,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     s === 'CRITICAL VARIANCE'
   ) {
     dotColor = 'bg-rose-600';
-    badgeClasses = 'bg-rose-50 text-rose-800 border-rose-200';
+    badgeClasses = 'bg-[#fdf2f2] text-rose-800 border-[#fbcfe8]';
   } else if (
     s === 'DRY' ||
     s === 'PREGNANT' ||
@@ -80,14 +80,14 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     s === 'CHILLING' ||
     s === 'INFO'
   ) {
-    dotColor = 'bg-blue-600';
-    badgeClasses = 'bg-blue-50 text-blue-800 border-blue-200';
+    dotColor = 'bg-emerald-600';
+    badgeClasses = 'bg-[#f2f8f6] text-[#205440] border-[#cbe4dc]';
   }
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-medium border rounded-md px-2 py-0.5 tracking-tight ${badgeClasses} ${
-        size === 'sm' ? 'text-[11px] leading-tight' : 'text-xs leading-normal'
+      className={`inline-flex items-center gap-1.5 font-medium border rounded-full tracking-tight transition-colors ${badgeClasses} ${
+        size === 'sm' ? 'text-[11px] px-2 py-0.5 leading-tight' : 'text-xs px-2.5 py-0.5 leading-normal'
       }`}
     >
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} aria-hidden="true" />

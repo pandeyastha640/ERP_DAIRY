@@ -248,14 +248,14 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsAiModalOpen(true)}
-              className="px-3 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 bg-sage-50 hover:bg-sage-100 border border-sage-200 text-forest-900 rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer active:scale-98"
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4 text-forest-700" />
               <span>Record AI Breeding</span>
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-forest-950/20 active:scale-98"
             >
               <Plus className="w-4 h-4" />
               <span>Add Cattle</span>
@@ -276,11 +276,11 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
       </div>
 
       {/* View Selector Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+      <div className="flex items-center gap-1.5 p-1 bg-[#f5f2eb] border border-[#ede8df] rounded-xl max-w-fit shadow-2xs">
         <button
           onClick={() => setActiveView('Herd')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-            activeView === 'Herd' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all duration-150 cursor-pointer ${
+            activeView === 'Herd' ? 'bg-white text-forest-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
           }`}
         >
           <Boxes className="w-3.5 h-3.5" />
@@ -288,17 +288,17 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
         </button>
         <button
           onClick={() => setActiveView('Breeding')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-            activeView === 'Breeding' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all duration-150 cursor-pointer ${
+            activeView === 'Breeding' ? 'bg-white text-forest-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
           }`}
         >
           <Calendar className="w-3.5 h-3.5" />
-          <span>Breeding, Estrus & Gestation Calendar</span>
+          <span>Breeding & Gestation Calendar</span>
         </button>
         <button
           onClick={() => setActiveView('Vaccination')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-            activeView === 'Vaccination' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all duration-150 cursor-pointer ${
+            activeView === 'Vaccination' ? 'bg-white text-forest-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
           }`}
         >
           <Syringe className="w-3.5 h-3.5" />
@@ -316,43 +316,43 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               placeholder="Search Cattle ID, Tag or Breed..."
             />
 
-            <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-xs">
+            <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs">
               <button
                 onClick={() => setStatusFilter('All')}
-                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                  statusFilter === 'All' ? 'bg-white text-slate-900 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  statusFilter === 'All' ? 'bg-white text-forest-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 All ({totalCattle})
               </button>
               <button
                 onClick={() => setStatusFilter('Milking')}
-                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                  statusFilter === 'Milking' ? 'bg-white text-emerald-800 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  statusFilter === 'Milking' ? 'bg-white text-forest-900 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 Milking ({milkingCount})
               </button>
               <button
                 onClick={() => setStatusFilter('Dry')}
-                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                  statusFilter === 'Dry' ? 'bg-white text-amber-800 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  statusFilter === 'Dry' ? 'bg-white text-amber-900 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 Dry ({dryCount})
               </button>
               <button
                 onClick={() => setStatusFilter('Pregnant')}
-                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                  statusFilter === 'Pregnant' ? 'bg-white text-blue-800 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  statusFilter === 'Pregnant' ? 'bg-white text-forest-900 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 Pregnant ({pregnantCount})
               </button>
               <button
                 onClick={() => setStatusFilter('Sick')}
-                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                  statusFilter === 'Sick' ? 'bg-white text-rose-800 font-semibold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  statusFilter === 'Sick' ? 'bg-white text-rose-900 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 Sick ({sickCount})
@@ -362,7 +362,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
             <select
               value={breedFilter}
               onChange={(e) => setBreedFilter(e.target.value)}
-              className="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none shadow-2xs cursor-pointer"
+              className="bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3 py-1.5 text-xs text-stone-800 outline-none shadow-2xs cursor-pointer focus:border-forest-600"
             >
               <option value="All">All Breeds</option>
               <option value="Gir">Gir</option>
@@ -373,15 +373,15 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               <option value="Jersey">Jersey</option>
             </select>
 
-            <span className="text-xs text-slate-500 font-mono">
-              Showing <strong className="text-emerald-700">{filteredCattle.length}</strong> of {totalCattle}
+            <span className="text-xs text-stone-500 font-mono">
+              Showing <strong className="text-forest-900 font-bold">{filteredCattle.length}</strong> of {totalCattle}
             </span>
           </FilterBar>
 
-          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
+          <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#faf8f5] border-b border-[#ede8df] text-stone-600 font-semibold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-4 py-3">Cattle ID</th>
                     <th className="px-4 py-3">Tag #</th>
@@ -397,10 +397,10 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
                     <th className="px-4 py-3 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-800 font-mono tabular-nums">
+                <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
                   {filteredCattle.length === 0 ? (
                     <tr>
-                      <td colSpan={12} className="px-4 py-8 text-center text-xs text-slate-400 font-sans">
+                      <td colSpan={12} className="px-4 py-8 text-center text-xs text-stone-400 font-sans">
                         No cattle found matching query.
                       </td>
                     </tr>
@@ -409,17 +409,17 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
                       <tr
                         key={cow.id}
                         onClick={() => setActiveProfile(cow)}
-                        className="hover:bg-slate-50/80 cursor-pointer transition-colors"
+                        className="hover:bg-cream-50/70 cursor-pointer transition-colors"
                       >
-                        <td className="px-4 py-3 font-bold text-blue-700">{cow.id}</td>
-                        <td className="px-4 py-3 font-semibold text-slate-900">{cow.tagNumber}</td>
-                        <td className="px-4 py-3 font-sans text-slate-700">{cow.breed}</td>
+                        <td className="px-4 py-3 font-bold text-forest-900">{cow.id}</td>
+                        <td className="px-4 py-3 font-semibold text-stone-900">{cow.tagNumber}</td>
+                        <td className="px-4 py-3 font-sans text-stone-700">{cow.breed}</td>
                         <td className="px-4 py-3">{cow.ageYears} yrs</td>
                         <td className="px-4 py-3">{cow.lactation} ({cow.lactationStage})</td>
-                        <td className="px-4 py-3 text-slate-500 font-sans">{cow.lastCalvingDate}</td>
-                        <td className="px-4 py-3 font-bold text-emerald-800">{cow.milkYieldLPerDay} L/d</td>
+                        <td className="px-4 py-3 text-stone-500 font-sans">{cow.lastCalvingDate}</td>
+                        <td className="px-4 py-3 font-bold text-forest-900">{cow.milkYieldLPerDay} L/d</td>
                         <td className="px-4 py-3">
-                          <MiniSparkline points={cow.historicalYields} color="#059669" width={60} height={18} />
+                          <MiniSparkline points={cow.historicalYields} color="#1b4332" width={60} height={18} />
                         </td>
                         <td className="px-4 py-3 font-sans">₹{cow.feedCostPerDay}/d</td>
                         <td className="px-4 py-3 font-sans">
@@ -434,7 +434,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
                               e.stopPropagation();
                               setActiveProfile(cow);
                             }}
-                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-medium transition-colors cursor-pointer"
+                            className="px-2.5 py-1 bg-[#fdfcfb] hover:bg-cream-100 text-forest-900 border border-[#ede8df] rounded-lg text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs"
                           >
                             Card
                           </button>
@@ -453,45 +453,51 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
       {activeView === 'Breeding' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center gap-2 text-blue-900 font-bold text-xs uppercase tracking-wide">
-                <Clock className="w-4 h-4 text-blue-700" />
+            <div className="p-4 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs">
+              <div className="flex items-center gap-2 text-forest-900 font-bold text-xs uppercase tracking-wide">
+                <span className="p-1 rounded-md bg-sage-50 text-forest-700">
+                  <Clock className="w-4 h-4" />
+                </span>
                 <span>Heat / Estrus Surveillance</span>
               </div>
-              <p className="text-xs text-blue-800 mt-2">
-                <strong>COW-004 (Sahiwal)</strong>: Cycle Day 19. Standing heat predicted in 48 hours. Prepared Pedigree Straw #SAHI-PED-402.
+              <p className="text-xs text-stone-700 mt-2.5 leading-relaxed font-normal">
+                <strong className="text-forest-950">COW-004 (Sahiwal)</strong>: Cycle Day 19. Standing heat predicted in 48 hours. Prepared Pedigree Straw #SAHI-PED-402.
               </p>
             </div>
 
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-              <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs uppercase tracking-wide">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+            <div className="p-4 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs">
+              <div className="flex items-center gap-2 text-forest-900 font-bold text-xs uppercase tracking-wide">
+                <span className="p-1 rounded-md bg-sage-50 text-forest-700">
+                  <CheckCircle2 className="w-4 h-4" />
+                </span>
                 <span>Pregnancy Diagnosis (PD) Due</span>
               </div>
-              <p className="text-xs text-emerald-800 mt-2">
-                <strong>COW-015 (Gir)</strong>: 44 days post-AI. Ultrasonography check scheduled for 31 Oct 2026 by Dr. Anita Rao.
+              <p className="text-xs text-stone-700 mt-2.5 leading-relaxed font-normal">
+                <strong className="text-forest-950">COW-015 (Gir)</strong>: 44 days post-AI. Ultrasonography check scheduled for 31 Oct 2026 by Dr. Anita Rao.
               </p>
             </div>
 
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <div className="flex items-center gap-2 text-amber-900 font-bold text-xs uppercase tracking-wide">
-                <AlertCircle className="w-4 h-4 text-amber-700" />
+            <div className="p-4 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs">
+              <div className="flex items-center gap-2 text-forest-900 font-bold text-xs uppercase tracking-wide">
+                <span className="p-1 rounded-md bg-gold-50 text-gold-700">
+                  <AlertCircle className="w-4 h-4" />
+                </span>
                 <span>Dry-Off & Calving Watch</span>
               </div>
-              <p className="text-xs text-amber-800 mt-2">
-                <strong>COW-008 (Murrah)</strong>: Gestation Day 247/280. Transition to dry cow mineral ration active. Calving due 17 Nov 2026.
+              <p className="text-xs text-stone-700 mt-2.5 leading-relaxed font-normal">
+                <strong className="text-forest-950">COW-008 (Murrah)</strong>: Gestation Day 247/280. Transition to dry cow mineral ration active. Calving due 17 Nov 2026.
               </p>
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
-            <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <span className="font-semibold text-xs text-slate-900">
+          <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-4 bg-cream-50/50 border-b border-[#ede8df] flex items-center justify-between">
+              <span className="font-bold text-xs text-forest-950">
                 Active Bovine Gestation & Artificial Insemination Ledger
               </span>
               <button
                 onClick={() => setIsAiModalOpen(true)}
-                className="px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                className="px-3.5 py-1.5 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs shadow-forest-950/20"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Record New Insemination</span>
@@ -500,7 +506,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px] font-sans">
+                <thead className="bg-[#faf8f5] border-b border-[#ede8df] text-stone-600 font-semibold uppercase tracking-wider text-[11px] font-sans">
                   <tr>
                     <th className="px-4 py-3">Record ID</th>
                     <th className="px-4 py-3">Cattle & Breed</th>
@@ -513,41 +519,41 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
                     <th className="px-4 py-3 font-sans">Inseminator</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-800">
+                <tbody className="divide-y divide-[#ede8df] text-stone-700">
                   {breedingRecords.map((r) => {
                     const progressPct = Math.min(100, Math.round((r.daysInGestation / 280) * 100));
                     return (
-                      <tr key={r.id} className="hover:bg-slate-50/80">
-                        <td className="px-4 py-3 font-bold text-blue-700">{r.id}</td>
+                      <tr key={r.id} className="hover:bg-cream-50/60 transition-colors">
+                        <td className="px-4 py-3 font-bold text-forest-900">{r.id}</td>
                         <td className="px-4 py-3 font-sans">
-                          <div className="font-bold text-slate-900">{r.cattleTag}</div>
-                          <div className="text-[10px] text-slate-500">{r.breed}</div>
+                          <div className="font-bold text-forest-950">{r.cattleTag}</div>
+                          <div className="text-[10px] text-stone-500">{r.breed}</div>
                         </td>
                         <td className="px-4 py-3">{r.eventDate}</td>
-                        <td className="px-4 py-3 font-bold text-slate-700">{r.strawCode}</td>
+                        <td className="px-4 py-3 font-bold text-stone-800">{r.strawCode}</td>
                         <td className="px-4 py-3 font-sans">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                             r.pdStatus.includes('Positive') || r.pdStatus.includes('Confirmed')
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-100 text-amber-800'
+                              ? 'bg-sage-50 text-forest-900 border-sage-200'
+                              : 'bg-amber-50 text-amber-900 border-amber-200'
                           }`}>
                             {r.pdStatus}
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="w-32 bg-slate-200 rounded-full h-2 overflow-hidden">
+                          <div className="w-32 bg-[#ede8df] rounded-full h-2 overflow-hidden">
                             <div
-                              className="bg-emerald-600 h-2 rounded-full"
+                              className="bg-forest-700 h-2 rounded-full"
                               style={{ width: `${progressPct}%` }}
                             />
                           </div>
-                          <span className="text-[10px] text-slate-500 font-sans mt-0.5 block">
+                          <span className="text-[10px] text-stone-500 font-sans mt-0.5 block">
                             Day {r.daysInGestation}/280 ({progressPct}%)
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-slate-600">{r.dryOffDate}</td>
-                        <td className="px-4 py-3 font-bold text-emerald-800">{r.expectedCalvingDate}</td>
-                        <td className="px-4 py-3 font-sans text-slate-600">{r.inseminator}</td>
+                        <td className="px-4 py-3 text-stone-600">{r.dryOffDate}</td>
+                        <td className="px-4 py-3 font-bold text-forest-900">{r.expectedCalvingDate}</td>
+                        <td className="px-4 py-3 font-sans text-stone-600">{r.inseminator}</td>
                       </tr>
                     );
                   })}
@@ -563,39 +569,39 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {vaccinationProtocols.map((vac) => (
-              <div key={vac.disease} className="p-4 bg-white border border-slate-200 rounded-lg shadow-2xs space-y-3">
+              <div key={vac.disease} className="p-5 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs space-y-3.5 transition-shadow duration-150 hover:shadow-sm">
                 <div className="flex items-start justify-between">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
-                    <Syringe className="w-4 h-4" />
+                  <div className="w-9 h-9 rounded-xl bg-sage-50 border border-sage-200 text-forest-800 flex items-center justify-center">
+                    <Syringe className="w-4 h-4 text-forest-700" />
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    vac.status === 'Protected' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800 animate-pulse'
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                    vac.status === 'Protected' ? 'bg-sage-50 text-forest-900 border-sage-200' : 'bg-rose-50 text-rose-900 border-rose-200 animate-pulse'
                   }`}>
                     {vac.status}
                   </span>
                 </div>
 
                 <div>
-                  <h4 className="font-bold text-xs text-slate-900 leading-tight">{vac.disease}</h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{vac.schedule}</p>
+                  <h4 className="font-bold text-xs text-forest-950 leading-tight">{vac.disease}</h4>
+                  <p className="text-[11px] text-stone-500 mt-1 font-medium">{vac.schedule}</p>
                 </div>
 
-                <div className="space-y-1 font-mono text-[11px] text-slate-600 border-t border-slate-100 pt-2">
+                <div className="space-y-1.5 font-mono text-[11px] text-stone-600 border-t border-[#ede8df]/70 pt-2.5">
                   <div className="flex justify-between">
                     <span>Coverage:</span>
-                    <span className="font-bold text-emerald-700">{vac.coveragePct}%</span>
+                    <span className="font-bold text-forest-900">{vac.coveragePct}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Last Admin:</span>
                     <span>{vac.lastAdministered}</span>
                   </div>
-                  <div className="flex justify-between font-bold text-slate-900">
+                  <div className="flex justify-between font-bold text-forest-950">
                     <span>Next Due:</span>
                     <span>{vac.nextDue}</span>
                   </div>
                 </div>
 
-                <div className="text-[10px] text-slate-400 font-mono">
+                <div className="text-[10px] text-stone-400 font-mono">
                   Batch: {vac.vaccineBatch}
                 </div>
               </div>
@@ -615,36 +621,36 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
         >
           <div className="space-y-5 text-xs">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="text-slate-500 text-[11px] font-sans">Daily Milk Yield</div>
-                <div className="text-xl font-bold text-emerald-800 mt-1">{activeProfile.milkYieldLPerDay} L</div>
-                <div className="text-[10px] text-slate-500 font-sans mt-0.5">₹{(activeProfile.milkYieldLPerDay * 38).toFixed(0)} daily realization</div>
+              <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans font-medium">Daily Milk Yield</div>
+                <div className="text-xl font-bold text-forest-900 mt-1">{activeProfile.milkYieldLPerDay} L</div>
+                <div className="text-[10px] text-stone-500 font-sans mt-0.5">₹{(activeProfile.milkYieldLPerDay * 38).toFixed(0)} daily realization</div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="text-slate-500 text-[11px] font-sans">Daily Feed Cost</div>
-                <div className="text-xl font-bold text-amber-700 mt-1">₹{activeProfile.feedCostPerDay}</div>
-                <div className="text-[10px] text-slate-500 font-sans mt-0.5">{activeProfile.dailyFeedKg} kg dry matter</div>
+              <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans font-medium">Daily Feed Cost</div>
+                <div className="text-xl font-bold text-amber-900 mt-1">₹{activeProfile.feedCostPerDay}</div>
+                <div className="text-[10px] text-stone-500 font-sans mt-0.5">{activeProfile.dailyFeedKg} kg dry matter</div>
               </div>
-              <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div className="text-emerald-900 text-[11px] font-sans font-semibold">Net Daily Margin</div>
-                <div className="text-xl font-bold text-emerald-800 mt-1">₹{Math.max(0, Math.round(activeProfile.milkYieldLPerDay * 38 - activeProfile.feedCostPerDay))}</div>
-                <div className="text-[10px] text-emerald-800 font-sans mt-0.5">Contribution to dairy</div>
+              <div className="p-3.5 bg-sage-50/80 rounded-xl border border-sage-200">
+                <div className="text-forest-950 text-[11px] font-sans font-bold">Net Daily Margin</div>
+                <div className="text-xl font-bold text-forest-900 mt-1">₹{Math.max(0, Math.round(activeProfile.milkYieldLPerDay * 38 - activeProfile.feedCostPerDay))}</div>
+                <div className="text-[10px] text-forest-800 font-sans mt-0.5 font-semibold">Contribution to dairy</div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="text-slate-500 text-[11px] font-sans">Lactation Stage</div>
-                <div className="text-xl font-bold text-slate-900 mt-1">{activeProfile.lactationStage}</div>
-                <div className="text-[10px] text-slate-500 font-sans mt-0.5">Calving: {activeProfile.lastCalvingDate}</div>
+              <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans font-medium">Lactation Stage</div>
+                <div className="text-xl font-bold text-stone-900 mt-1">{activeProfile.lactationStage}</div>
+                <div className="text-[10px] text-stone-500 font-sans mt-0.5">Calving: {activeProfile.lastCalvingDate}</div>
               </div>
             </div>
 
-            <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-2xs">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-slate-900">7-Day Milk Production History</span>
-                <span className="font-mono text-emerald-800 font-bold">{activeProfile.milkYieldLPerDay} L today</span>
+            <div className="p-4 bg-[#fdfcfb] rounded-2xl border border-[#ede8df] shadow-xs">
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-bold text-forest-950">7-Day Milk Production History</span>
+                <span className="font-mono text-forest-900 font-bold bg-sage-50 px-2.5 py-0.5 rounded-full border border-sage-200">{activeProfile.milkYieldLPerDay} L today</span>
               </div>
               <AreaTrendChart
                 data={activeProfile.historicalYields.map((val, idx) => ({ label: `Day -${6 - idx}`, value: val }))}
-                primaryColor="#047857"
+                primaryColor="#1b4332"
                 primaryLabel="Daily Yield (L)"
                 unit="L"
                 height={130}
@@ -652,59 +658,59 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
             </div>
 
             {/* Reproduction & Gestation Card */}
-            <div className="p-3.5 bg-blue-50/60 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-1.5 font-semibold text-blue-900 mb-2">
-                <Calendar className="w-3.5 h-3.5 text-blue-700" />
+            <div className="p-4 bg-cream-50/80 rounded-2xl border border-[#ede8df]">
+              <div className="flex items-center gap-2 font-bold text-forest-950 mb-2.5">
+                <Calendar className="w-4 h-4 text-forest-700" />
                 <span>Bovine Gestation & Calving Milestones</span>
               </div>
-              <div className="grid grid-cols-3 gap-2 font-mono text-[11px] text-slate-700">
-                <div className="p-2 bg-white rounded border border-blue-100">
-                  <span className="text-[10px] text-slate-500 block">AI Insemination:</span>
-                  <span className="font-bold text-slate-900">{activeProfile.lastCalvingDate}</span>
+              <div className="grid grid-cols-3 gap-2 font-mono text-[11px] text-stone-700">
+                <div className="p-2.5 bg-white rounded-xl border border-[#ede8df]">
+                  <span className="text-[10px] text-stone-500 block mb-0.5">AI Insemination:</span>
+                  <span className="font-bold text-stone-900">{activeProfile.lastCalvingDate}</span>
                 </div>
-                <div className="p-2 bg-white rounded border border-blue-100">
-                  <span className="text-[10px] text-slate-500 block">Dry-Off Due (+220d):</span>
-                  <span className="font-bold text-amber-700">20 Dec 2026</span>
+                <div className="p-2.5 bg-white rounded-xl border border-[#ede8df]">
+                  <span className="text-[10px] text-stone-500 block mb-0.5">Dry-Off Due (+220d):</span>
+                  <span className="font-bold text-amber-800">20 Dec 2026</span>
                 </div>
-                <div className="p-2 bg-white rounded border border-blue-100">
-                  <span className="text-[10px] text-slate-500 block">Expected Calving (+280d):</span>
-                  <span className="font-bold text-emerald-700">18 Feb 2027</span>
+                <div className="p-2.5 bg-white rounded-xl border border-[#ede8df]">
+                  <span className="text-[10px] text-stone-500 block mb-0.5">Expected Calving (+280d):</span>
+                  <span className="font-bold text-forest-900">18 Feb 2027</span>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex items-center gap-1.5 font-semibold text-slate-900 mb-2">
-                  <Syringe className="w-3.5 h-3.5 text-blue-700" />
+              <div className="p-4 bg-[#fdfcfb] rounded-2xl border border-[#ede8df]">
+                <div className="flex items-center gap-2 font-bold text-forest-950 mb-2">
+                  <Syringe className="w-4 h-4 text-forest-700" />
                   <span>Vaccination Protocol</span>
                 </div>
                 <div className="space-y-2">
                   {activeProfile.vaccinations.map((vac, i) => (
-                    <div key={i} className="flex items-center justify-between text-[11px] text-slate-700 border-b border-slate-200/60 pb-1">
+                    <div key={i} className="flex items-center justify-between text-[11px] text-stone-700 border-b border-[#ede8df]/70 pb-1.5">
                       <span>{vac.name}</span>
-                      <span className="font-mono text-slate-500">{vac.date} ({vac.status})</span>
+                      <span className="font-mono text-stone-500">{vac.date} ({vac.status})</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex items-center gap-1.5 font-semibold text-slate-900 mb-2">
-                  <HeartPulse className="w-3.5 h-3.5 text-rose-600" />
+              <div className="p-4 bg-[#fdfcfb] rounded-2xl border border-[#ede8df]">
+                <div className="flex items-center gap-2 font-bold text-forest-950 mb-2">
+                  <HeartPulse className="w-4 h-4 text-rose-700" />
                   <span>Veterinary & Clinical Notes</span>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-relaxed">{activeProfile.veterinaryNotes}</p>
-                <div className="mt-2 text-[10px] font-mono text-emerald-800 font-semibold">
+                <p className="text-[11px] text-stone-600 leading-relaxed">{activeProfile.veterinaryNotes}</p>
+                <div className="mt-2.5 text-[10px] font-mono text-forest-900 font-bold bg-sage-50 px-2.5 py-1 rounded-lg border border-sage-200 inline-block">
                   Next scheduled checkup: 18 Oct 2026 (Dr. Anita Rao)
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#ede8df]">
               <button
                 onClick={() => setActiveProfile(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium cursor-pointer"
+                className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-800 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
               >
                 Close Animal Card
               </button>
@@ -721,13 +727,13 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
         subtitle="Log semen straw, insemination date, and calculate 280-day gestation schedule"
         maxWidth="md"
       >
-        <form onSubmit={handleRecordInsemination} className="space-y-3.5">
+        <form onSubmit={handleRecordInsemination} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Target Cattle</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">Target Cattle</label>
             <select
               value={aiCattleTag}
               onChange={(e) => setAiCattleTag(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-600 shadow-2xs"
+              className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
             >
               {cattleList.map((c) => (
                 <option key={c.id} value={`${c.id} (${c.tagNumber})`}>
@@ -739,47 +745,47 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Bull Semen Straw Code</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Bull Semen Straw Code</label>
               <input
                 type="text"
                 value={aiStrawCode}
                 onChange={(e) => setAiStrawCode(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 outline-none focus:border-blue-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Inseminator Veterinarian</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Inseminator Veterinarian</label>
               <input
                 type="text"
                 value={aiInseminator}
                 onChange={(e) => setAiInseminator(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
                 required
               />
             </div>
           </div>
 
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-xs text-blue-900 space-y-1">
-            <div className="font-semibold">Automated Gestation Milestones:</div>
-            <div className="text-[11px] text-blue-800">
+          <div className="p-3.5 bg-sage-50/80 rounded-xl border border-sage-200 text-xs text-forest-950 space-y-1.5 font-medium">
+            <div className="font-bold text-forest-900">Automated Gestation Milestones:</div>
+            <div className="text-[11px] text-forest-800 leading-relaxed">
               • Pregnancy Diagnosis (PD) Due: <strong>+60 Days</strong><br />
               • Dry-Off Reminder: <strong>+220 Days</strong><br />
               • Expected Calving Date: <strong>+280 Days</strong>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsAiModalOpen(false)}
-              className="px-4 py-2 text-xs text-slate-600 hover:text-slate-900 cursor-pointer"
+              className="px-4 py-2 text-xs text-stone-600 hover:text-stone-900 cursor-pointer font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold shadow-2xs cursor-pointer"
+              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
             >
               Commit AI Insemination Record
             </button>
@@ -795,16 +801,16 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
         subtitle="Individual RFID tag registration, pedigree assignment, and initial lactation"
         maxWidth="md"
       >
-        <form onSubmit={handleCreateCattle} className="space-y-3.5">
+        <form onSubmit={handleCreateCattle} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Breed</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Breed</label>
               <select
                 value={newBreed}
                 onChange={(e) =>
                   setNewBreed(e.target.value as 'Gir' | 'Sahiwal' | 'Murrah Buffalo' | 'Red Sindhi')
                 }
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
               >
                 <option value="Gir">Gir (Indigenous Cow)</option>
                 <option value="Sahiwal">Sahiwal</option>
@@ -813,44 +819,44 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Ear Tag Number</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Ear Tag Number</label>
               <input
                 type="text"
                 placeholder="TAG-IN-88053"
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Age (Years)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Age (Years)</label>
               <input
                 type="number"
                 value={newAge}
                 onChange={(e) => setNewAge(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Lactation</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Lactation</label>
               <input
                 type="number"
                 value={newLactation}
                 onChange={(e) => setNewLactation(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Status</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Status</label>
               <select
                 value={newStatus}
                 onChange={(e) =>
                   setNewStatus(e.target.value as 'Milking' | 'Dry' | 'Pregnant' | 'Sick')
                 }
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
               >
                 <option value="Milking">Milking</option>
                 <option value="Dry">Dry</option>
@@ -862,46 +868,46 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Initial Yield (L/day)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Initial Yield (L/day)</label>
               <input
                 type="number"
                 step="0.1"
                 value={newYield}
                 onChange={(e) => setNewYield(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Feed Cost (₹/day)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Feed Cost (₹/day)</label>
               <input
                 type="number"
                 value={newFeedCost}
                 onChange={(e) => setNewFeedCost(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Shed Location</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Shed Location</label>
               <input
                 type="text"
                 value={newShed}
                 onChange={(e) => setNewShed(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsAddModalOpen(false)}
-              className="px-4 py-2 text-xs text-slate-600 hover:text-slate-900 cursor-pointer"
+              className="px-4 py-2 text-xs text-stone-600 hover:text-stone-900 cursor-pointer font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs cursor-pointer"
+              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
             >
               Save Cattle Record
             </button>

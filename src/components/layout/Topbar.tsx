@@ -12,6 +12,7 @@ import {
   X,
   GitFork,
   FileClock,
+  Sparkles,
 } from 'lucide-react';
 
 interface TopbarProps {
@@ -73,16 +74,16 @@ export const Topbar: React.FC<TopbarProps> = ({
   const dateFilters: DateFilter[] = ['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days', 'Custom'];
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4 sticky top-0 z-20 select-none shadow-2xs">
+    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#ede8df] px-4 sm:px-6 flex items-center justify-between gap-4 sticky top-0 z-20 select-none shadow-[0_1px_4px_rgba(27,67,50,0.02)]">
       {/* Left: Global Search & Facility Breadcrumb */}
       <div className="flex items-center gap-3 flex-1 max-w-xl">
         <button
           onClick={onOpenSearch}
-          className="flex-1 flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-lg text-xs text-slate-500 transition-colors text-left cursor-pointer"
+          className="flex-1 flex items-center gap-2.5 px-3.5 py-2 bg-[#faf8f5] hover:bg-white border border-[#ede8df] hover:border-[#cbd5e1] rounded-xl text-xs text-stone-500 transition-all text-left cursor-pointer shadow-xs group"
         >
-          <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <Search className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#1b4332] shrink-0 transition-colors" />
           <span className="truncate">Search cattle, farmers, batches, SKU, routes...</span>
-          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white text-slate-400 rounded border border-slate-200 ml-auto shadow-2xs">
+          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white text-stone-400 rounded-md border border-[#ede8df] ml-auto shadow-2xs font-semibold">
             ⌘K
           </kbd>
         </button>
@@ -96,16 +97,16 @@ export const Topbar: React.FC<TopbarProps> = ({
               setShowNotifications(false);
               setShowDateMenu(false);
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs text-slate-700 transition-colors cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#ede8df] hover:border-[#cbd5e1] rounded-xl text-xs text-stone-700 transition-all cursor-pointer shadow-xs"
           >
-            <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+            <MapPin className="w-3.5 h-3.5 text-[#2d6a4f] shrink-0" />
             <span className="truncate max-w-[140px] font-medium">{currentFacility}</span>
-            <ChevronDown className="w-3 h-3 text-slate-400" />
+            <ChevronDown className="w-3 h-3 text-stone-400" />
           </button>
 
           {showFacilityMenu && (
-            <div className="absolute left-0 mt-1.5 w-60 bg-white border border-slate-200 rounded-lg shadow-xl py-1 z-50">
-              <div className="px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider text-slate-400 border-b border-slate-100">
+            <div className="absolute left-0 mt-2 w-64 bg-white border border-[#ede8df] rounded-2xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3.5 py-2 text-[10px] uppercase font-mono tracking-wider text-stone-400 border-b border-[#f2eee6] font-bold">
                 Operating Facility
               </div>
               {facilities.map((fac) => (
@@ -115,15 +116,15 @@ export const Topbar: React.FC<TopbarProps> = ({
                     onChangeFacility(fac);
                     setShowFacilityMenu(false);
                   }}
-                  className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer ${
+                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-[#faf8f4] transition-colors cursor-pointer ${
                     currentFacility === fac
-                      ? 'text-emerald-800 font-semibold bg-emerald-50/70'
-                      : 'text-slate-700'
+                      ? 'text-[#1b4332] font-bold bg-[#f0f7f2]'
+                      : 'text-stone-700'
                   }`}
                 >
                   <span className="truncate">{fac}</span>
                   {currentFacility === fac && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#2d6a4f]" />
                   )}
                 </button>
               ))}
@@ -143,15 +144,18 @@ export const Topbar: React.FC<TopbarProps> = ({
               setShowFacilityMenu(false);
               setShowNotifications(false);
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs text-slate-700 transition-colors cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#ede8df] hover:border-[#cbd5e1] rounded-xl text-xs text-stone-700 transition-all cursor-pointer shadow-xs"
           >
-            <Calendar className="w-3.5 h-3.5 text-slate-500" />
-            <span className="font-mono text-xs">{currentDateFilter}</span>
-            <ChevronDown className="w-3 h-3 text-slate-400" />
+            <Calendar className="w-3.5 h-3.5 text-stone-400" />
+            <span className="font-mono text-xs font-medium">{currentDateFilter}</span>
+            <ChevronDown className="w-3 h-3 text-stone-400" />
           </button>
 
           {showDateMenu && (
-            <div className="absolute right-0 mt-1.5 w-40 bg-white border border-slate-200 rounded-lg shadow-xl py-1 z-50">
+            <div className="absolute right-0 mt-2 w-44 bg-white border border-[#ede8df] rounded-2xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider text-stone-400 border-b border-[#f2eee6] font-bold">
+                Time Window
+              </div>
               {dateFilters.map((df) => (
                 <button
                   key={df}
@@ -159,10 +163,10 @@ export const Topbar: React.FC<TopbarProps> = ({
                     onChangeDateFilter(df);
                     setShowDateMenu(false);
                   }}
-                  className={`w-full text-left px-3 py-1.5 text-xs hover:bg-slate-50 transition-colors cursor-pointer ${
+                  className={`w-full text-left px-3.5 py-2 text-xs hover:bg-[#faf8f4] transition-colors cursor-pointer ${
                     currentDateFilter === df
-                      ? 'text-emerald-800 font-semibold bg-emerald-50/70'
-                      : 'text-slate-700'
+                      ? 'text-[#1b4332] font-bold bg-[#f0f7f2]'
+                      : 'text-stone-700'
                   }`}
                 >
                   {df}
@@ -176,20 +180,20 @@ export const Topbar: React.FC<TopbarProps> = ({
         <button
           onClick={onOpenMobileField}
           title="Open Field Staff Touch Mode"
-          className="p-1.5 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg text-slate-600 transition-colors flex items-center gap-1.5 text-xs cursor-pointer shadow-2xs"
+          className="p-2 bg-[#f0f7f2] hover:bg-[#e4f1e8] border border-[#c8e4d2] text-[#1b4332] rounded-xl transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer shadow-2xs"
         >
-          <Smartphone className="w-4 h-4 text-emerald-700" />
-          <span className="hidden xl:inline text-xs font-medium text-slate-700">Field Mode</span>
+          <Smartphone className="w-4 h-4 text-[#2d6a4f]" />
+          <span className="hidden xl:inline text-xs">Field Mode</span>
         </button>
 
         {/* Trace Flow Action */}
         {onOpenTracer && (
           <button
             onClick={onOpenTracer}
-            title="Inspect Milk & Money Flow across all 11 stages"
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+            title="Inspect Milk & Money Flow across all stages"
+            className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-[#faf8f4] hover:bg-[#f0f7f2] border border-[#ede8df] hover:border-[#c8e4d2] text-[#1b4332] rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs"
           >
-            <GitFork className="w-3.5 h-3.5 text-emerald-700" />
+            <GitFork className="w-3.5 h-3.5 text-[#2d6a4f]" />
             <span>Trace Flow</span>
           </button>
         )}
@@ -199,9 +203,9 @@ export const Topbar: React.FC<TopbarProps> = ({
           <button
             onClick={onOpenAudit}
             title="Open Operational Audit Trail"
-            className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors cursor-pointer shadow-2xs"
+            className="hidden xl:flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-[#faf8f4] border border-[#ede8df] text-stone-700 rounded-xl text-xs font-medium transition-colors cursor-pointer shadow-2xs"
           >
-            <FileClock className="w-3.5 h-3.5 text-slate-500" />
+            <FileClock className="w-3.5 h-3.5 text-stone-400" />
             <span>Audit</span>
           </button>
         )}
@@ -209,7 +213,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         {/* Quick Collection Action */}
         <button
           onClick={onOpenQuickCollection}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+          className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 bg-[#1b4332] hover:bg-[#2d6a4f] text-white rounded-xl text-xs font-semibold shadow-[0_2px_8px_rgba(27,67,50,0.2)] transition-all cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Record Milk</span>
@@ -225,38 +229,38 @@ export const Topbar: React.FC<TopbarProps> = ({
               setShowDateMenu(false);
             }}
             aria-label="View notifications"
-            className="p-2 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-lg text-slate-600 relative transition-colors cursor-pointer shadow-2xs"
+            className="p-2 bg-white border border-[#ede8df] hover:border-[#cbd5e1] hover:bg-[#faf8f4] rounded-xl text-stone-600 relative transition-all cursor-pointer shadow-2xs"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-4 h-4 text-stone-600" />
             {unreadAlerts.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 text-white text-[10px] font-bold font-mono rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 text-white text-[10px] font-bold font-mono rounded-full flex items-center justify-center shadow-xs">
                 {unreadAlerts.length}
               </span>
             )}
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden z-50">
-              <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[#ede8df] rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-4.5 py-3 border-b border-[#ede8df] flex items-center justify-between bg-[#faf8f4]">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-900">Operational Alerts</span>
-                  <span className="px-1.5 py-0.2 bg-rose-50 text-rose-700 border border-rose-200 rounded text-[10px] font-mono font-semibold">
+                  <span className="text-xs font-bold text-[#0f2319]">Operational Alerts</span>
+                  <span className="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-full text-[10px] font-mono font-bold">
                     {unreadAlerts.length} Active
                   </span>
                 </div>
                 <button
                   onClick={() => setShowNotifications(false)}
-                  className="text-slate-400 hover:text-slate-700 cursor-pointer"
+                  className="text-stone-400 hover:text-stone-700 p-1 cursor-pointer transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+              <div className="max-h-80 overflow-y-auto divide-y divide-[#f2eee6]">
                 {alerts.map((alert) => (
                   <div
                     key={alert.id}
-                    className="p-3 hover:bg-slate-50/80 transition-colors cursor-pointer"
+                    className="p-3.5 hover:bg-[#faf8f4] transition-colors cursor-pointer"
                     onClick={() => {
                       onOpenAlertModule(alert.targetModule);
                       setShowNotifications(false);
@@ -268,18 +272,18 @@ export const Topbar: React.FC<TopbarProps> = ({
                           alert.priority === 'Critical'
                             ? 'text-rose-600'
                             : alert.priority === 'High'
-                            ? 'text-amber-600'
-                            : 'text-blue-600'
+                            ? 'text-[#c59b27]'
+                            : 'text-[#2d6a4f]'
                         }`}
                       >
                         [{alert.priority.toUpperCase()}] {alert.category}
                       </span>
-                      <span className="text-slate-400 font-mono text-[10px]">
+                      <span className="text-stone-400 font-mono text-[10px]">
                         {alert.timestamp}
                       </span>
                     </div>
-                    <div className="text-xs font-medium text-slate-900">{alert.title}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
+                    <div className="text-xs font-bold text-[#0f2319]">{alert.title}</div>
+                    <div className="text-[11px] text-stone-500 mt-0.5 line-clamp-2 leading-relaxed">
                       {alert.description}
                     </div>
                   </div>
@@ -298,24 +302,24 @@ export const Topbar: React.FC<TopbarProps> = ({
               setShowNotifications(false);
               setShowDateMenu(false);
             }}
-            className="flex items-center gap-2 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-slate-300 rounded-lg transition-colors text-left cursor-pointer shadow-2xs"
+            className="flex items-center gap-2.5 px-3 py-1.5 bg-white border border-[#ede8df] hover:border-[#cbd5e1] rounded-xl transition-all text-left cursor-pointer shadow-xs"
           >
-            <div className="w-6 h-6 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center text-xs font-bold shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-[#eef6f0] border border-[#cde6d5] text-[#1b4332] flex items-center justify-center text-xs font-bold shrink-0">
               {currentRole.slice(0, 2).toUpperCase()}
             </div>
             <div className="hidden lg:block text-left leading-tight">
-              <div className="text-xs font-semibold text-slate-900 truncate max-w-[120px]">
+              <div className="text-xs font-bold text-[#0f2319] truncate max-w-[130px]">
                 {currentRole}
               </div>
-              <div className="text-[10px] text-slate-400 font-mono">Demo Role</div>
+              <div className="text-[10px] text-stone-400 font-mono">Session Role</div>
             </div>
-            <ChevronDown className="w-3 h-3 text-slate-400" />
+            <ChevronDown className="w-3 h-3 text-stone-400" />
           </button>
 
           {showRoleMenu && (
-            <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-2xl py-1.5 z-50">
-              <div className="px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider text-slate-400 border-b border-slate-100 mb-1">
-                Demo Role Switcher
+            <div className="absolute right-0 mt-2 w-60 bg-white border border-[#ede8df] rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3.5 py-2 text-[10px] uppercase font-mono tracking-wider text-stone-400 border-b border-[#f2eee6] font-bold">
+                Switch Operational Role
               </div>
               {roles.map((r) => (
                 <button
@@ -324,14 +328,14 @@ export const Topbar: React.FC<TopbarProps> = ({
                     onChangeRole(r);
                     setShowRoleMenu(false);
                   }}
-                  className={`w-full text-left px-3 py-1.5 text-xs flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer ${
+                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-[#faf8f4] transition-colors cursor-pointer ${
                     currentRole === r
-                      ? 'text-emerald-800 font-semibold bg-emerald-50/70'
-                      : 'text-slate-700'
+                      ? 'text-[#1b4332] font-bold bg-[#f0f7f2]'
+                      : 'text-stone-700'
                   }`}
                 >
                   <span>{r}</span>
-                  {currentRole === r && <UserCheck className="w-3.5 h-3.5 text-emerald-700" />}
+                  {currentRole === r && <UserCheck className="w-3.5 h-3.5 text-[#2d6a4f]" />}
                 </button>
               ))}
             </div>

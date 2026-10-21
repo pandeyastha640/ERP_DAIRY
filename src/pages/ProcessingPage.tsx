@@ -17,6 +17,7 @@ import {
   Warehouse,
   Boxes,
   Search,
+  Sparkles,
 } from 'lucide-react';
 
 interface ProcessingPageProps {
@@ -104,22 +105,41 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
     setIsCreateModalOpen(false);
   };
 
+  const filteredBatches = batches.filter((b) => {
+    const mSearch = b.batchId.toLowerCase().includes(batchSearch.toLowerCase()) ||
+      b.pasteurizerLine.toLowerCase().includes(batchSearch.toLowerCase()) ||
+      b.operator.toLowerCase().includes(batchSearch.toLowerCase());
+    const mStatus = statusFilter === 'All' || b.status === statusFilter;
+    const mLine = lineFilter === 'All' || b.pasteurizerLine.includes(lineFilter);
+    return mSearch && mStatus && mLine;
+  });
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
-            Dairy Processing & Pasteurization
-          </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
-            HTST continuous pasteurization, cream separation, homogenization, and multi-product batch yield conversions.
-          </p>
+      {/* Page Header */}
+      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-700 shadow-xs">
+            <Factory className="w-5 h-5 text-forest-700" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-forest-950 font-sans">
+                Dairy Processing & Pasteurization
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sage-50 text-forest-800 border border-sage-200">
+                HTST Continuous 72°C/15s
+              </span>
+            </div>
+            <p className="text-xs text-stone-500 mt-0.5 font-sans">
+              HTST continuous pasteurization, cream separation, homogenization, and multi-product batch yield conversions.
+            </p>
+          </div>
         </div>
 
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 self-start md:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Launch Processing Batch</span>
@@ -127,55 +147,63 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
       </div>
 
       {/* KPI Ribbon */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3.5">
         <MetricCard label="Raw Milk Available" value={`${availableMilkPool.toLocaleString()} L`} unit="" trend="neutral" changeText="Available in Silos" />
         <MetricCard label="Milk Processed" value={`${reconciliation.processingConsumptionLitres.toLocaleString()} L`} unit="" trend="neutral" changeText="Completed batches" />
-        <MetricCard label="Active Batches" value={batches.length} unit="Batches" trend="up" changeText="Line 1 & 2" />
+        <MetricCard label="Active Batches" value={batches.length} unit="Batches" trend="up" changeText="Line 1 & 2 operational" />
         <MetricCard label="Mean Yield Rate" value={`${avgYield}%`} unit="" trend="up" changeText="98.1% benchmark" />
         <MetricCard label="Line Loss / Wastage" value={`${reconciliation.spillageWastageLitres.toLocaleString()} L`} unit="" trend="down" isGoodWhenUp={false} changeText="Line rinse loss" />
         <MetricCard label="Processing Cost" value={`₹${(totalCost / 1000).toFixed(1)}k`} unit="" trend="neutral" changeText="Energy & Steam" />
       </div>
 
       {/* CONNECTED CONVERSION FLOW BANNER */}
-      <div className="p-3.5 bg-[#161b22] border border-[#30363d] rounded-lg text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 font-mono">
-        <div className="flex items-center gap-2">
-          <Warehouse className="w-4 h-4 text-[#58a6ff]" />
-          <span className="font-semibold text-[#f0f6fc] font-sans">Silo Milk Pool ({availableMilkPool.toLocaleString()} L Available)</span>
-          <ArrowRight className="w-3.5 h-3.5 text-[#8b949e]" />
-          <Factory className="w-4 h-4 text-[#f0883e]" />
-          <span className="text-[#c9d1d9]">HTST Processing</span>
-          <ArrowRight className="w-3.5 h-3.5 text-[#8b949e]" />
-          <Boxes className="w-4 h-4 text-[#3fb950]" />
-          <span className="text-[#3fb950]">Auto-Updates Finished Goods Inventory</span>
+      <div className="p-4 bg-cream-50/70 border border-[#ede8df] rounded-2xl text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#ede8df] rounded-lg text-forest-950 font-bold shadow-2xs">
+            <Warehouse className="w-3.5 h-3.5 text-forest-700" />
+            <span>Silo Milk Pool ({availableMilkPool.toLocaleString()} L Available)</span>
+          </div>
+          <ArrowRight className="w-3.5 h-3.5 text-stone-400" />
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#ede8df] rounded-lg text-stone-700 font-medium shadow-2xs">
+            <Factory className="w-3.5 h-3.5 text-amber-600" />
+            <span>HTST Continuous Processing</span>
+          </div>
+          <ArrowRight className="w-3.5 h-3.5 text-stone-400" />
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-forest-900 border border-forest-950 rounded-lg text-white font-bold shadow-xs">
+            <Boxes className="w-3.5 h-3.5 text-sage-300" />
+            <span>Auto-Updates Finished Goods Inventory</span>
+          </div>
         </div>
-        <div className="text-[11px] text-[#8b949e] font-sans">
+        <div className="text-[11px] text-stone-500 font-sans">
           Launching a batch deducts milk from Silos and generates finished SKU stock automatically.
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="bg-white border border-[#ede8df] rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-2.5" />
           <input
             type="text"
             value={batchSearch}
             onChange={(e) => setBatchSearch(e.target.value)}
             placeholder="Search Batch ID, Line, or Operator..."
-            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+            className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 focus:bg-white rounded-xl pl-9 pr-3 py-2 text-xs text-forest-950 placeholder-stone-400 outline-none transition-all"
           />
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-[#8b949e]">Status:</span>
-            <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
+            <span className="text-xs text-stone-500 font-medium font-sans">Status:</span>
+            <div className="flex bg-cream-50 border border-[#ede8df] rounded-xl p-0.5 text-xs">
               {(['All', 'In Progress', 'Completed'] as const).map((s) => (
                 <button
                   key={s}
                   onClick={() => setStatusFilter(s)}
-                  className={`px-2.5 py-1 rounded-md transition-colors ${
-                    statusFilter === s ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    statusFilter === s
+                      ? 'bg-forest-900 text-white shadow-xs'
+                      : 'text-stone-600 hover:text-forest-900'
                   }`}
                 >
                   {s}
@@ -185,11 +213,11 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-[#8b949e]">Line:</span>
+            <span className="text-xs text-stone-500 font-medium font-sans">Line:</span>
             <select
               value={lineFilter}
               onChange={(e) => setLineFilter(e.target.value)}
-              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+              className="bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-1.5 text-xs text-forest-950 outline-none font-sans"
             >
               <option value="All">All Lines</option>
               <option value="HTST Line 1">Continuous HTST Line 1</option>
@@ -204,7 +232,7 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
                 setStatusFilter('All');
                 setLineFilter('All');
               }}
-              className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+              className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
             >
               Reset
             </button>
@@ -213,69 +241,58 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
       </div>
 
       {/* Batches Table */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
-        <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#f0f6fc]">Production Batch Log</h3>
-          <span className="text-xs font-mono text-[#8b949e]">
-            Showing {batches.filter((b) => {
-              const mSearch = b.batchId.toLowerCase().includes(batchSearch.toLowerCase()) ||
-                b.pasteurizerLine.toLowerCase().includes(batchSearch.toLowerCase()) ||
-                b.operator.toLowerCase().includes(batchSearch.toLowerCase());
-              const mStatus = statusFilter === 'All' || b.status === statusFilter;
-              const mLine = lineFilter === 'All' || b.pasteurizerLine.includes(lineFilter);
-              return mSearch && mStatus && mLine;
-            }).length} of {batches.length} batches
+      <div className="bg-white border border-[#ede8df] rounded-2xl shadow-xs overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-[#ede8df] bg-cream-50/50 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-forest-950 font-sans">Production Batch Log</h3>
+            <p className="text-[11px] text-stone-500">Live pasteurization runs, yield conversions and cost allocations</p>
+          </div>
+          <span className="text-xs font-mono font-medium text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-0.5 rounded-full">
+            Showing {filteredBatches.length} of {batches.length} batches
           </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+            <thead className="bg-[#fcfbf9] text-stone-500 font-mono border-b border-[#ede8df]">
               <tr>
-                <th className="px-4 py-2.5 font-medium">Batch ID</th>
-                <th className="px-4 py-2.5 font-medium">Line / Pasteurizer</th>
-                <th className="px-4 py-2.5 font-medium">Raw Input</th>
-                <th className="px-4 py-2.5 font-medium">Standardized Products</th>
-                <th className="px-4 py-2.5 font-medium">Yield %</th>
-                <th className="px-4 py-2.5 font-medium">Wastage</th>
-                <th className="px-4 py-2.5 font-medium">Batch Cost</th>
-                <th className="px-4 py-2.5 font-medium">Status</th>
-                <th className="px-4 py-2.5 font-medium text-right">Details</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Batch ID</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Line / Pasteurizer</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Raw Input</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Standardized Products</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Yield %</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Wastage</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Batch Cost</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Status</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px] text-right">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
-              {batches.filter((b) => {
-                const mSearch = b.batchId.toLowerCase().includes(batchSearch.toLowerCase()) ||
-                  b.pasteurizerLine.toLowerCase().includes(batchSearch.toLowerCase()) ||
-                  b.operator.toLowerCase().includes(batchSearch.toLowerCase());
-                const mStatus = statusFilter === 'All' || b.status === statusFilter;
-                const mLine = lineFilter === 'All' || b.pasteurizerLine.includes(lineFilter);
-                return mSearch && mStatus && mLine;
-              }).map((batch) => (
+            <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
+              {filteredBatches.map((batch) => (
                 <tr
                   key={batch.id}
                   onClick={() => setActiveBatch(batch)}
-                  className="hover:bg-[#1f2937]/30 cursor-pointer transition-colors"
+                  className="hover:bg-cream-50/60 cursor-pointer transition-colors"
                 >
-                  <td className="px-4 py-3 font-bold text-[#58a6ff]">{batch.batchId}</td>
-                  <td className="px-4 py-3 font-sans text-[#f0f6fc]">{batch.pasteurizerLine}</td>
-                  <td className="px-4 py-3 font-bold text-[#f0f6fc]">{batch.inputMilkLitres.toLocaleString()} L</td>
-                  <td className="px-4 py-3 font-sans">
-                    <div className="text-[#c9d1d9] font-medium">{batch.products[0]?.productName}</div>
-                    <div className="text-[11px] text-[#8b949e]">+{batch.products.length - 1} secondary co-products</div>
+                  <td className="px-4 py-3.5 font-bold text-forest-900">{batch.batchId}</td>
+                  <td className="px-4 py-3.5 font-sans font-medium text-stone-800">{batch.pasteurizerLine}</td>
+                  <td className="px-4 py-3.5 font-bold text-forest-950">{batch.inputMilkLitres.toLocaleString()} L</td>
+                  <td className="px-4 py-3.5 font-sans">
+                    <div className="text-stone-900 font-semibold">{batch.products[0]?.productName}</div>
+                    <div className="text-[11px] text-stone-500">+{batch.products.length - 1} secondary co-products</div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-[#3fb950]">{batch.yieldPercentage}%</td>
-                  <td className="px-4 py-3 text-[#f85149]">{batch.wastageLitres} L</td>
-                  <td className="px-4 py-3 text-[#f0f6fc]">₹{batch.processingCostTotal.toLocaleString()}</td>
-                  <td className="px-4 py-3 font-sans">
+                  <td className="px-4 py-3.5 font-bold text-emerald-700">{batch.yieldPercentage}%</td>
+                  <td className="px-4 py-3.5 text-rose-700 font-medium">{batch.wastageLitres} L</td>
+                  <td className="px-4 py-3.5 font-bold text-forest-950">₹{batch.processingCostTotal.toLocaleString()}</td>
+                  <td className="px-4 py-3.5 font-sans">
                     <StatusBadge status={batch.status} size="sm" />
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3.5 text-right font-sans">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveBatch(batch);
                       }}
-                      className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] rounded text-[11px] font-sans transition-colors"
+                      className="px-2.5 py-1 bg-cream-100 hover:bg-cream-200 text-stone-700 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
                     >
                       Inspect Yield
                     </button>
@@ -298,61 +315,64 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
         >
           <div className="space-y-4 text-xs font-mono">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] text-[11px] font-sans">Raw Milk Inward</div>
-                <div className="text-lg font-bold text-[#f0f6fc] mt-1">{activeBatch.inputMilkLitres} L</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">{activeBatch.inputFatPct}% Fat · {activeBatch.inputSnfPct}% SNF</div>
+              <div className="p-3 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans">Raw Milk Inward</div>
+                <div className="text-lg font-bold text-forest-950 mt-0.5">{activeBatch.inputMilkLitres} L</div>
+                <div className="text-[10px] text-stone-500 font-sans">{activeBatch.inputFatPct}% Fat · {activeBatch.inputSnfPct}% SNF</div>
               </div>
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] text-[11px] font-sans">Batch Yield Rate</div>
-                <div className="text-lg font-bold text-[#3fb950] mt-1">{activeBatch.yieldPercentage}%</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">{activeBatch.wastageLitres} L total loss</div>
+              <div className="p-3 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans">Batch Yield Rate</div>
+                <div className="text-lg font-bold text-emerald-700 mt-0.5">{activeBatch.yieldPercentage}%</div>
+                <div className="text-[10px] text-stone-500 font-sans">{activeBatch.wastageLitres} L line loss</div>
               </div>
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] text-[11px] font-sans">Processing Cost</div>
-                <div className="text-lg font-bold text-[#f0883e] mt-1">₹{activeBatch.processingCostTotal}</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">₹{(activeBatch.processingCostTotal / activeBatch.inputMilkLitres).toFixed(2)}/L line cost</div>
+              <div className="p-3 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans">Processing Cost</div>
+                <div className="text-lg font-bold text-amber-700 mt-0.5">₹{activeBatch.processingCostTotal}</div>
+                <div className="text-[10px] text-stone-500 font-sans">₹{(activeBatch.processingCostTotal / activeBatch.inputMilkLitres).toFixed(2)}/L line cost</div>
               </div>
-              <div className="p-3 bg-[#0d1117] rounded border border-[#30363d]">
-                <div className="text-[#8b949e] text-[11px] font-sans">Batch Operator</div>
-                <div className="text-sm font-bold text-[#bc8cff] mt-1 truncate">{activeBatch.operator}</div>
-                <div className="text-[10px] text-[#8b949e] font-sans">Shift Engineer</div>
+              <div className="p-3 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans">Batch Operator</div>
+                <div className="text-sm font-bold text-forest-900 mt-0.5 truncate">{activeBatch.operator}</div>
+                <div className="text-[10px] text-stone-500 font-sans">Shift Engineer</div>
               </div>
             </div>
 
             {/* Product Output Yield Breakdown */}
-            <div className="p-4 bg-[#0d1117] rounded-lg border border-[#30363d]">
-              <div className="text-xs font-bold text-[#f0f6fc] font-sans mb-3">
-                Standardized Finished Output Breakdown
+            <div className="p-4 bg-white rounded-xl border border-[#ede8df] shadow-2xs">
+              <div className="text-xs font-bold text-forest-950 font-sans mb-3 flex items-center justify-between">
+                <span>Standardized Finished Output Breakdown</span>
+                <span className="text-[10px] text-forest-800 bg-sage-50 border border-sage-200 px-2 py-0.5 rounded-md font-mono">
+                  {activeBatch.products.length} Products Formed
+                </span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {activeBatch.products.map((p, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between p-2 bg-[#161b22] rounded border border-[#21262d]"
+                    className="flex items-center justify-between p-3 bg-cream-50/60 rounded-xl border border-[#ede8df]"
                   >
                     <div>
-                      <div className="font-sans font-semibold text-[#f0f6fc]">{p.productName}</div>
-                      <div className="text-[11px] text-[#8b949e]">
+                      <div className="font-sans font-bold text-forest-950">{p.productName}</div>
+                      <div className="text-[11px] text-stone-500 font-mono">
                         {p.sku} · Spec: {p.standardFatPct}% Fat / {p.standardSnfPct}% SNF
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-bold text-[#3fb950]">
+                      <div className="text-sm font-bold text-emerald-800">
                         {p.outputQuantity} {p.unit}
                       </div>
-                      <div className="text-[10px] text-[#8b949e] font-sans">Output packaged</div>
+                      <div className="text-[10px] text-stone-500 font-sans">Output packaged</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-[#30363d]">
-              <span className="font-sans text-[11px] text-[#8b949e]">Status: {activeBatch.status}</span>
+            <div className="flex items-center justify-between pt-3 border-t border-[#ede8df]">
+              <span className="font-sans text-[11px] text-stone-500 font-medium">Status: {activeBatch.status}</span>
               <button
                 onClick={() => setActiveBatch(null)}
-                className="px-4 py-2 bg-[#21262d] text-[#f0f6fc] rounded text-xs hover:bg-[#30363d]"
+                className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-800 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
               >
                 Close Batch View
               </button>
@@ -369,26 +389,26 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
         subtitle="Deduct raw milk from cold silo pool and initialize HTST pasteurization sequence"
         maxWidth="md"
       >
-        <form onSubmit={handleCreate} className="space-y-3.5">
+        <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Production Recipe &amp; Output BOM</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Production Recipe & Output BOM</label>
             <select
               value={recipe}
               onChange={(e) => setRecipe(e.target.value as any)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs text-[#f0f6fc]"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
             >
               <option value="standard">Standard Multi-Product Run (70% Toned Milk, 25% Curd, 3.5% Cream)</option>
               <option value="fluid">Fluid Market Milk Run (60% Full Cream 1L, 38% Toned Milk 500ml)</option>
               <option value="curd">Fermented Dahi / Curd Run (85% Classic Curd 400g, 12% Cream Balance)</option>
-              <option value="ghee">Desi Cow Ghee &amp; Butter Run (35% Ghee 1L, 60% Skimmed Milk)</option>
+              <option value="ghee">Desi Cow Ghee & Butter Run (35% Ghee 1L, 60% Skimmed Milk)</option>
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Processing Line</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Processing Line</label>
             <select
               value={line}
               onChange={(e) => setLine(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs text-[#f0f6fc]"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
             >
               <option value="Continuous HTST Line 1 (3000 LPH)">Continuous HTST Line 1 (3000 LPH)</option>
               <option value="Batch Vat Pasteurizer 2 (1500 L)">Batch Vat Pasteurizer 2 (1500 L)</option>
@@ -396,34 +416,34 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Input Raw Milk Volume (Litres)</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Input Raw Milk Volume (Litres)</label>
             <input
               type="number"
               value={inputLitres}
               onChange={(e) => setInputLitres(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs font-mono text-[#f0f6fc]"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Shift Engineer / Operator</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Shift Engineer / Operator</label>
             <input
               type="text"
               value={operator}
               onChange={(e) => setOperator(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-2 text-xs text-[#f0f6fc]"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
             />
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded text-xs font-semibold"
+              className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-all"
             >
               Start HTST Processing
             </button>
@@ -433,3 +453,5 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
     </div>
   );
 };
+
+export default ProcessingPage;

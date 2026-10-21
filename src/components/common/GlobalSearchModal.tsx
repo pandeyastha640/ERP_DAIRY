@@ -93,10 +93,10 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/40 backdrop-blur-xs flex items-start justify-center pt-20 px-4">
       <div
-        className="w-full max-w-2xl bg-white border border-slate-200 rounded-xl shadow-2xl text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        className="w-full max-w-2xl bg-white border border-[#ede8df] rounded-3xl shadow-2xl text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center px-4 border-b border-slate-200 bg-slate-50/60">
+        <div className="flex items-center px-5 border-b border-[#ede8df] bg-[#faf8f5]">
           <Search className="w-5 h-5 text-slate-400 shrink-0 mr-3" />
           <input
             type="text"
@@ -108,19 +108,19 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           />
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 ml-2 cursor-pointer"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-[#ede8df] ml-2 cursor-pointer transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="max-h-96 overflow-y-auto p-3 space-y-4">
+        <div className="max-h-96 overflow-y-auto p-4 space-y-4">
           {!query && (
             <div className="p-6 text-center text-xs text-slate-500">
-              Try searching for <span className="text-emerald-700 font-mono font-bold">COW-001</span>,{' '}
-              <span className="text-emerald-700 font-mono font-bold">FARM-002</span>,{' '}
-              <span className="text-emerald-700 font-mono font-bold">BATCH-104</span>, or{' '}
-              <span className="text-emerald-700 font-mono font-bold">Gold Milk</span>
+              Try searching for <span className="text-[#1b4332] font-mono font-bold">COW-001</span>,{' '}
+              <span className="text-[#1b4332] font-mono font-bold">FARM-002</span>,{' '}
+              <span className="text-[#1b4332] font-mono font-bold">BATCH-104</span>, or{' '}
+              <span className="text-[#1b4332] font-mono font-bold">Gold Milk</span>
             </div>
           )}
 
@@ -132,8 +132,8 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
           {filteredCattle.length > 0 && (
             <div>
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-500 px-2 mb-1 flex items-center gap-1.5 font-semibold">
-                <Boxes className="w-3.5 h-3.5 text-emerald-700" /> Cattle Herd
+              <div className="text-[11px] font-mono uppercase tracking-wider text-[#1b4332] px-2 mb-1.5 flex items-center gap-1.5 font-bold">
+                <Boxes className="w-3.5 h-3.5 text-[#1b4332]" /> Cattle Herd
               </div>
               <div className="space-y-1">
                 {filteredCattle.map((c) => (
@@ -143,16 +143,16 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                       onSelectResult('cattle', c.id);
                       onClose();
                     }}
-                    className="w-full text-left p-2.5 rounded-lg hover:bg-slate-50 flex items-center justify-between text-xs transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+                    className="w-full text-left p-3 rounded-xl hover:bg-[#faf8f5] flex items-center justify-between text-xs transition-colors cursor-pointer border border-transparent hover:border-[#ede8df]"
                   >
                     <div>
-                      <span className="font-mono font-bold text-emerald-800">{c.id}</span>
-                      <span className="text-slate-800 ml-2">
+                      <span className="font-mono font-bold text-[#1b4332]">{c.id}</span>
+                      <span className="text-slate-800 ml-2 font-medium">
                         {c.breed} ({c.lactation} Lactation)
                       </span>
-                      <span className="text-slate-500 text-[11px] ml-2">{c.shedLocation}</span>
+                      <span className="text-slate-500 text-[11px] ml-2 font-mono">{c.shedLocation}</span>
                     </div>
-                    <span className="font-mono text-emerald-700 font-bold">
+                    <span className="font-mono text-[#1b4332] font-bold">
                       {c.milkYieldLPerDay} L/day
                     </span>
                   </button>
@@ -163,7 +163,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
           {filteredFarmers.length > 0 && (
             <div>
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-500 px-2 mb-1 flex items-center gap-1.5 font-semibold">
+              <div className="text-[11px] font-mono uppercase tracking-wider text-blue-700 px-2 mb-1.5 flex items-center gap-1.5 font-bold">
                 <Users className="w-3.5 h-3.5 text-blue-700" /> Farmers
               </div>
               <div className="space-y-1">
@@ -174,12 +174,12 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                       onSelectResult('farmers', f.id);
                       onClose();
                     }}
-                    className="w-full text-left p-2.5 rounded-lg hover:bg-slate-50 flex items-center justify-between text-xs transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+                    className="w-full text-left p-3 rounded-xl hover:bg-[#faf8f5] flex items-center justify-between text-xs transition-colors cursor-pointer border border-transparent hover:border-[#ede8df]"
                   >
                     <div>
                       <span className="font-mono font-bold text-blue-700">{f.id}</span>
-                      <span className="text-slate-800 ml-2">{f.name}</span>
-                      <span className="text-slate-500 text-[11px] ml-2">({f.village})</span>
+                      <span className="text-slate-800 ml-2 font-medium">{f.name}</span>
+                      <span className="text-slate-500 text-[11px] ml-2 font-mono">({f.village})</span>
                     </div>
                     <span className="font-mono text-slate-700 font-semibold">{f.todayMilkL} L today</span>
                   </button>
@@ -190,8 +190,8 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
           {filteredProducts.length > 0 && (
             <div>
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-500 px-2 mb-1 flex items-center gap-1.5 font-semibold">
-                <PackageSearch className="w-3.5 h-3.5 text-amber-600" /> Products Master
+              <div className="text-[11px] font-mono uppercase tracking-wider text-amber-700 px-2 mb-1.5 flex items-center gap-1.5 font-bold">
+                <PackageSearch className="w-3.5 h-3.5 text-amber-700" /> Products Master
               </div>
               <div className="space-y-1">
                 {filteredProducts.map((p) => (
@@ -201,11 +201,11 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                       onSelectResult('products', p.id);
                       onClose();
                     }}
-                    className="w-full text-left p-2.5 rounded-lg hover:bg-slate-50 flex items-center justify-between text-xs transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+                    className="w-full text-left p-3 rounded-xl hover:bg-[#faf8f5] flex items-center justify-between text-xs transition-colors cursor-pointer border border-transparent hover:border-[#ede8df]"
                   >
                     <div>
-                      <span className="font-mono text-amber-700 font-semibold">{p.sku}</span>
-                      <span className="text-slate-800 ml-2">{p.name}</span>
+                      <span className="font-mono text-amber-700 font-bold">{p.sku}</span>
+                      <span className="text-slate-800 ml-2 font-medium">{p.name}</span>
                     </div>
                     <span className="font-mono font-bold text-slate-900">₹{p.sellingPrice}</span>
                   </button>
@@ -216,8 +216,8 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
           {filteredBatches.length > 0 && (
             <div>
-              <div className="text-[11px] font-mono uppercase tracking-wider text-slate-500 px-2 mb-1 flex items-center gap-1.5 font-semibold">
-                <Factory className="w-3.5 h-3.5 text-purple-600" /> Processing Batches
+              <div className="text-[11px] font-mono uppercase tracking-wider text-purple-700 px-2 mb-1.5 flex items-center gap-1.5 font-bold">
+                <Factory className="w-3.5 h-3.5 text-purple-700" /> Processing Batches
               </div>
               <div className="space-y-1">
                 {filteredBatches.map((b) => (
@@ -227,13 +227,13 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                       onSelectResult('processing', b.id);
                       onClose();
                     }}
-                    className="w-full text-left p-2.5 rounded-lg hover:bg-slate-50 flex items-center justify-between text-xs transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+                    className="w-full text-left p-3 rounded-xl hover:bg-[#faf8f5] flex items-center justify-between text-xs transition-colors cursor-pointer border border-transparent hover:border-[#ede8df]"
                   >
                     <div>
                       <span className="font-mono text-purple-700 font-bold">{b.batchId}</span>
-                      <span className="text-slate-500 ml-2">{b.inputMilkLitres} L input</span>
+                      <span className="text-slate-500 ml-2 font-mono">{b.inputMilkLitres} L input</span>
                     </div>
-                    <span className="text-emerald-700 font-mono font-semibold">{b.status}</span>
+                    <span className="text-[#1b4332] font-mono font-bold">{b.status}</span>
                   </button>
                 ))}
               </div>
@@ -241,7 +241,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           )}
         </div>
 
-        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+        <div className="p-3.5 bg-[#faf8f5] border-t border-[#ede8df] flex items-center justify-between text-[11px] text-slate-500">
           <span>Click any item to navigate immediately</span>
           <span className="font-mono">ESC to dismiss</span>
         </div>

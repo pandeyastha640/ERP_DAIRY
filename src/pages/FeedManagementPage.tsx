@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FeedItem, FeedFormula } from '../types/dairy';
 import { MetricCard } from '../components/common/MetricCard';
-import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
 import {
   Wheat,
@@ -13,6 +12,9 @@ import {
   ArrowRight,
   TrendingUp,
   Search,
+  CheckCircle2,
+  PackageCheck,
+  Scale,
 } from 'lucide-react';
 
 interface FeedManagementPageProps {
@@ -34,7 +36,6 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
   const [runwayFilter, setRunwayFilter] = useState<'All' | 'Low Stock' | 'Optimal'>('All');
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [isConsumptionModalOpen, setIsConsumptionModalOpen] = useState(false);
-  const [isFormulaModalOpen, setIsFormulaModalOpen] = useState(false);
 
   // Purchase Modal Form State
   const [selectedFeedId, setSelectedFeedId] = useState(feeds[0]?.id || '');
@@ -91,37 +92,54 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
     setIsConsumptionModalOpen(false);
   };
 
+  const filteredFeeds = feeds.filter((f) => {
+    const mSearch = f.name.toLowerCase().includes(feedSearch.toLowerCase()) || f.supplier.toLowerCase().includes(feedSearch.toLowerCase());
+    const mCat = feedCategoryFilter === 'All' || f.type === feedCategoryFilter;
+    const mRunway = runwayFilter === 'All' || (runwayFilter === 'Low Stock' ? f.daysRemaining <= 5.0 : f.daysRemaining > 5.0);
+    return mSearch && mCat && mRunway;
+  });
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
-            Feed & Nutrition Management
-          </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
-            Ration balancing, dry matter intake, feed procurement and cost-per-litre optimization for cattle.
-          </p>
+      {/* Page Header */}
+      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-700 shadow-xs">
+            <Wheat className="w-5 h-5 text-forest-700" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-forest-950 font-sans">
+                Feed & Nutrition Management
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sage-50 text-forest-800 border border-sage-200">
+                ICAR Ration Compliance
+              </span>
+            </div>
+            <p className="text-xs text-stone-500 mt-0.5 font-sans">
+              Ration balancing, dry matter intake, feed procurement and cost-per-litre optimization for cattle.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setIsPurchaseModalOpen(true)}
-            className="px-3 py-1.5 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-[#f0f6fc] rounded-lg transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-white hover:bg-cream-50 border border-[#ede8df] hover:border-forest-200 text-xs font-semibold text-forest-900 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
-            <ShoppingCart className="w-3.5 h-3.5 text-[#388bfd]" />
+            <ShoppingCart className="w-3.5 h-3.5 text-forest-700" />
             <span>Add Purchase</span>
           </button>
           <button
             onClick={() => setIsConsumptionModalOpen(true)}
-            className="px-3 py-1.5 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-[#f0f6fc] rounded-lg transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-white hover:bg-cream-50 border border-[#ede8df] hover:border-forest-200 text-xs font-semibold text-forest-900 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
-            <Wheat className="w-3.5 h-3.5 text-[#e3b341]" />
+            <Wheat className="w-3.5 h-3.5 text-gold-600" />
             <span>Record Consumption</span>
           </button>
           <button
             onClick={() => setActiveTab('Formulation')}
-            className="px-3 py-1.5 bg-[#388bfd] hover:bg-[#4c97ff] text-xs font-semibold text-white rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-xs font-semibold text-white rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Calculator className="w-3.5 h-3.5" />
             <span>Feed Formula</span>
@@ -130,20 +148,20 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       </div>
 
       {/* KPI Ribbon */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
         <MetricCard
           label="Total Feed Stock"
           value={`${(totalStockKg / 1000).toFixed(1)} MT`}
           unit=""
           trend="neutral"
-          changeText={`${totalStockKg.toLocaleString()} kg`}
+          changeText={`${totalStockKg.toLocaleString()} kg total`}
         />
         <MetricCard
           label="Consumed Today"
           value={`${totalConsumedKg.toLocaleString()} kg`}
           unit=""
           trend="neutral"
-          changeText="52 Cattle intake"
+          changeText="52 Cattle daily intake"
         />
         <MetricCard
           label="Feed Cost Today"
@@ -158,32 +176,36 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
           value={`₹${(totalStockValue / 1000).toFixed(1)}k`}
           unit=""
           trend="neutral"
-          changeText="Warehouse assets"
+          changeText="Feed warehouse assets"
         />
         <MetricCard
-          label="Stock Runway"
+          label="Min Stock Runway"
           value={`${minDaysRemaining} Days`}
           unit=""
           trend="down"
           isGoodWhenUp={true}
-          changeText="Alert: Pellets low"
+          changeText="Critical alert on pellets"
         />
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-1 p-1 bg-[#161b22] border border-[#30363d] rounded-lg max-w-fit">
+      {/* Segmented Control Tabs */}
+      <div className="flex items-center gap-1.5 p-1 bg-cream-50/80 border border-[#ede8df] rounded-xl max-w-fit shadow-2xs">
         <button
           onClick={() => setActiveTab('Inventory')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-            activeTab === 'Inventory' ? 'bg-[#388bfd] text-white' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+          className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+            activeTab === 'Inventory'
+              ? 'bg-forest-900 text-white shadow-xs'
+              : 'text-stone-600 hover:text-forest-900'
           }`}
         >
           Feed Inventory & Stock
         </button>
         <button
           onClick={() => setActiveTab('Formulation')}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-            activeTab === 'Formulation' ? 'bg-[#388bfd] text-white' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+          className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+            activeTab === 'Formulation'
+              ? 'bg-forest-900 text-white shadow-xs'
+              : 'text-stone-600 hover:text-forest-900'
           }`}
         >
           Formulation & Cost Calculator
@@ -194,25 +216,25 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       {activeTab === 'Inventory' && (
         <div className="space-y-4">
           {/* Feed Filter and Search Bar */}
-          <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="bg-white border border-[#ede8df] rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-sm">
-              <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-2.5" />
               <input
                 type="text"
                 value={feedSearch}
                 onChange={(e) => setFeedSearch(e.target.value)}
                 placeholder="Search Feed Item or Supplier..."
-                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+                className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 focus:bg-white rounded-xl pl-9 pr-3 py-2 text-xs text-forest-950 placeholder-stone-400 outline-none transition-all"
               />
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-[#8b949e]">Category:</span>
+                <span className="text-xs text-stone-500 font-medium font-sans">Category:</span>
                 <select
                   value={feedCategoryFilter}
                   onChange={(e) => setFeedCategoryFilter(e.target.value)}
-                  className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+                  className="bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-1.5 text-xs text-forest-950 outline-none font-sans"
                 >
                   <option value="All">All Categories</option>
                   <option value="Green Fodder">Green Fodder</option>
@@ -224,14 +246,16 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
               </div>
 
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-[#8b949e]">Runway:</span>
-                <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
+                <span className="text-xs text-stone-500 font-medium font-sans">Runway:</span>
+                <div className="flex bg-cream-50 border border-[#ede8df] rounded-xl p-0.5 text-xs">
                   {(['All', 'Low Stock', 'Optimal'] as const).map((r) => (
                     <button
                       key={r}
                       onClick={() => setRunwayFilter(r)}
-                      className={`px-2.5 py-1 rounded-md transition-colors ${
-                        runwayFilter === r ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        runwayFilter === r
+                          ? 'bg-forest-900 text-white shadow-xs'
+                          : 'text-stone-600 hover:text-forest-900'
                       }`}
                     >
                       {r}
@@ -247,7 +271,7 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     setFeedCategoryFilter('All');
                     setRunwayFilter('All');
                   }}
-                  className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+                  className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Reset
                 </button>
@@ -255,65 +279,71 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
             </div>
           </div>
 
-          <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
-            <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#f0f6fc]">Feed Inventory Ledger</h3>
-              <span className="text-xs font-mono text-[#8b949e]">
-                Showing {feeds.filter((f) => {
-                  const mSearch = f.name.toLowerCase().includes(feedSearch.toLowerCase()) || f.supplier.toLowerCase().includes(feedSearch.toLowerCase());
-                  const mCat = feedCategoryFilter === 'All' || f.type === feedCategoryFilter;
-                  const mRunway = runwayFilter === 'All' || (runwayFilter === 'Low Stock' ? f.daysRemaining <= 5.0 : f.daysRemaining > 5.0);
-                  return mSearch && mCat && mRunway;
-                }).length} of {feeds.length} items
+          {/* Feed Inventory Table */}
+          <div className="bg-white border border-[#ede8df] rounded-2xl shadow-xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-[#ede8df] bg-cream-50/50 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-forest-950 font-sans">Feed Inventory Ledger</h3>
+                <p className="text-[11px] text-stone-500">Live store balance, unit valuations and buffer runway</p>
+              </div>
+              <span className="text-xs font-mono font-medium text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-0.5 rounded-full">
+                Showing {filteredFeeds.length} of {feeds.length} items
               </span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+                <thead className="bg-[#fcfbf9] text-stone-500 font-mono border-b border-[#ede8df]">
                   <tr>
-                    <th className="px-4 py-2.5 font-medium">Feed Item</th>
-                    <th className="px-4 py-2.5 font-medium">Category</th>
-                    <th className="px-4 py-2.5 font-medium">Opening Stock</th>
-                    <th className="px-4 py-2.5 font-medium">Purchased</th>
-                    <th className="px-4 py-2.5 font-medium">Consumed</th>
-                    <th className="px-4 py-2.5 font-medium">Closing Stock</th>
-                    <th className="px-4 py-2.5 font-medium">Unit Cost</th>
-                    <th className="px-4 py-2.5 font-medium">Stock Value</th>
-                    <th className="px-4 py-2.5 font-medium">Runway</th>
-                    <th className="px-4 py-2.5 font-medium">Supplier</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Feed Item</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Category</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Opening</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Purchased</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Consumed</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Closing Stock</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Unit Cost</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Stock Value</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Runway</th>
+                    <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Supplier</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
-                  {feeds.filter((f) => {
-                    const mSearch = f.name.toLowerCase().includes(feedSearch.toLowerCase()) || f.supplier.toLowerCase().includes(feedSearch.toLowerCase());
-                    const mCat = feedCategoryFilter === 'All' || f.type === feedCategoryFilter;
-                    const mRunway = runwayFilter === 'All' || (runwayFilter === 'Low Stock' ? f.daysRemaining <= 5.0 : f.daysRemaining > 5.0);
-                    return mSearch && mCat && mRunway;
-                  }).map((feed) => (
-                    <tr key={feed.id} className="hover:bg-[#1f2937]/30 transition-colors">
-                      <td className="px-4 py-3 font-sans font-semibold text-[#f0f6fc]">
+                <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
+                  {filteredFeeds.map((feed) => (
+                    <tr key={feed.id} className="hover:bg-cream-50/60 transition-colors">
+                      <td className="px-4 py-3.5 font-sans font-bold text-forest-950">
                         {feed.name}
                         {feed.daysRemaining <= 4.0 && (
-                          <span className="ml-2 text-[10px] text-[#f85149] font-mono bg-[#f85149]/15 px-1.5 py-0.2 rounded border border-[#f85149]/30">
+                          <span className="ml-2 text-[10px] text-rose-700 font-mono bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200 font-semibold">
                             LOW STOCK
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 font-sans text-[#8b949e]">{feed.type}</td>
-                      <td className="px-4 py-3">{feed.openingStockKg.toLocaleString()} kg</td>
-                      <td className="px-4 py-3 text-[#3fb950]">
-                        {feed.purchasedKg > 0 ? `+${feed.purchasedKg.toLocaleString()} kg` : '-'}
+                      <td className="px-4 py-3.5 font-sans">
+                        <span className="px-2 py-0.5 bg-cream-100/70 border border-[#ede8df] text-stone-700 rounded-md text-[11px]">
+                          {feed.type}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-[#f0883e]">-{feed.consumedKg.toLocaleString()} kg</td>
-                      <td className="px-4 py-3 font-bold text-[#f0f6fc]">{feed.closingStockKg.toLocaleString()} kg</td>
-                      <td className="px-4 py-3">₹{feed.unitCostPerKg.toFixed(2)}/kg</td>
-                      <td className="px-4 py-3 text-[#58a6ff]">₹{feed.stockValue.toLocaleString()}</td>
-                      <td className="px-4 py-3 font-bold">
-                        <span className={feed.daysRemaining <= 4.0 ? 'text-[#f85149]' : 'text-[#3fb950]'}>
+                      <td className="px-4 py-3.5">{feed.openingStockKg.toLocaleString()} kg</td>
+                      <td className="px-4 py-3.5 font-bold text-emerald-700">
+                        {feed.purchasedKg > 0 ? `+${feed.purchasedKg.toLocaleString()} kg` : '—'}
+                      </td>
+                      <td className="px-4 py-3.5 text-stone-600">-{feed.consumedKg.toLocaleString()} kg</td>
+                      <td className="px-4 py-3.5 font-bold text-forest-950 text-sm">
+                        {feed.closingStockKg.toLocaleString()} kg
+                      </td>
+                      <td className="px-4 py-3.5">₹{feed.unitCostPerKg.toFixed(2)}/kg</td>
+                      <td className="px-4 py-3.5 font-bold text-forest-900">
+                        ₹{feed.stockValue.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3.5 font-bold">
+                        <span className={`px-2 py-0.5 rounded-md font-mono text-[11px] ${
+                          feed.daysRemaining <= 4.0
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}>
                           {feed.daysRemaining} days
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-sans text-[#8b949e] text-[11px]">{feed.supplier}</td>
+                      <td className="px-4 py-3.5 font-sans text-stone-600 text-[11px]">{feed.supplier}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -327,22 +357,26 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       {activeTab === 'Formulation' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Form: Parameters */}
-          <div className="lg:col-span-2 bg-[#161b22] border border-[#30363d] rounded-lg p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+          <div className="lg:col-span-2 bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-[#ede8df] pb-3">
               <div>
-                <h3 className="text-sm font-semibold text-[#f0f6fc]">Ration Balancing Formulation</h3>
-                <p className="text-xs text-[#8b949e]">Adjust dietary dry matter ratios per animal to observe cost impact</p>
+                <h3 className="text-sm font-bold text-forest-950 font-sans">Ration Balancing Formulation</h3>
+                <p className="text-xs text-stone-500">Adjust dietary dry matter ratios per animal to observe cost impact</p>
               </div>
-              <span className="text-xs font-mono text-[#388bfd] font-semibold">{formGroup}</span>
+              <span className="text-xs font-mono text-forest-800 bg-sage-50 border border-sage-200 px-3 py-1 rounded-full font-bold">
+                {formGroup}
+              </span>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[#8b949e] mb-1">Cattle Production Group</label>
+                <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">
+                  Cattle Production Group
+                </label>
                 <select
                   value={formGroup}
                   onChange={(e) => setFormGroup(e.target.value as any)}
-                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs text-[#f0f6fc] outline-none"
+                  className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
                 >
                   <option value="High Yield Milking">High Yield Milking Herd</option>
                   <option value="Mid Lactation">Mid Lactation / Maintenance</option>
@@ -350,22 +384,24 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#8b949e] mb-1">Number of Animals in Group</label>
+                <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">
+                  Number of Animals in Group
+                </label>
                 <input
                   type="number"
                   value={calcAnimals}
                   onChange={(e) => setCalcAnimals(parseInt(e.target.value) || 1)}
-                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+                  className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
                 />
               </div>
             </div>
 
             {/* Component Sliders/Inputs */}
             <div className="space-y-3 pt-2">
-              <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded-lg flex items-center justify-between">
+              <div className="p-3.5 bg-cream-50/50 border border-[#ede8df] rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-[#f0f6fc]">Green Maize Fodder (Hybrid Chari)</div>
-                  <div className="text-[11px] text-[#8b949e]">Unit rate: ₹3.20/kg</div>
+                  <div className="text-xs font-bold text-forest-950 font-sans">Green Maize Fodder (Hybrid Chari)</div>
+                  <div className="text-[11px] text-stone-500">Unit rate: ₹3.20/kg</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -373,17 +409,17 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     step="0.5"
                     value={calcGreenFodder}
                     onChange={(e) => setCalcGreenFodder(parseFloat(e.target.value) || 0)}
-                    className="w-20 bg-[#161b22] border border-[#30363d] rounded px-2 py-1 text-xs font-mono text-center text-[#f0f6fc]"
+                    className="w-20 bg-white border border-[#ede8df] rounded-lg px-2.5 py-1 text-xs font-mono text-center text-forest-950 font-bold"
                   />
-                  <span className="text-xs text-[#8b949e]">kg/cow</span>
-                  <span className="text-xs font-mono font-bold text-[#58a6ff] w-16 text-right">₹{costGreen.toFixed(1)}</span>
+                  <span className="text-xs text-stone-500 font-sans">kg/cow</span>
+                  <span className="text-xs font-mono font-bold text-forest-900 w-16 text-right">₹{costGreen.toFixed(1)}</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded-lg flex items-center justify-between">
+              <div className="p-3.5 bg-cream-50/50 border border-[#ede8df] rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-[#f0f6fc]">Wheat Straw (Dry Bhusa / Turi)</div>
-                  <div className="text-[11px] text-[#8b949e]">Unit rate: ₹6.80/kg</div>
+                  <div className="text-xs font-bold text-forest-950 font-sans">Wheat Straw (Dry Bhusa / Turi)</div>
+                  <div className="text-[11px] text-stone-500">Unit rate: ₹6.80/kg</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -391,17 +427,17 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     step="0.5"
                     value={calcDryFodder}
                     onChange={(e) => setCalcDryFodder(parseFloat(e.target.value) || 0)}
-                    className="w-20 bg-[#161b22] border border-[#30363d] rounded px-2 py-1 text-xs font-mono text-center text-[#f0f6fc]"
+                    className="w-20 bg-white border border-[#ede8df] rounded-lg px-2.5 py-1 text-xs font-mono text-center text-forest-950 font-bold"
                   />
-                  <span className="text-xs text-[#8b949e]">kg/cow</span>
-                  <span className="text-xs font-mono font-bold text-[#58a6ff] w-16 text-right">₹{costDry.toFixed(1)}</span>
+                  <span className="text-xs text-stone-500 font-sans">kg/cow</span>
+                  <span className="text-xs font-mono font-bold text-forest-900 w-16 text-right">₹{costDry.toFixed(1)}</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded-lg flex items-center justify-between">
+              <div className="p-3.5 bg-cream-50/50 border border-[#ede8df] rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-[#f0f6fc]">Milking Concentrate Pellet 22% CP</div>
-                  <div className="text-[11px] text-[#8b949e]">Unit rate: ₹28.50/kg</div>
+                  <div className="text-xs font-bold text-forest-950 font-sans">Milking Concentrate Pellet 22% CP</div>
+                  <div className="text-[11px] text-stone-500">Unit rate: ₹28.50/kg</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -409,17 +445,17 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     step="0.5"
                     value={calcConcentrate}
                     onChange={(e) => setCalcConcentrate(parseFloat(e.target.value) || 0)}
-                    className="w-20 bg-[#161b22] border border-[#30363d] rounded px-2 py-1 text-xs font-mono text-center text-[#f0f6fc]"
+                    className="w-20 bg-white border border-[#ede8df] rounded-lg px-2.5 py-1 text-xs font-mono text-center text-forest-950 font-bold"
                   />
-                  <span className="text-xs text-[#8b949e]">kg/cow</span>
-                  <span className="text-xs font-mono font-bold text-[#58a6ff] w-16 text-right">₹{costConc.toFixed(1)}</span>
+                  <span className="text-xs text-stone-500 font-sans">kg/cow</span>
+                  <span className="text-xs font-mono font-bold text-forest-900 w-16 text-right">₹{costConc.toFixed(1)}</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#0d1117] border border-[#30363d] rounded-lg flex items-center justify-between">
+              <div className="p-3.5 bg-cream-50/50 border border-[#ede8df] rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-semibold text-[#f0f6fc]">Chelated Mineral Mixture & Vitamins</div>
-                  <div className="text-[11px] text-[#8b949e]">Unit rate: ₹115.00/kg</div>
+                  <div className="text-xs font-bold text-forest-950 font-sans">Chelated Mineral Mixture & Vitamins</div>
+                  <div className="text-[11px] text-stone-500">Unit rate: ₹115.00/kg</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
@@ -427,50 +463,57 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
                     step="0.05"
                     value={calcMineral}
                     onChange={(e) => setCalcMineral(parseFloat(e.target.value) || 0)}
-                    className="w-20 bg-[#161b22] border border-[#30363d] rounded px-2 py-1 text-xs font-mono text-center text-[#f0f6fc]"
+                    className="w-20 bg-white border border-[#ede8df] rounded-lg px-2.5 py-1 text-xs font-mono text-center text-forest-950 font-bold"
                   />
-                  <span className="text-xs text-[#8b949e]">kg/cow</span>
-                  <span className="text-xs font-mono font-bold text-[#58a6ff] w-16 text-right">₹{costMin.toFixed(1)}</span>
+                  <span className="text-xs text-stone-500 font-sans">kg/cow</span>
+                  <span className="text-xs font-mono font-bold text-forest-900 w-16 text-right">₹{costMin.toFixed(1)}</span>
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Expected Avg Milk Yield per Cow (Litres/day)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">
+                Expected Avg Milk Yield per Cow (Litres/day)
+              </label>
               <input
                 type="number"
                 step="0.5"
                 value={expectedYieldPerCow}
                 onChange={(e) => setExpectedYieldPerCow(parseFloat(e.target.value) || 1)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+                className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none font-bold"
               />
             </div>
           </div>
 
           {/* Right Summary Card */}
-          <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5 flex flex-col justify-between space-y-4">
+          <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-[#f0f6fc] mb-3">Ration Economic Summary</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-forest-950 font-sans">Ration Economic Summary</h3>
+                <span className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  BALANCED
+                </span>
+              </div>
 
               <div className="space-y-3 font-mono text-xs">
-                <div className="p-3 bg-[#0d1117] rounded-lg border border-[#30363d]">
-                  <div className="text-[11px] text-[#8b949e] font-sans">Daily Intake / Animal</div>
-                  <div className="text-lg font-bold text-[#f0f6fc] mt-1">{dailyFeedKgPerAnimal.toFixed(2)} kg</div>
-                  <div className="text-[10px] text-[#8b949e] font-sans">Dry matter verified</div>
+                <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                  <div className="text-[11px] text-stone-500 font-sans">Daily Intake / Animal</div>
+                  <div className="text-lg font-bold text-forest-950 mt-0.5">{dailyFeedKgPerAnimal.toFixed(2)} kg</div>
+                  <div className="text-[10px] text-stone-500 font-sans">Dry matter intake verified</div>
                 </div>
 
-                <div className="p-3 bg-[#0d1117] rounded-lg border border-[#30363d]">
-                  <div className="text-[11px] text-[#8b949e] font-sans">Daily Cost / Animal</div>
-                  <div className="text-lg font-bold text-[#f0883e] mt-1">₹{dailyCostPerAnimal.toFixed(2)}</div>
-                  <div className="text-[10px] text-[#8b949e] font-sans">₹{totalDailyCost.toFixed(0)} for group</div>
+                <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                  <div className="text-[11px] text-stone-500 font-sans">Daily Cost / Animal</div>
+                  <div className="text-lg font-bold text-amber-700 mt-0.5">₹{dailyCostPerAnimal.toFixed(2)}</div>
+                  <div className="text-[10px] text-stone-500 font-sans">₹{totalDailyCost.toFixed(0)} for entire herd group</div>
                 </div>
 
-                <div className="p-4 bg-[#238636]/15 rounded-lg border border-[#238636]/40">
-                  <div className="text-xs font-semibold text-[#3fb950] font-sans">Estimated Feed Cost / Litre</div>
-                  <div className="text-2xl font-bold text-[#3fb950] mt-1 font-mono">
-                    ₹{feedCostPerLitre} / L
+                <div className="p-4 bg-emerald-50/70 rounded-xl border border-emerald-200/80">
+                  <div className="text-xs font-bold text-emerald-900 font-sans">Estimated Feed Cost / Litre</div>
+                  <div className="text-3xl font-extrabold text-emerald-800 mt-1 font-mono tracking-tight">
+                    ₹{feedCostPerLitre} <span className="text-sm font-medium">/ L</span>
                   </div>
-                  <div className="text-[11px] text-[#c9d1d9] font-sans mt-1">
+                  <div className="text-[11px] text-emerald-800/90 font-sans mt-1.5 leading-relaxed">
                     At ₹38/L milk procurement parity, provides ₹{(38 - parseFloat(feedCostPerLitre)).toFixed(2)} gross contribution margin per litre.
                   </div>
                 </div>
@@ -481,7 +524,7 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
               onClick={() => {
                 alert(`Feed Formula for ${formGroup} updated with Feed Cost: ₹${feedCostPerLitre}/L.`);
               }}
-              className="w-full py-2.5 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-bold transition-colors"
+              className="w-full py-2.5 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               Apply Ration to {formGroup}
             </button>
@@ -497,53 +540,53 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
         subtitle="Inward batch entry to replenish fodder or concentrate stock"
         maxWidth="md"
       >
-        <form onSubmit={handleSavePurchase} className="space-y-3.5">
+        <form onSubmit={handleSavePurchase} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Select Feed Product</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Select Feed Product</label>
             <select
               value={selectedFeedId}
               onChange={(e) => setSelectedFeedId(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs text-[#f0f6fc] outline-none"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
             >
               {feeds.map((f) => (
                 <option key={f.id} value={f.id}>
-                  {f.name} (Current: {f.closingStockKg} kg)
+                  {f.name} (Current Stock: {f.closingStockKg} kg)
                 </option>
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Quantity (Kg)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Quantity (Kg)</label>
               <input
                 type="number"
                 value={purchaseQty}
                 onChange={(e) => setPurchaseQty(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+                className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Unit Rate (₹/kg)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Unit Rate (₹/kg)</label>
               <input
                 type="number"
                 step="0.1"
                 value={purchaseRate}
                 onChange={(e) => setPurchaseRate(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+                className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
               />
             </div>
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsPurchaseModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded-lg text-xs font-semibold"
+              className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-all"
             >
               Save Inward Purchase
             </button>
@@ -559,41 +602,41 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
         subtitle="Log quantity deducted from feed store to cow sheds"
         maxWidth="md"
       >
-        <form onSubmit={handleSaveConsumption} className="space-y-3.5">
+        <form onSubmit={handleSaveConsumption} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Feed Item</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Feed Item</label>
             <select
               value={consumeFeedId}
               onChange={(e) => setConsumeFeedId(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs text-[#f0f6fc] outline-none"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
             >
               {feeds.map((f) => (
                 <option key={f.id} value={f.id}>
-                  {f.name} (Stock: {f.closingStockKg} kg)
+                  {f.name} (Available: {f.closingStockKg} kg)
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Consumed Today (Kg)</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Consumed Today (Kg)</label>
             <input
               type="number"
               value={consumeQty}
               onChange={(e) => setConsumeQty(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-xs font-mono text-[#f0f6fc] outline-none"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
             />
           </div>
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsConsumptionModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded-lg text-xs font-semibold"
+              className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-all"
             >
               Deduct Consumption
             </button>
@@ -603,3 +646,5 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
     </div>
   );
 };
+
+export default FeedManagementPage;

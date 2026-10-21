@@ -76,12 +76,12 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-[#ede8df] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-forest-950 font-sans">
             Milk Collection Desk
           </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
+          <p className="text-xs text-stone-500 mt-1 font-medium">
             Real-time farmer inward intake, milk analyzer integration, lactometer testing and instantaneous payable calculation.
           </p>
         </div>
@@ -89,21 +89,21 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsIotBridgeOpen(true)}
-            className="px-3.5 py-2 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-xs font-semibold text-emerald-300 rounded-lg transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
+            className="px-3.5 py-2 bg-sage-50 hover:bg-sage-100 border border-sage-200 text-xs font-semibold text-forest-900 rounded-xl transition-all duration-150 flex items-center gap-2 shadow-xs cursor-pointer active:scale-98"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <Cpu className="w-4 h-4 text-emerald-400" />
+            <span className="w-2 h-2 rounded-full bg-forest-600 animate-pulse" />
+            <Cpu className="w-4 h-4 text-forest-700" />
             <span>Lactoscan IoT Bridge</span>
           </button>
           <button
             onClick={onOpenMobileView}
-            className="px-3 py-2 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-xs font-semibold text-[#58a6ff] rounded-lg transition-colors cursor-pointer"
+            className="px-3.5 py-2 bg-[#fdfcfb] hover:bg-cream-100 border border-[#ede8df] text-xs font-semibold text-stone-700 rounded-xl transition-all duration-150 cursor-pointer shadow-xs active:scale-98"
           >
             Touch Field Mode
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-forest-950/20 active:scale-98"
           >
             <Plus className="w-4 h-4" />
             <span>Manual Entry</span>
@@ -112,28 +112,28 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
       </div>
 
       {/* Hardware IoT Intake Station Banner */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-4">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
+        <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <Radio className="w-4 h-4 text-emerald-400" />
-            <span className="font-semibold text-[#f0f6fc]">BMC Anand Intake Station:</span>
+            <Radio className="w-4 h-4 text-forest-600 animate-pulse" />
+            <span className="font-bold text-forest-950">BMC Anand Intake Station:</span>
           </div>
-          <div className="flex items-center gap-1.5 font-mono text-[#8b949e]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-1.5 font-mono text-stone-600 bg-cream-50 px-2.5 py-1 rounded-lg border border-[#ede8df]">
+            <span className="w-1.5 h-1.5 rounded-full bg-forest-600" />
             <span>Milkotronic Analyzer COM3 (Online)</span>
           </div>
-          <div className="flex items-center gap-1.5 font-mono text-[#8b949e]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-1.5 font-mono text-stone-600 bg-cream-50 px-2.5 py-1 rounded-lg border border-[#ede8df]">
+            <span className="w-1.5 h-1.5 rounded-full bg-forest-600" />
             <span>Mettler Load Cell COM4 (Calibrated)</span>
           </div>
         </div>
 
         <button
           onClick={() => setIsIotBridgeOpen(true)}
-          className="text-xs text-[#58a6ff] hover:underline font-medium flex items-center gap-1 cursor-pointer"
+          className="text-xs text-forest-800 hover:text-forest-950 font-semibold flex items-center gap-1.5 cursor-pointer bg-sage-50 px-3 py-1 rounded-lg border border-sage-200/80 hover:bg-sage-100 transition-colors"
         >
           <span>Open Serial Stream</span>
-          <Zap className="w-3.5 h-3.5 text-amber-400" />
+          <Zap className="w-3.5 h-3.5 text-gold-600" />
         </button>
       </div>
 
@@ -156,42 +156,42 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
       </div>
 
       {/* Comprehensive Filter and Search Bar */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 space-y-3">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-4 space-y-3.5 shadow-xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3.5 top-3" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search Farmer, ID, Centre, or CC#..."
-              className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+              className="w-full bg-[#faf8f5] border border-[#ede8df] focus:border-forest-600 focus:bg-white rounded-xl pl-9 pr-3.5 py-2 text-xs text-stone-800 placeholder-stone-400 outline-none transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-[#8b949e]">Shift:</span>
-            <div className="flex bg-[#0d1117] border border-[#30363d] rounded-lg p-0.5 text-xs">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="text-xs font-semibold text-stone-500">Shift:</span>
+            <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs">
               <button
                 onClick={() => setShiftFilter('All')}
-                className={`px-2.5 py-1 rounded-md transition-colors ${
-                  shiftFilter === 'All' ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  shiftFilter === 'All' ? 'bg-white text-forest-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 All ({collections.length})
               </button>
               <button
                 onClick={() => setShiftFilter('Morning')}
-                className={`px-2.5 py-1 rounded-md transition-colors ${
-                  shiftFilter === 'Morning' ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  shiftFilter === 'Morning' ? 'bg-white text-forest-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 Morning ({morningCount})
               </button>
               <button
                 onClick={() => setShiftFilter('Evening')}
-                className={`px-2.5 py-1 rounded-md transition-colors ${
-                  shiftFilter === 'Evening' ? 'bg-[#388bfd] text-white font-medium' : 'text-[#8b949e] hover:text-[#f0f6fc]'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  shiftFilter === 'Evening' ? 'bg-white text-forest-950 font-bold shadow-xs' : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
                 Evening ({eveningCount})
@@ -200,14 +200,14 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#21262d] text-xs">
-          <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-[#ede8df]/70 text-xs">
+          <div className="flex items-center gap-3.5 flex-wrap">
             <div className="flex items-center gap-1.5">
-              <span className="text-[#8b949e]">QC Status:</span>
+              <span className="text-stone-500 font-medium">QC Status:</span>
               <select
                 value={qcFilter}
                 onChange={(e) => setQcFilter(e.target.value as any)}
-                className="bg-[#0d1117] border border-[#30363d] rounded-md px-2 py-1 text-xs text-[#c9d1d9] outline-none"
+                className="bg-[#faf8f5] border border-[#ede8df] rounded-lg px-2.5 py-1 text-xs text-stone-800 outline-none focus:border-forest-600 cursor-pointer"
               >
                 <option value="All">All QC Results</option>
                 <option value="PASS">PASS Only</option>
@@ -217,11 +217,11 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-[#8b949e]">Centre:</span>
+              <span className="text-stone-500 font-medium">Centre:</span>
               <select
                 value={centreFilter}
                 onChange={(e) => setCentreFilter(e.target.value)}
-                className="bg-[#0d1117] border border-[#30363d] rounded-md px-2 py-1 text-xs text-[#c9d1d9] outline-none"
+                className="bg-[#faf8f5] border border-[#ede8df] rounded-lg px-2.5 py-1 text-xs text-stone-800 outline-none focus:border-forest-600 cursor-pointer"
               >
                 <option value="All">All Centres</option>
                 {centres.map((c) => (
@@ -231,11 +231,11 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-[#8b949e]">Date:</span>
+              <span className="text-stone-500 font-medium">Date:</span>
               <select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className="bg-[#0d1117] border border-[#30363d] rounded-md px-2 py-1 text-xs text-[#c9d1d9] outline-none"
+                className="bg-[#faf8f5] border border-[#ede8df] rounded-lg px-2.5 py-1 text-xs text-stone-800 outline-none focus:border-forest-600 cursor-pointer"
               >
                 <option value="All">All Dates</option>
                 <option value="2026-10-06">2026-10-06 (Today)</option>
@@ -244,9 +244,9 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-[#8b949e] font-mono">
-              Showing <strong className="text-[#58a6ff]">{filtered.length}</strong> of {collections.length}
+          <div className="flex items-center gap-2.5">
+            <span className="text-stone-500 font-mono text-xs">
+              Showing <strong className="text-forest-900 font-bold">{filtered.length}</strong> of {collections.length}
             </span>
             {isFiltered && (
               <button
@@ -257,7 +257,7 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
                   setDateFilter('All');
                   setSearch('');
                 }}
-                className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-lg text-[11px] font-semibold border border-rose-200 transition-colors cursor-pointer"
               >
                 Reset Filters
               </button>
@@ -267,58 +267,58 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
       </div>
 
       {/* Collection Records Table */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
-        <div className="px-5 py-3 border-b border-[#30363d] flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#f0f6fc]">Today's Milk Inward Log</h3>
-          <span className="text-xs font-mono text-[#3fb950] font-semibold">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
+        <div className="px-5 py-3.5 border-b border-[#ede8df] flex items-center justify-between bg-cream-50/40">
+          <h3 className="text-sm font-bold text-forest-950">Today's Milk Inward Log</h3>
+          <span className="text-xs font-mono text-forest-800 font-bold bg-sage-50 px-2.5 py-1 rounded-full border border-sage-200">
             Total Payable: ₹{totalPayable.toLocaleString()}
           </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+            <thead className="bg-[#faf8f5] text-stone-600 font-mono border-b border-[#ede8df] uppercase text-[11px] tracking-wider">
               <tr>
-                <th className="px-4 py-2.5 font-medium">Time / Shift</th>
-                <th className="px-4 py-2.5 font-medium">Farmer</th>
-                <th className="px-4 py-2.5 font-medium">Collection Centre</th>
-                <th className="px-4 py-2.5 font-medium">Quantity</th>
-                <th className="px-4 py-2.5 font-medium">Fat %</th>
-                <th className="px-4 py-2.5 font-medium">SNF %</th>
-                <th className="px-4 py-2.5 font-medium">Temp (°C)</th>
-                <th className="px-4 py-2.5 font-medium">QC Status</th>
-                <th className="px-4 py-2.5 font-medium">Rate / L</th>
-                <th className="px-4 py-2.5 font-medium text-right">Payable</th>
-                <th className="px-4 py-2.5 font-medium text-right">Receipt Slip</th>
+                <th className="px-4 py-3 font-semibold">Time / Shift</th>
+                <th className="px-4 py-3 font-semibold">Farmer</th>
+                <th className="px-4 py-3 font-semibold">Collection Centre</th>
+                <th className="px-4 py-3 font-semibold">Quantity</th>
+                <th className="px-4 py-3 font-semibold">Fat %</th>
+                <th className="px-4 py-3 font-semibold">SNF %</th>
+                <th className="px-4 py-3 font-semibold">Temp (°C)</th>
+                <th className="px-4 py-3 font-semibold">QC Status</th>
+                <th className="px-4 py-3 font-semibold">Rate / L</th>
+                <th className="px-4 py-3 font-semibold text-right">Payable</th>
+                <th className="px-4 py-3 font-semibold text-right">Receipt Slip</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
+            <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
               {filtered.map((item) => (
-                <tr key={item.id} className="hover:bg-[#1f2937]/30 transition-colors">
+                <tr key={item.id} className="hover:bg-cream-50/80 transition-colors">
                   <td className="px-4 py-3">
-                    <span className="font-bold text-[#f0f6fc]">{item.time}</span>
-                    <span className="text-[#8b949e] ml-2 text-[11px] font-sans">({item.shift})</span>
+                    <span className="font-bold text-stone-900">{item.time}</span>
+                    <span className="text-stone-400 ml-2 text-[11px] font-sans">({item.shift})</span>
                   </td>
                   <td className="px-4 py-3 font-sans">
-                    <div className="font-semibold text-[#f0f6fc]">{item.farmerName}</div>
-                    <div className="text-[11px] text-[#8b949e] font-mono">{item.farmerId}</div>
+                    <div className="font-bold text-forest-950">{item.farmerName}</div>
+                    <div className="text-[11px] text-stone-500 font-mono">{item.farmerId}</div>
                   </td>
-                  <td className="px-4 py-3 font-sans text-[#8b949e]">{item.centre}</td>
-                  <td className="px-4 py-3 font-bold text-[#f0f6fc]">{item.quantityLitres.toFixed(1)} L</td>
-                  <td className="px-4 py-3 text-[#58a6ff]">{item.fat.toFixed(2)}%</td>
-                  <td className="px-4 py-3">{item.snf.toFixed(2)}%</td>
+                  <td className="px-4 py-3 font-sans text-stone-600">{item.centre}</td>
+                  <td className="px-4 py-3 font-bold text-stone-900">{item.quantityLitres.toFixed(1)} L</td>
+                  <td className="px-4 py-3 text-forest-800 font-semibold">{item.fat.toFixed(2)}%</td>
+                  <td className="px-4 py-3 font-medium">{item.snf.toFixed(2)}%</td>
                   <td className="px-4 py-3">
-                    <span className={item.temperatureC > 20 ? 'text-[#f0883e] font-bold' : 'text-[#c9d1d9]'}>
+                    <span className={item.temperatureC > 20 ? 'text-amber-800 font-bold' : 'text-stone-700'}>
                       {item.temperatureC.toFixed(1)}°C
                     </span>
                   </td>
                   <td className="px-4 py-3 font-sans">
                     <StatusBadge status={item.quality} size="sm" />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 font-medium">
                     {item.ratePerLitre > 0 ? `₹${item.ratePerLitre.toFixed(2)}` : '-'}
                   </td>
-                  <td className="px-4 py-3 text-right font-bold text-[#3fb950]">
-                    {item.payableAmount > 0 ? `₹${item.payableAmount.toLocaleString()}` : 'REJECTED'}
+                  <td className="px-4 py-3 text-right font-bold text-forest-900">
+                    {item.payableAmount > 0 ? `₹${item.payableAmount.toLocaleString()}` : <span className="text-rose-700">REJECTED</span>}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
@@ -326,10 +326,10 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
                         setSelectedSlipRecord(item);
                         setIsSlipOpen(true);
                       }}
-                      className="px-2 py-1 bg-[#161b22] hover:bg-[#21262d] text-[#58a6ff] hover:text-white rounded text-[11px] font-mono border border-[#30363d] inline-flex items-center gap-1 cursor-pointer transition-colors"
+                      className="px-2.5 py-1 bg-[#fdfcfb] hover:bg-cream-100 text-forest-800 hover:text-forest-950 rounded-lg text-[11px] font-mono border border-[#ede8df] inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
                       title="Print 58mm/80mm Slip or Send SMS"
                     >
-                      <Printer className="w-3 h-3" />
+                      <Printer className="w-3 h-3 text-stone-500" />
                       <span>POS Slip</span>
                     </button>
                   </td>

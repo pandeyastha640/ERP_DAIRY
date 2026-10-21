@@ -47,10 +47,10 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
   };
 
   const channelDonutSlices = [
-    { label: 'Distributor Network', value: channelSales.Distributor, color: '#388bfd' },
-    { label: 'Institutional / Horeca', value: channelSales.Horeca, color: '#3fb950' },
-    { label: 'Retail Supermarket', value: channelSales.Retail, color: '#f0883e' },
-    { label: 'Farm Direct Consumer', value: channelSales.Direct, color: '#bc8cff' },
+    { label: 'Distributor Network', value: channelSales.Distributor, color: '#1b4332' },
+    { label: 'Institutional / Horeca', value: channelSales.Horeca, color: '#2d6a4f' },
+    { label: 'Retail Supermarket', value: channelSales.Retail, color: '#52b788' },
+    { label: 'Farm Direct Consumer', value: channelSales.Direct, color: '#c59b27' },
   ];
 
   const salesTrend = [
@@ -104,20 +104,30 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="border-b border-[#30363d] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#f0f6fc]">
-            Sales Orders & Revenue Operations
-          </h1>
-          <p className="text-xs text-[#8b949e] mt-0.5">
-            Omni-channel commercial invoices across distributor networks, modern retail, Horeca banquets, and farm gate sales.
-          </p>
+      {/* Page Header */}
+      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-700 shadow-xs">
+            <ShoppingCart className="w-5 h-5 text-forest-700" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold tracking-tight text-forest-950 font-sans">
+                Sales Orders & Revenue Operations
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sage-50 text-forest-800 border border-sage-200">
+                GST 3-Ply Compliant
+              </span>
+            </div>
+            <p className="text-xs text-stone-500 mt-0.5 font-sans">
+              Omni-channel commercial invoices across distributor networks, modern retail, Horeca banquets, and farm gate sales.
+            </p>
+          </div>
         </div>
 
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-[#388bfd] hover:bg-[#4c97ff] text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 self-start sm:self-auto"
+          className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 self-start md:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Create Sales Order</span>
@@ -125,10 +135,10 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
       </div>
 
       {/* KPI Ribbon */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
         <MetricCard label="Today's Gross Sales" value={`₹${todayRevenue.toLocaleString()}`} unit="" trend="up" changePct={2.4} changeText="Invoiced today" />
         <MetricCard label="Estimated Monthly Run" value="₹42.8 Lakhs" unit="" trend="up" changeText="30-day projection" />
-        <MetricCard label="Commercial Orders" value={orders.length} unit="Invoices" trend="neutral" changeText="Active routes" />
+        <MetricCard label="Commercial Orders" value={orders.length} unit="Invoices" trend="neutral" changeText="Active routes fulfillment" />
         <MetricCard label="Avg Order Value" value={`₹${avgOrderValue.toLocaleString()}`} unit="" trend="up" changeText="Wholesale average" />
         <MetricCard
           label="Payment Receivables"
@@ -143,14 +153,19 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Trend */}
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5">
+        <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-[#f0f6fc]">Daily Revenue Trajectory (₹)</h3>
-            <span className="text-xs font-mono text-[#3fb950] font-bold">₹1.42 Lakhs Today</span>
+            <div>
+              <h3 className="text-sm font-bold text-forest-950 font-sans">Daily Revenue Trajectory (₹)</h3>
+              <p className="text-[11px] text-stone-500">Gross billing trend over current cycle</p>
+            </div>
+            <span className="text-xs font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full font-bold">
+              ₹1.42 Lakhs Today
+            </span>
           </div>
           <AreaTrendChart
             data={salesTrend}
-            primaryColor="#3fb950"
+            primaryColor="#1b4332"
             primaryLabel="Daily Gross Sales"
             unit="₹"
             height={160}
@@ -158,10 +173,15 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
         </div>
 
         {/* Channel Breakdown */}
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5">
+        <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-[#f0f6fc]">Sales Mix by Channel</h3>
-            <span className="text-xs font-mono text-[#8b949e]">4 Active Channels</span>
+            <div>
+              <h3 className="text-sm font-bold text-forest-950 font-sans">Sales Mix by Channel</h3>
+              <p className="text-[11px] text-stone-500">Offtake split across market channels</p>
+            </div>
+            <span className="text-xs font-mono text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-1 rounded-full font-medium">
+              4 Active Channels
+            </span>
           </div>
           <DonutChart
             slices={channelDonutSlices}
@@ -173,25 +193,25 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
       </div>
 
       {/* Orders Filter & Search */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="bg-white border border-[#ede8df] rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-2.5" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search Order SO#, Customer or Product..."
-            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-[#58a6ff] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] outline-none"
+            className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 focus:bg-white rounded-xl pl-9 pr-3 py-2 text-xs text-forest-950 placeholder-stone-400 outline-none transition-all"
           />
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-[#8b949e]">Channel:</span>
+            <span className="text-xs text-stone-500 font-medium font-sans">Channel:</span>
             <select
               value={channelFilter}
               onChange={(e) => setChannelFilter(e.target.value)}
-              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+              className="bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-1.5 text-xs text-forest-950 outline-none font-sans"
             >
               <option value="All">All Channels</option>
               <option value="Distributor">Distributor</option>
@@ -202,11 +222,11 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-[#8b949e]">Payment:</span>
+            <span className="text-xs text-stone-500 font-medium font-sans">Payment:</span>
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value as any)}
-              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+              className="bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-1.5 text-xs text-forest-950 outline-none font-sans"
             >
               <option value="All">All Payment Statuses</option>
               <option value="Paid">Paid</option>
@@ -216,11 +236,11 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-[#8b949e]">Date:</span>
+            <span className="text-xs text-stone-500 font-medium font-sans">Date:</span>
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1 text-xs text-[#c9d1d9] outline-none"
+              className="bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-1.5 text-xs text-forest-950 outline-none font-sans"
             >
               <option value="All">All Dates</option>
               <option value="2026-10-06">2026-10-06 (Today)</option>
@@ -228,8 +248,8 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
             </select>
           </div>
 
-          <span className="text-xs text-[#8b949e] font-mono ml-1">
-            Showing <strong className="text-[#58a6ff]">{filteredOrders.length}</strong> of {displayOrders.length}
+          <span className="text-xs font-mono font-medium text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-1 rounded-full">
+            Showing <strong className="font-bold text-forest-950">{filteredOrders.length}</strong> of {displayOrders.length}
           </span>
 
           {(search !== '' || channelFilter !== 'All' || paymentFilter !== 'All' || dateFilter !== 'All') && (
@@ -240,7 +260,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                 setPaymentFilter('All');
                 setDateFilter('All');
               }}
-              className="px-2 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#f85149] rounded text-[11px] font-medium transition-colors cursor-pointer"
+              className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
             >
               Reset
             </button>
@@ -249,40 +269,53 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-lg overflow-hidden">
+      <div className="bg-white border border-[#ede8df] rounded-2xl shadow-xs overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-[#ede8df] bg-cream-50/50 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-forest-950 font-sans">Commercial Order Book</h3>
+            <p className="text-[11px] text-stone-500">Authorized sales orders, dispatch tracking and tax invoices</p>
+          </div>
+          <span className="text-xs font-mono font-medium text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-0.5 rounded-full">
+            {displayOrders.length} Invoiced Orders
+          </span>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0d1117] text-[#8b949e] font-mono border-b border-[#30363d]">
+            <thead className="bg-[#fcfbf9] text-stone-500 font-mono border-b border-[#ede8df]">
               <tr>
-                <th className="px-4 py-2.5 font-medium">Order #</th>
-                <th className="px-4 py-2.5 font-medium">Date</th>
-                <th className="px-4 py-2.5 font-medium">Customer</th>
-                <th className="px-4 py-2.5 font-medium">Channel</th>
-                <th className="px-4 py-2.5 font-medium">Product</th>
-                <th className="px-4 py-2.5 font-medium">Quantity</th>
-                <th className="px-4 py-2.5 font-medium">Unit Rate</th>
-                <th className="px-4 py-2.5 font-medium">Total Amount</th>
-                <th className="px-4 py-2.5 font-medium">Payment</th>
-                <th className="px-4 py-2.5 font-medium">Fulfillment</th>
-                <th className="px-4 py-2.5 font-medium text-right">Tax Invoice</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Order #</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Date</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Customer</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Channel</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Product</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Quantity</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Unit Rate</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Total Amount</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Payment</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Fulfillment</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px] text-right">Tax Invoice</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#21262d] text-[#c9d1d9] font-mono tabular-nums">
+            <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
               {filteredOrders.map((ord) => (
-                <tr key={ord.id} className="hover:bg-[#1f2937]/30 transition-colors">
-                  <td className="px-4 py-3 font-bold text-[#58a6ff]">{ord.orderNumber}</td>
-                  <td className="px-4 py-3 text-[#8b949e]">{ord.date}</td>
-                  <td className="px-4 py-3 font-sans font-semibold text-[#f0f6fc]">{ord.customerName}</td>
-                  <td className="px-4 py-3 font-sans text-[#8b949e]">{ord.channel}</td>
-                  <td className="px-4 py-3 font-sans text-[#c9d1d9]">{ord.product}</td>
-                  <td className="px-4 py-3">{ord.quantityUnits.toLocaleString()}</td>
-                  <td className="px-4 py-3">₹{ord.unitRate.toFixed(2)}</td>
-                  <td className="px-4 py-3 font-bold text-[#3fb950]">₹{ord.totalAmount.toLocaleString()}</td>
-                  <td className="px-4 py-3 font-sans">
+                <tr key={ord.id} className="hover:bg-cream-50/60 transition-colors">
+                  <td className="px-4 py-3.5 font-bold text-forest-900">{ord.orderNumber}</td>
+                  <td className="px-4 py-3.5 text-stone-500">{ord.date}</td>
+                  <td className="px-4 py-3.5 font-sans font-bold text-forest-950">{ord.customerName}</td>
+                  <td className="px-4 py-3.5 font-sans">
+                    <span className="px-2 py-0.5 bg-cream-100/70 border border-[#ede8df] text-stone-700 rounded-md text-[11px]">
+                      {ord.channel}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5 font-sans text-stone-800 font-medium">{ord.product}</td>
+                  <td className="px-4 py-3.5">{ord.quantityUnits.toLocaleString()}</td>
+                  <td className="px-4 py-3.5">₹{ord.unitRate.toFixed(2)}</td>
+                  <td className="px-4 py-3.5 font-bold text-forest-950 text-sm">₹{ord.totalAmount.toLocaleString()}</td>
+                  <td className="px-4 py-3.5 font-sans">
                     <StatusBadge status={ord.paymentStatus} size="sm" />
                   </td>
-                  <td className="px-4 py-3 font-sans text-[#8b949e]">{ord.fulfillmentStatus}</td>
-                  <td className="px-4 py-3 text-right font-sans">
+                  <td className="px-4 py-3.5 font-sans text-stone-600">{ord.fulfillmentStatus}</td>
+                  <td className="px-4 py-3.5 text-right font-sans">
                     <button
                       onClick={async () => {
                         try {
@@ -363,9 +396,9 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                         });
                         setIsInvoiceModalOpen(true);
                       }}
-                      className="px-2.5 py-1 bg-sky-950/60 hover:bg-sky-900/80 text-sky-400 border border-sky-800/60 rounded text-xs cursor-pointer font-medium inline-flex items-center gap-1.5 transition-colors"
+                      className="px-3 py-1.5 bg-sage-50 hover:bg-sage-100 text-forest-800 border border-sage-200 rounded-xl text-xs cursor-pointer font-bold inline-flex items-center gap-1.5 transition-all shadow-2xs"
                     >
-                      <FileText className="w-3.5 h-3.5" />
+                      <FileText className="w-3.5 h-3.5 text-forest-700" />
                       <span>GST Invoice</span>
                     </button>
                   </td>
@@ -384,26 +417,26 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
         subtitle="Issue wholesale distributor dispatch or direct institutional invoice"
         maxWidth="md"
       >
-        <form onSubmit={handleCreate} className="space-y-3.5">
+        <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#8b949e] mb-1">Customer Name</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Customer Name</label>
             <input
               type="text"
               required
               placeholder="e.g. Vadodara Retail Mart"
               value={customer}
               onChange={(e) => setCustomer(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs text-[#f0f6fc]"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Sales Channel</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Sales Channel</label>
               <select
                 value={channel}
                 onChange={(e) => setChannel(e.target.value as any)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs text-[#f0f6fc]"
+                className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
               >
                 <option value="Distributor">Distributor</option>
                 <option value="Retail Supermarket">Retail Supermarket</option>
@@ -412,56 +445,56 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Product</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Product</label>
               <input
                 type="text"
                 value={product}
                 onChange={(e) => setProduct(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs text-[#f0f6fc]"
+                className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Quantity (Units)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Quantity (Units)</label>
               <input
                 type="number"
                 value={qty}
                 onChange={(e) => setQty(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs font-mono text-[#f0f6fc]"
+                className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#8b949e] mb-1">Unit Rate (₹)</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Unit Rate (₹)</label>
               <input
                 type="number"
                 step="0.5"
                 value={rate}
                 onChange={(e) => setRate(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] rounded px-3 py-1.5 text-xs font-mono text-[#f0f6fc]"
+                className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
               />
             </div>
           </div>
 
-          <div className="p-3 bg-[#0d1117] rounded border border-[#30363d] flex items-center justify-between text-xs">
-            <span className="text-[#8b949e]">Calculated Invoice Amount:</span>
-            <span className="text-base font-bold font-mono text-[#3fb950]">
+          <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df] flex items-center justify-between text-xs">
+            <span className="text-stone-600 font-sans font-medium">Calculated Invoice Amount:</span>
+            <span className="text-base font-bold font-mono text-forest-950">
               ₹{((parseInt(qty) || 0) * (parseFloat(rate) || 0)).toLocaleString()}
             </span>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(false)}
-              className="px-4 py-2 text-xs text-[#8b949e]"
+              className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-700 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#388bfd] text-white rounded text-xs font-semibold"
+              className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-all"
             >
               Issue Invoice
             </button>
@@ -475,7 +508,6 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
         onClose={() => setIsInvoiceModalOpen(false)}
         invoiceData={selectedInvoice}
         onOrderDispatched={(orderNum, status) => {
-          // Update local orders list so table reflects status immediately
           setLocalOrders((prev) =>
             prev.map((o) =>
               o.orderNumber === orderNum ||
@@ -485,7 +517,6 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                 : o
             )
           );
-          // Update selected invoice fulfillment status if viewed
           if (selectedInvoice) {
             setSelectedInvoice({
               ...selectedInvoice,
@@ -500,3 +531,5 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
     </div>
   );
 };
+
+export default SalesPage;

@@ -40,26 +40,26 @@ export const Modal: React.FC<ModalProps> = ({
   }[maxWidth];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
       <div
-        className={`relative w-full ${maxWidthClass} bg-white border border-slate-200 rounded-xl shadow-xl text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-150`}
+        className={`relative w-full ${maxWidthClass} bg-white border border-[#ede8df] rounded-2xl sm:rounded-3xl shadow-[0_20px_50px_-10px_rgba(27,67,50,0.12)] text-stone-900 overflow-hidden animate-in zoom-in-95 duration-200`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/60">
+        <div className="flex items-center justify-between px-6 py-4.5 border-b border-[#ede8df] bg-[#faf8f4]">
           <div>
-            <h3 className="text-base font-semibold text-slate-900 tracking-tight">{title}</h3>
-            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+            <h3 className="text-base sm:text-lg font-bold text-[#0f2319] tracking-tight">{title}</h3>
+            {subtitle && <p className="text-xs text-stone-500 mt-0.5">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
             aria-label="Close dialog"
-            className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-[#ede8df]/60 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 max-h-[calc(85vh-8rem)] overflow-y-auto">{children}</div>
+        <div className="p-6 sm:p-7 max-h-[calc(85vh-7rem)] overflow-y-auto">{children}</div>
       </div>
     </div>
   );

@@ -99,7 +99,6 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
     };
 
     if (isSimulatedOffline) {
-      // Store in local offline queue
       const queuedItem = { ...recordPayload, queuedAt: new Date().toISOString() };
       setOfflineQueue((prev) => [...prev, queuedItem]);
       setToastMessage(`Stored in Offline Cache! (${offlineQueue.length + 1} pending sync)`);
@@ -121,7 +120,6 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
     setIsSyncing(true);
 
     setTimeout(() => {
-      // Replay all offline records
       offlineQueue.forEach((rec) => {
         onSaveCollection(rec);
       });
@@ -135,34 +133,34 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
   };
 
   return (
-    <div className="bg-white min-h-[580px] max-w-md mx-auto p-5 rounded-2xl border border-slate-200 shadow-2xl text-slate-900">
+    <div className="bg-white min-h-[580px] max-w-md mx-auto p-6 rounded-3xl border border-[#ede8df] shadow-lg text-stone-900 font-sans">
       {/* Top Header */}
-      <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
+      <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#ede8df]">
         <div className="flex items-center gap-2">
           {onClose && (
             <button
               onClick={onClose}
               aria-label="Close Field View"
               title="Close Field View"
-              className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 cursor-pointer flex items-center gap-1"
+              className="p-1.5 rounded-xl text-stone-500 hover:text-stone-900 hover:bg-cream-100 cursor-pointer flex items-center gap-1 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span className="text-xs font-semibold">Exit</span>
+              <span className="text-xs font-bold">Exit</span>
             </button>
           )}
           <div>
-            <h2 className="text-base font-bold text-slate-900">Field Milk Collection</h2>
-            <p className="text-[11px] text-slate-500">Touch Entry · Shift {shift}</p>
+            <h2 className="text-base font-bold text-forest-950">Field Milk Collection</h2>
+            <p className="text-[11px] text-stone-500 font-mono">Touch Entry &bull; Shift {shift}</p>
           </div>
         </div>
-        <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-xs">
+        <div className="flex bg-cream-50 border border-[#ede8df] rounded-xl p-0.5 text-xs">
           <button
             type="button"
             onClick={() => setShift('Morning')}
-            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-semibold ${
               shift === 'Morning'
-                ? 'bg-emerald-700 text-white font-medium shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-forest-900 text-white shadow-xs'
+                : 'text-stone-600 hover:text-forest-900'
             }`}
           >
             Morning
@@ -170,10 +168,10 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
           <button
             type="button"
             onClick={() => setShift('Evening')}
-            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer font-semibold ${
               shift === 'Evening'
-                ? 'bg-emerald-700 text-white font-medium shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-forest-900 text-white shadow-xs'
+                : 'text-stone-600 hover:text-forest-900'
             }`}
           >
             Evening
@@ -182,15 +180,15 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
       </div>
 
       {/* Connectivity & Offline Queue Bar */}
-      <div className="mb-3 p-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-xs">
+      <div className="mb-4 p-2.5 bg-cream-50/70 border border-[#ede8df] rounded-xl flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5">
           {isSimulatedOffline ? (
-            <span className="flex items-center gap-1 text-amber-700 font-medium">
+            <span className="flex items-center gap-1.5 text-amber-800 font-bold font-mono">
               <WifiOff className="w-3.5 h-3.5 text-amber-600" />
               <span>Offline Mode ({offlineQueue.length} queued)</span>
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-emerald-700 font-medium">
+            <span className="flex items-center gap-1.5 text-emerald-800 font-bold font-mono">
               <Wifi className="w-3.5 h-3.5 text-emerald-600" />
               <span>Online Direct Sync</span>
             </span>
@@ -203,7 +201,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
               type="button"
               onClick={handleSyncOfflineQueue}
               disabled={isSyncing}
-              className="px-2 py-0.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-[11px] font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+              className="px-2.5 py-1 bg-forest-900 hover:bg-forest-800 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-xs"
             >
               <UploadCloud className="w-3 h-3" />
               <span>{isSyncing ? 'Syncing...' : `Sync (${offlineQueue.length})`}</span>
@@ -213,10 +211,10 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
           <button
             type="button"
             onClick={() => setIsSimulatedOffline(!isSimulatedOffline)}
-            className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold transition-colors cursor-pointer ${
+            className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all cursor-pointer ${
               isSimulatedOffline
-                ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                : 'bg-cream-100 text-stone-700 hover:bg-cream-200 border border-[#ede8df]'
             }`}
             title="Toggle offline mode to test IndexedDB / LocalStorage queueing"
           >
@@ -226,7 +224,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
       </div>
 
       {showSuccessToast && (
-        <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg flex items-center gap-2 text-xs font-semibold animate-in fade-in duration-200">
+        <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-2 text-xs font-semibold shadow-2xs animate-in fade-in duration-200">
           <Check className="w-4 h-4 text-emerald-700" />
           <span>{toastMessage}</span>
         </div>
@@ -235,13 +233,13 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
       <form onSubmit={handleSave} className="space-y-4">
         {/* Step 1: Select Farmer */}
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">
+          <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider font-mono">
             1. Farmer Supplier
           </label>
           <select
             value={selectedFarmerId}
             onChange={(e) => setSelectedFarmerId(e.target.value)}
-            className="w-full bg-white border border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-800 outline-none shadow-2xs cursor-pointer"
+            className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-forest-950 outline-none shadow-2xs cursor-pointer font-sans"
           >
             {farmers.map((farmer) => (
               <option key={farmer.id} value={farmer.id}>
@@ -250,7 +248,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
             ))}
           </select>
           {selectedFarmer && (
-            <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500 px-1">
+            <div className="mt-1.5 flex items-center justify-between text-[11px] text-stone-500 px-1 font-mono">
               <span>Cattle: {selectedFarmer.cattleCount} animals</span>
               <span>Avg Quality: {selectedFarmer.avgFat}% Fat</span>
             </div>
@@ -259,7 +257,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
 
         {/* Step 2: Litres (Large Touch Input) */}
         <div>
-          <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">
+          <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider font-mono">
             2. Quantity (Litres)
           </label>
           <div className="relative">
@@ -271,18 +269,18 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
               value={litres}
               onChange={(e) => setLitres(e.target.value)}
               placeholder="e.g. 45.0"
-              className="w-full bg-white border-2 border-slate-300 focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 rounded-lg px-4 py-3 text-2xl font-bold font-mono text-slate-900 outline-none tabular-nums shadow-2xs"
+              className="w-full bg-[#fdfcfb] border-2 border-[#ede8df] focus:border-forest-600 rounded-2xl px-4 py-3 text-2xl font-bold font-mono text-forest-950 outline-none tabular-nums shadow-xs transition-all"
             />
-            <span className="absolute right-4 top-4 text-sm font-semibold text-slate-400">
+            <span className="absolute right-4 top-4 text-xs font-bold font-mono text-stone-400">
               LITRES
             </span>
           </div>
         </div>
 
         {/* Step 3: Fat, SNF, Temperature Grid */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2.5">
           <div>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Fat %</label>
+            <label className="block text-[11px] font-bold text-stone-700 mb-1 font-mono">Fat %</label>
             <input
               type="number"
               step="0.1"
@@ -290,11 +288,11 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
               max="12"
               value={fat}
               onChange={(e) => setFat(e.target.value)}
-              className="w-full bg-white border border-slate-300 focus:border-emerald-600 rounded-lg p-2.5 text-base font-bold font-mono text-center text-slate-900 outline-none shadow-2xs"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl p-2.5 text-base font-bold font-mono text-center text-forest-950 outline-none shadow-2xs"
             />
           </div>
           <div>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">SNF %</label>
+            <label className="block text-[11px] font-bold text-stone-700 mb-1 font-mono">SNF %</label>
             <input
               type="number"
               step="0.1"
@@ -302,54 +300,54 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
               max="12"
               value={snf}
               onChange={(e) => setSnf(e.target.value)}
-              className="w-full bg-white border border-slate-300 focus:border-emerald-600 rounded-lg p-2.5 text-base font-bold font-mono text-center text-slate-900 outline-none shadow-2xs"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl p-2.5 text-base font-bold font-mono text-center text-forest-950 outline-none shadow-2xs"
             />
           </div>
           <div>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Temp (°C)</label>
+            <label className="block text-[11px] font-bold text-stone-700 mb-1 font-mono">Temp (°C)</label>
             <input
               type="number"
               step="0.1"
               value={temperature}
               onChange={(e) => setTemperature(e.target.value)}
-              className="w-full bg-white border border-slate-300 focus:border-emerald-600 rounded-lg p-2.5 text-base font-bold font-mono text-center text-slate-900 outline-none shadow-2xs"
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl p-2.5 text-base font-bold font-mono text-center text-forest-950 outline-none shadow-2xs"
             />
           </div>
         </div>
 
         {/* Live Status & Economics Calculation Card */}
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 space-y-2">
+        <div className="bg-cream-50/70 border border-[#ede8df] rounded-2xl p-4 space-y-2.5 shadow-2xs font-sans">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-600 font-medium">QC Decision:</span>
+            <span className="text-stone-600 font-semibold">QC Decision:</span>
             <div className="flex items-center gap-1 font-bold">
               {qualityStatus === 'PASS' && (
-                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                <span className="text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1 font-mono text-[11px]">
                   <CheckCircle2 className="w-3.5 h-3.5" /> PASS
                 </span>
               )}
               {qualityStatus === 'WARNING' && (
-                <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 flex items-center gap-1">
+                <span className="text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200 flex items-center gap-1 font-mono text-[11px]">
                   <AlertTriangle className="w-3.5 h-3.5" /> WARNING
                 </span>
               )}
               {qualityStatus === 'FAIL' && (
-                <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 flex items-center gap-1">
+                <span className="text-rose-800 bg-rose-50 px-2.5 py-0.5 rounded-md border border-rose-200 flex items-center gap-1 font-mono text-[11px]">
                   <XCircle className="w-3.5 h-3.5" /> REJECT
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-xs border-t border-slate-200 pt-2">
-            <span className="text-slate-600">Computed Rate:</span>
-            <span className="font-mono tabular-nums font-bold text-slate-900">
+          <div className="flex items-center justify-between text-xs border-t border-[#ede8df] pt-2">
+            <span className="text-stone-600">Computed Rate:</span>
+            <span className="font-mono tabular-nums font-bold text-forest-950">
               ₹{calculatedRate.toFixed(2)} / L
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs border-t border-slate-200 pt-2">
-            <span className="text-slate-700 font-semibold">Total Payable Amount:</span>
-            <span className="text-lg font-mono tabular-nums font-bold text-emerald-800">
+          <div className="flex items-center justify-between text-xs border-t border-[#ede8df] pt-2">
+            <span className="text-stone-800 font-bold">Total Payable Amount:</span>
+            <span className="text-xl font-mono tabular-nums font-extrabold text-forest-950">
               ₹{calculatedPayable.toLocaleString()}
             </span>
           </div>
@@ -359,7 +357,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
         <button
           type="submit"
           disabled={numLitres <= 0}
-          className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-40 text-white font-bold rounded-lg text-sm shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full py-3.5 bg-forest-900 hover:bg-forest-800 disabled:opacity-40 text-white font-bold rounded-xl text-sm shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Confirm & Record Collection</span>
@@ -368,3 +366,5 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
     </div>
   );
 };
+
+export default MobileFieldView;

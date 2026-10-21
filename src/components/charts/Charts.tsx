@@ -23,8 +23,8 @@ export interface AreaTrendChartProps {
 export const AreaTrendChart: React.FC<AreaTrendChartProps> = ({
   data,
   height = 180,
-  primaryColor = '#047857', // Deep agricultural emerald
-  secondaryColor = '#2563eb', // Muted operational blue
+  primaryColor = '#1b4332', // Deep forest green
+  secondaryColor = '#52b788', // Soft sage green
   primaryLabel = 'Value',
   secondaryLabel,
   unit = 'L',
@@ -33,7 +33,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = ({
 
   if (!data || data.length === 0) {
     return (
-      <div className="h-40 flex items-center justify-center text-xs text-slate-400">
+      <div className="h-40 flex items-center justify-center text-xs text-stone-400 font-medium">
         No trend data available
       </div>
     );
@@ -66,22 +66,22 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = ({
 
   return (
     <div className="relative w-full overflow-hidden select-none">
-      <div className="flex items-center justify-between text-xs text-slate-500 mb-2 px-1">
+      <div className="flex items-center justify-between text-xs text-stone-500 mb-3 px-1">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: primaryColor }} />
-            <span className="font-medium text-slate-700">{primaryLabel}</span>
+            <span className="w-2.5 h-2.5 rounded-full ring-2 ring-forest-500/20" style={{ backgroundColor: primaryColor }} />
+            <span className="font-semibold text-stone-800">{primaryLabel}</span>
           </span>
           {secondaryLabel && (
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: secondaryColor }} />
-              <span className="font-medium text-slate-700">{secondaryLabel}</span>
+              <span className="w-2.5 h-2.5 rounded-full ring-2 ring-sage-500/20" style={{ backgroundColor: secondaryColor }} />
+              <span className="font-semibold text-stone-800">{secondaryLabel}</span>
             </span>
           )}
         </div>
         {hoverIndex !== null && (
-          <div className="text-xs font-mono tabular-nums text-slate-800 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-2xs">
-            <span className="text-slate-500 mr-1">{data[hoverIndex].label}:</span>
+          <div className="text-xs font-mono tabular-nums text-stone-800 bg-[#fdfcfb] border border-[#ede8df] px-2.5 py-1 rounded-xl shadow-xs animate-in fade-in">
+            <span className="text-stone-500 mr-1.5 font-sans font-medium">{data[hoverIndex].label}:</span>
             <span style={{ color: primaryColor }} className="font-bold">
               {data[hoverIndex].value.toLocaleString()} {unit}
             </span>
@@ -101,7 +101,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = ({
       >
         <defs>
           <linearGradient id="areaGradientPrimary" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={primaryColor} stopOpacity="0.2" />
+            <stop offset="0%" stopColor={primaryColor} stopOpacity="0.22" />
             <stop offset="100%" stopColor={primaryColor} stopOpacity="0.0" />
           </linearGradient>
         </defs>
@@ -117,16 +117,18 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = ({
                 y1={y}
                 x2={width - paddingX}
                 y2={y}
-                stroke="#e2e8f0"
-                strokeDasharray="3 3"
+                stroke="#ede8df"
+                strokeDasharray="4 4"
+                strokeWidth="1"
               />
               <text
                 x={paddingX - 8}
-                y={y + 3}
-                fill="#94a3b8"
+                y={y + 3.5}
+                fill="#a8a29e"
                 fontSize="10"
                 textAnchor="end"
                 fontFamily="var(--font-mono)"
+                fontWeight="500"
               >
                 {gridVal >= 1000 ? `${(gridVal / 1000).toFixed(1)}k` : gridVal}
               </text>
@@ -139,7 +141,7 @@ export const AreaTrendChart: React.FC<AreaTrendChartProps> = ({
         <polyline
           fill="none"
           stroke={primaryColor}
-          strokeWidth="2"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           points={primaryPoints}
@@ -235,8 +237,8 @@ export const BarComparisonChart: React.FC<BarComparisonChartProps> = ({
   data,
   labelA,
   labelB,
-  colorA = '#047857', // Own herd emerald
-  colorB = '#2563eb', // Farmer procurement blue
+  colorA = '#1b4332', // Forest green
+  colorB = '#52b788', // Soft sage green
   unit = 'L',
   height = 190,
 }) => {
@@ -247,22 +249,24 @@ export const BarComparisonChart: React.FC<BarComparisonChartProps> = ({
   const plotWidth = width - paddingX * 2;
   const plotHeight = height - paddingY * 2;
   const groupWidth = plotWidth / data.length;
-  const barWidth = Math.min(20, (groupWidth - 14) / 2);
+  const barWidth = Math.min(22, (groupWidth - 14) / 2);
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between text-xs text-slate-500 mb-2 px-1">
+      <div className="flex items-center justify-between text-xs text-stone-500 mb-3 px-1">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: colorA }} />
-            <span className="font-medium text-slate-700">{labelA}</span>
+            <span className="w-2.5 h-2.5 rounded-full ring-2 ring-forest-500/20" style={{ backgroundColor: colorA }} />
+            <span className="font-semibold text-stone-800">{labelA}</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: colorB }} />
-            <span className="font-medium text-slate-700">{labelB}</span>
+            <span className="w-2.5 h-2.5 rounded-full ring-2 ring-sage-500/20" style={{ backgroundColor: colorB }} />
+            <span className="font-semibold text-stone-800">{labelB}</span>
           </span>
         </div>
-        <span className="text-xs text-slate-500">Unit: {unit}</span>
+        <span className="text-xs font-mono text-stone-400 bg-cream-100 px-2 py-0.5 rounded-md border border-[#ede8df]">
+          Unit: {unit}
+        </span>
       </div>
 
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
@@ -277,16 +281,18 @@ export const BarComparisonChart: React.FC<BarComparisonChartProps> = ({
                 y1={y}
                 x2={width - paddingX}
                 y2={y}
-                stroke="#e2e8f0"
-                strokeDasharray="3 3"
+                stroke="#ede8df"
+                strokeDasharray="4 4"
+                strokeWidth="1"
               />
               <text
                 x={paddingX - 8}
-                y={y + 3}
-                fill="#94a3b8"
+                y={y + 3.5}
+                fill="#a8a29e"
                 fontSize="10"
                 textAnchor="end"
                 fontFamily="var(--font-mono)"
+                fontWeight="500"
               >
                 {val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val}
               </text>
@@ -311,10 +317,10 @@ export const BarComparisonChart: React.FC<BarComparisonChartProps> = ({
                 width={barWidth}
                 height={heightA}
                 fill={colorA}
-                rx="2"
-                className="transition-opacity hover:opacity-85"
+                rx="3"
+                className="transition-all duration-200 hover:opacity-85 hover:brightness-110 cursor-pointer"
               >
-                <title>{`${d.label} - ${labelA}: ${d.valueA} ${unit}`}</title>
+                <title>{`${d.label} - ${labelA}: ${d.valueA.toLocaleString()} ${unit}`}</title>
               </rect>
               {/* Bar B */}
               <rect
@@ -323,20 +329,21 @@ export const BarComparisonChart: React.FC<BarComparisonChartProps> = ({
                 width={barWidth}
                 height={heightB}
                 fill={colorB}
-                rx="2"
-                className="transition-opacity hover:opacity-85"
+                rx="3"
+                className="transition-all duration-200 hover:opacity-85 hover:brightness-110 cursor-pointer"
               >
-                <title>{`${d.label} - ${labelB}: ${d.valueB} ${unit}`}</title>
+                <title>{`${d.label} - ${labelB}: ${d.valueB.toLocaleString()} ${unit}`}</title>
               </rect>
 
               {/* Label */}
               <text
                 x={groupCenter}
                 y={height - 6}
-                fill="#64748b"
+                fill="#78716c"
                 fontSize="10"
                 textAnchor="middle"
                 fontFamily="var(--font-sans)"
+                fontWeight="500"
               >
                 {d.label}
               </text>
@@ -400,7 +407,8 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                 strokeWidth={strokeWidth}
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
-                className="transition-all duration-200 hover:opacity-85"
+                strokeLinecap="round"
+                className="transition-all duration-300 hover:opacity-80 cursor-pointer"
               />
             );
           })}
@@ -409,12 +417,12 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         {(centerLabel || centerValue) && (
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
             {centerValue && (
-              <span className="text-base font-bold text-slate-900 font-mono tabular-nums">
+              <span className="text-base font-bold text-forest-950 font-mono tabular-nums">
                 {centerValue}
               </span>
             )}
             {centerLabel && (
-              <span className="text-[11px] text-slate-500 max-w-[80px] leading-tight mt-0.5">
+              <span className="text-[11px] text-stone-500 max-w-[80px] leading-tight mt-0.5 font-medium">
                 {centerLabel}
               </span>
             )}
@@ -426,17 +434,17 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         {slices.map((slice, i) => {
           const pct = ((slice.value / total) * 100).toFixed(1);
           return (
-            <div key={i} className="flex items-center justify-between gap-3 text-slate-700">
+            <div key={i} className="flex items-center justify-between gap-3 text-stone-700 bg-[#fdfcfb] px-2.5 py-1.5 rounded-lg border border-[#ede8df]/70">
               <div className="flex items-center gap-2 truncate">
                 <span
-                  className="w-2.5 h-2.5 rounded-xs shrink-0"
+                  className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-stone-200"
                   style={{ backgroundColor: slice.color }}
                 />
-                <span className="truncate text-xs font-medium text-slate-800">{slice.label}</span>
+                <span className="truncate text-xs font-semibold text-stone-800">{slice.label}</span>
               </div>
               <div className="flex items-center gap-2 shrink-0 font-mono tabular-nums text-right">
-                <span className="text-slate-500 text-[11px]">{pct}%</span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-stone-400 text-[11px]">{pct}%</span>
+                <span className="font-bold text-forest-900">
                   ₹{slice.value >= 1000 ? `${(slice.value / 1000).toFixed(1)}k` : slice.value}
                 </span>
               </div>
@@ -457,8 +465,8 @@ export const MiniSparkline: React.FC<{
   color?: string;
   width?: number;
   height?: number;
-}> = ({ points, color = '#047857', width = 70, height = 20 }) => {
-  if (!points || points.length < 2) return <span className="text-xs text-slate-400">-</span>;
+}> = ({ points, color = '#1b4332', width = 70, height = 20 }) => {
+  if (!points || points.length < 2) return <span className="text-xs text-stone-400 font-mono">-</span>;
 
   const min = Math.min(...points);
   const max = Math.max(...points) || 1;
@@ -477,7 +485,7 @@ export const MiniSparkline: React.FC<{
       <polyline
         fill="none"
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth="1.75"
         strokeLinecap="round"
         strokeLinejoin="round"
         points={path}

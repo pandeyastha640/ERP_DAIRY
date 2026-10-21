@@ -118,7 +118,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
         actions={
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-forest-950/20 active:scale-98"
           >
             <Plus className="w-4 h-4" />
             <span>Add Farmer</span>
@@ -188,43 +188,43 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
           placeholder="Search Farmer ID, Name or Village..."
         />
 
-        <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-xs">
+        <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs">
           <button
             onClick={() => setStatusFilter('All')}
-            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
               statusFilter === 'All'
-                ? 'bg-white text-slate-900 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-forest-950 font-bold shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
             }`}
           >
             All ({totalFarmers})
           </button>
           <button
             onClick={() => setStatusFilter('Active')}
-            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
               statusFilter === 'Active'
-                ? 'bg-white text-emerald-800 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-forest-900 font-bold shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
             }`}
           >
             Active ({activeCount})
           </button>
           <button
             onClick={() => setStatusFilter('Under Review')}
-            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
               statusFilter === 'Under Review'
-                ? 'bg-white text-amber-800 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-amber-900 font-bold shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
             }`}
           >
             Under Review ({underReviewCount})
           </button>
           <button
             onClick={() => setStatusFilter('Inactive')}
-            className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
               statusFilter === 'Inactive'
-                ? 'bg-white text-rose-800 font-semibold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-rose-900 font-bold shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
             }`}
           >
             Inactive ({inactiveCount})
@@ -232,11 +232,11 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 font-medium">Village:</span>
+          <span className="text-xs text-stone-500 font-medium">Village:</span>
           <select
             value={villageFilter}
             onChange={(e) => setVillageFilter(e.target.value)}
-            className="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none shadow-2xs cursor-pointer"
+            className="bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3 py-1.5 text-xs text-stone-800 outline-none shadow-2xs cursor-pointer focus:border-forest-600"
           >
             <option value="All">All Villages ({totalFarmers})</option>
             {villages.map((v) => (
@@ -247,16 +247,16 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
           </select>
         </div>
 
-        <span className="text-xs text-slate-500 font-mono">
-          Showing <strong className="text-emerald-700">{filteredFarmers.length}</strong> of {totalFarmers}
+        <span className="text-xs text-stone-500 font-mono">
+          Showing <strong className="text-forest-900 font-bold">{filteredFarmers.length}</strong> of {totalFarmers}
         </span>
       </FilterBar>
 
       {/* 4. Farmers Table */}
-      <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+            <thead className="bg-[#faf8f5] border-b border-[#ede8df] text-stone-600 font-semibold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="px-4 py-3">Farmer ID</th>
                 <th className="px-4 py-3">Farmer Name</th>
@@ -271,10 +271,10 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-800 font-mono tabular-nums">
+            <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
               {filteredFarmers.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-8 text-center text-xs text-slate-400 font-sans">
+                  <td colSpan={11} className="px-4 py-8 text-center text-xs text-stone-400 font-sans">
                     No farmers found matching query.
                   </td>
                 </tr>
@@ -283,19 +283,19 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
                   <tr
                     key={farmer.id}
                     onClick={() => setActiveProfile(farmer)}
-                    className="hover:bg-slate-50/80 cursor-pointer transition-colors"
+                    className="hover:bg-cream-50/70 cursor-pointer transition-colors"
                   >
-                    <td className="px-4 py-3 font-bold text-blue-700">{farmer.id}</td>
-                    <td className="px-4 py-3 font-sans font-semibold text-slate-900">
+                    <td className="px-4 py-3 font-bold text-forest-900">{farmer.id}</td>
+                    <td className="px-4 py-3 font-sans font-bold text-forest-950">
                       {farmer.name}
                     </td>
-                    <td className="px-4 py-3 font-sans text-slate-500">{farmer.village}</td>
+                    <td className="px-4 py-3 font-sans text-stone-600">{farmer.village}</td>
                     <td className="px-4 py-3">{farmer.cattleCount} animals</td>
-                    <td className="px-4 py-3 font-bold text-slate-900">{farmer.todayMilkL} L</td>
-                    <td className="px-4 py-3 text-emerald-800">{farmer.avgFat}%</td>
+                    <td className="px-4 py-3 font-bold text-stone-900">{farmer.todayMilkL} L</td>
+                    <td className="px-4 py-3 text-forest-800 font-semibold">{farmer.avgFat}%</td>
                     <td className="px-4 py-3">{farmer.avgSNF}%</td>
                     <td className="px-4 py-3">₹{farmer.ratePerL.toFixed(2)}</td>
-                    <td className="px-4 py-3 font-bold text-emerald-800">
+                    <td className="px-4 py-3 font-bold text-forest-900">
                       ₹{farmer.todayPayable.toLocaleString()}
                     </td>
                     <td className="px-4 py-3 font-sans">
@@ -307,7 +307,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
                           e.stopPropagation();
                           setActiveProfile(farmer);
                         }}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-sans font-medium transition-colors cursor-pointer"
+                        className="px-2.5 py-1 bg-[#fdfcfb] hover:bg-cream-100 text-forest-900 border border-[#ede8df] rounded-lg text-[11px] font-sans font-semibold transition-colors cursor-pointer shadow-2xs"
                       >
                         Ledger
                       </button>
@@ -332,51 +332,51 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
           <div className="space-y-5 text-xs">
             {/* Top Metrics Strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="text-slate-500 text-[11px] font-sans">Today's Milk Supply</div>
-                <div className="text-xl font-bold text-slate-900 mt-1">
+              <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans font-medium">Today's Milk Supply</div>
+                <div className="text-xl font-bold text-forest-950 mt-1">
                   {activeProfile.todayMilkL} L
                 </div>
-                <div className="text-[10px] text-slate-500 font-sans mt-0.5">
+                <div className="text-[10px] text-stone-500 font-sans mt-0.5">
                   M: {activeProfile.morningMilkL} L / E: {activeProfile.eveningMilkL} L
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="text-slate-500 text-[11px] font-sans">Fat / SNF Quality</div>
-                <div className="text-xl font-bold text-blue-700 mt-1">
+              <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans font-medium">Fat / SNF Quality</div>
+                <div className="text-xl font-bold text-forest-900 mt-1">
                   {activeProfile.avgFat}% / {activeProfile.avgSNF}%
                 </div>
-                <div className="text-[10px] text-emerald-700 font-sans mt-0.5">Grade A Certified</div>
+                <div className="text-[10px] text-forest-700 font-sans mt-0.5 font-medium">Grade A Certified</div>
               </div>
-              <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div className="text-emerald-900 text-[11px] font-sans font-semibold">
+              <div className="p-3.5 bg-sage-50/80 rounded-xl border border-sage-200">
+                <div className="text-forest-950 text-[11px] font-sans font-bold">
                   Today's Settlement
                 </div>
-                <div className="text-xl font-bold text-emerald-800 mt-1">
+                <div className="text-xl font-bold text-forest-900 mt-1">
                   ₹{activeProfile.todayPayable.toLocaleString()}
                 </div>
-                <div className="text-[10px] text-emerald-800 font-sans mt-0.5">
+                <div className="text-[10px] text-forest-800 font-sans mt-0.5 font-semibold">
                   @ ₹{activeProfile.ratePerL}/L rate
                 </div>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="text-slate-500 text-[11px] font-sans">Quality Score</div>
-                <div className="text-xl font-bold text-slate-900 mt-1">
+              <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df]">
+                <div className="text-stone-500 text-[11px] font-sans font-medium">Quality Score</div>
+                <div className="text-xl font-bold text-stone-900 mt-1">
                   {activeProfile.demoPerformanceScore}/100
                 </div>
-                <div className="text-[10px] text-slate-500 font-sans mt-0.5">
+                <div className="text-[10px] text-stone-500 font-sans mt-0.5">
                   Consistency rating
                 </div>
               </div>
             </div>
 
             {/* Milk Supply History Chart */}
-            <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-2xs">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-slate-900">
+            <div className="p-4 bg-[#fdfcfb] rounded-2xl border border-[#ede8df] shadow-xs">
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-bold text-forest-950">
                   Milk Supply Trend (Last 6 Days)
                 </span>
-                <span className="font-mono text-emerald-800 font-bold">
+                <span className="font-mono text-forest-900 font-bold bg-sage-50 px-2.5 py-0.5 rounded-full border border-sage-200">
                   {activeProfile.todayMilkL} L today
                 </span>
               </div>
@@ -385,7 +385,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
                   label: s.date.slice(5),
                   value: s.litres,
                 }))}
-                primaryColor="#047857"
+                primaryColor="#1b4332"
                 primaryLabel="Supplied (L)"
                 unit="L"
                 height={120}
@@ -393,29 +393,29 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
             </div>
 
             {/* Bank & Settlement Records */}
-            <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-              <div className="flex items-center justify-between font-semibold text-slate-900 mb-2">
-                <div className="flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5 text-blue-700" />
+            <div className="p-4 bg-cream-50/70 rounded-2xl border border-[#ede8df]">
+              <div className="flex items-center justify-between font-bold text-forest-950 mb-3">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-forest-700" />
                   <span>Settlement Bank Account: {activeProfile.bankAccount}</span>
                 </div>
-                <span className="text-[10px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold">
+                <span className="text-[10px] font-mono text-forest-900 bg-sage-50 px-2.5 py-0.5 rounded-full border border-sage-200 font-bold">
                   Direct Transfer Active
                 </span>
               </div>
-              <div className="space-y-1.5 font-mono text-[11px]">
+              <div className="space-y-2 font-mono text-[11px]">
                 {activeProfile.paymentHistory.map((p, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between text-slate-700 border-b border-slate-200/60 pb-1"
+                    className="flex items-center justify-between text-stone-700 border-b border-[#ede8df]/70 pb-1.5"
                   >
                     <span>
                       {p.date} · {p.method}
                     </span>
-                    <span className="font-bold text-emerald-800">
+                    <span className="font-bold text-forest-900">
                       ₹{p.amount.toLocaleString()}
                     </span>
-                    <span className="font-sans text-emerald-800 font-semibold text-[10px]">
+                    <span className="font-sans text-forest-800 font-bold text-[10px] bg-sage-100/70 px-2 py-0.5 rounded-md">
                       PAID
                     </span>
                   </div>
@@ -423,21 +423,21 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-3 border-t border-[#ede8df]">
               <button
                 onClick={() => {
                   import('../services/pdfGenerator').then(({ pdfGenerator }) => {
                     pdfGenerator.generateFarmerPassbookPDF(activeProfile, collectionsList, settings);
                   });
                 }}
-                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs shadow-forest-950/20 transition-all duration-150 active:scale-98"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Download Monthly Passbook PDF</span>
               </button>
               <button
                 onClick={() => setActiveProfile(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium cursor-pointer"
+                className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-800 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
               >
                 Close Ledger
               </button>
@@ -454,9 +454,9 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
         subtitle="Enrol farmer into DairyOS procurement network and setup automated banking"
         maxWidth="md"
       >
-        <form onSubmit={handleCreateFarmer} className="space-y-3.5">
+        <form onSubmit={handleCreateFarmer} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">
               Farmer Full Name
             </label>
             <input
@@ -465,19 +465,19 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
               placeholder="e.g. Sanjaybhai Patel"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-emerald-600 shadow-2xs"
+              className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">
                 Village Cluster
               </label>
               <select
                 value={newVillage}
                 onChange={(e) => setNewVillage(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
               >
                 {villages.map((v) => (
                   <option key={v} value={v}>
@@ -487,50 +487,50 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Cattle Count</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Cattle Count</label>
               <input
                 type="number"
                 value={newCattle}
                 onChange={(e) => setNewCattle(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">
                 Phone / Mobile
               </label>
               <input
                 type="text"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">Bank Account</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Bank Account</label>
               <input
                 type="text"
                 value={newBank}
                 onChange={(e) => setNewBank(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 outline-none focus:border-emerald-600 shadow-2xs"
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#ede8df]">
             <button
               type="button"
               onClick={() => setIsAddModalOpen(false)}
-              className="px-4 py-2 text-xs text-slate-600 hover:text-slate-900 cursor-pointer"
+              className="px-4 py-2 text-xs text-stone-600 hover:text-stone-900 cursor-pointer font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs cursor-pointer"
+              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
             >
               Save Farmer
             </button>
