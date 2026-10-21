@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDairyERP } from '../context/DairyERPContext';
 import { MetricCard } from '../components/common/MetricCard';
 import { AreaTrendChart, BarComparisonChart } from '../components/charts/Charts';
+import { Modal } from '../components/common/Modal';
 import {
   PageContainer,
   PageHeader,
@@ -20,6 +21,8 @@ import {
   Scale,
   Calendar,
   Filter,
+  Milk,
+  Plus,
 } from 'lucide-react';
 
 export const MilkOperationsPage: React.FC = () => {
@@ -32,6 +35,8 @@ export const MilkOperationsPage: React.FC = () => {
     salesOrdersList,
     currentFacility,
     currentDateFilter,
+    cattleList,
+    recordCattleMilking,
   } = useDairyERP();
 
   const [activeTab, setActiveTab] = useState<
@@ -41,6 +46,14 @@ export const MilkOperationsPage: React.FC = () => {
   const [centreFilter, setCentreFilter] = useState<
     'All' | 'Anand CC' | 'Borsad Chilling' | 'Nadiad Hub'
   >('All');
+
+  // Daily Parlour Milking Modal State
+  const [isParlourModalOpen, setIsParlourModalOpen] = useState(false);
+  const [selectedCowId, setSelectedCowId] = useState(cattleList[0]?.id || 'COW-001');
+  const [parlourShift, setParlourShift] = useState<'Morning' | 'Evening'>('Morning');
+  const [parlourYield, setParlourYield] = useState('14.0');
+  const [parlourFat, setParlourFat] = useState('4.4');
+  const [parlourSnf, setParlourSnf] = useState('8.6');
 
   // Dynamic Shift Collections Breakdown
   const morningCollections = collectionsList.filter((c) => c.shift === 'Morning');
@@ -439,17 +452,28 @@ export const MilkOperationsPage: React.FC = () => {
 
       {activeTab === 'Own Milk' && (
         <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-forest-950">Own Herd Milking Economics</h3>
-            <span className="text-xs font-mono text-forest-900 bg-sage-50 px-2.5 py-1 rounded-full border border-sage-200 font-bold">
-              {reconciliation.ownProductionLitres.toLocaleString()} L/day across{' '}
-              {herdEconomics.totalMilkingCows} milking cows
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-forest-950">Own Herd Milking Economics</h3>
+              <p className="text-xs text-stone-500 font-medium mt-0.5">
+                Own milk is produced in the automatic milking parlour at Shed A & B, with inline
+                chillers bringing milk to 3.9°C within 12 minutes of extraction.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-forest-900 bg-sage-50 px-2.5 py-1 rounded-full border border-sage-200 font-bold shrink-0">
+                {reconciliation.ownProductionLitres.toLocaleString()} L/day across{' '}
+                {herdEconomics.totalMilkingCows} milking cows
+              </span>
+              <button
+                onClick={() => setIsParlourModalOpen(true)}
+                className="px-3.5 py-1.5 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors active:scale-98 shrink-0"
+              >
+                <Milk className="w-3.5 h-3.5" />
+                <span>Log Parlour Milking</span>
+              </button>
+            </div>
           </div>
-          <p className="text-xs text-stone-500 font-medium">
-            Own milk is produced in the automatic milking parlour at Shed A & B, with inline
-            chillers bringing milk to 3.9°C within 12 minutes of extraction.
-          </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
             <div className="p-4 bg-cream-50/70 rounded-xl border border-[#ede8df] shadow-2xs">
               <div className="text-stone-500 font-sans text-xs font-semibold">Herd Avg Daily Yield</div>
@@ -550,6 +574,115 @@ export const MilkOperationsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Parlour Milking Modal */}
+      <Modal
+        isOpen={isParlourModalOpen}
+        onClose={() => setIsParlourModalOpen(false)}
+        title="Record Own Herd Milking Yield"
+        subtitle="Log parlour extraction for individual cows to immediately update mass balance reconciliation"
+        maxWidth="md"
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            recordCattleMilking({
+              cattleId: selectedCowId,
+              yieldLitres: parseFloat(parlourYield) || 0,
+              shift: parlourShift,
+              fat: parseFloat(parlourFat) || 4.4,
+              snf: parseFloat(parlourSnf) || 8.6,
+            });
+            setIsParlourModalOpen(false);
+          }}
+          className="space-y-4 text-xs"
+        >
+          <div>
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">Select Cow from Herd</label>
+            <select
+              value={selectedCowId}
+              onChange={(e) => {
+                setSelectedCowId(e.target.value);
+                const found = cattleList.find((c) => c.id === e.target.value);
+                if (found) {
+                  setParlourYield(found.milkYieldLPerDay.toString());
+                }
+              }}
+              className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
+            >
+              {cattleList.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.id} - {c.tagNumber} ({c.breed}, {c.status}) — Current: {c.milkYieldLPerDay} L/d
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Shift</label>
+              <select
+                value={parlourShift}
+                onChange={(e) => setParlourShift(e.target.value as 'Morning' | 'Evening')}
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
+              >
+                <option value="Morning">Morning Shift (05:00 - 08:30)</option>
+                <option value="Evening">Evening Shift (16:00 - 19:30)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Milk Yield (Litres)</label>
+              <input
+                type="number"
+                step="0.1"
+                required
+                value={parlourYield}
+                onChange={(e) => setParlourYield(e.target.value)}
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-forest-950 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Fat %</label>
+              <input
+                type="number"
+                step="0.1"
+                value={parlourFat}
+                onChange={(e) => setParlourFat(e.target.value)}
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">SNF %</label>
+              <input
+                type="number"
+                step="0.1"
+                value={parlourSnf}
+                onChange={(e) => setParlourSnf(e.target.value)}
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#ede8df]">
+            <button
+              type="button"
+              onClick={() => setIsParlourModalOpen(false)}
+              className="px-4 py-2 text-xs text-stone-600 hover:text-stone-900 cursor-pointer font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
+            >
+              Commit Parlour Milking
+            </button>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Cattle } from '../types/dairy';
+import { useDairyERP } from '../context/DairyERPContext';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { MiniSparkline, AreaTrendChart } from '../components/charts/Charts';
@@ -21,6 +22,8 @@ import {
   AlertCircle,
   Clock,
   Sparkles,
+  Milk,
+  Scale,
 } from 'lucide-react';
 
 interface CattleManagementPageProps {
@@ -30,10 +33,13 @@ interface CattleManagementPageProps {
 }
 
 export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
-  cattleList,
+  cattleList: propsCattleList,
   onAddCattle,
   selectedCattleId,
 }) => {
+  const { recordCattleMilking, cattleList: contextCattleList } = useDairyERP();
+  const cattleList = contextCattleList && contextCattleList.length > 0 ? contextCattleList : propsCattleList;
+
   const [activeView, setActiveView] = useState<'Herd' | 'Breeding' | 'Vaccination'>('Herd');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Milking' | 'Dry' | 'Pregnant' | 'Sick'>('All');
@@ -46,6 +52,15 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
   });
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isMilkingModalOpen, setIsMilkingModalOpen] = useState(false);
+
+  // Daily Milking Form State
+  const [milkingCattleId, setMilkingCattleId] = useState(cattleList[0]?.id || 'COW-001');
+  const [milkingShift, setMilkingShift] = useState<'Morning' | 'Evening'>('Morning');
+  const [milkingYield, setMilkingYield] = useState('14.5');
+  const [milkingFat, setMilkingFat] = useState('4.4');
+  const [milkingSnf, setMilkingSnf] = useState('8.6');
+  const [milkingShed, setMilkingShed] = useState('Milking Parlour A');
 
   // New Cattle Form State
   const [newBreed, setNewBreed] = useState<'Gir' | 'Sahiwal' | 'Murrah Buffalo' | 'Red Sindhi'>('Gir');
@@ -237,6 +252,29 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
     setIsAiModalOpen(false);
   };
 
+  const handleRecordMilking = (e: React.FormEvent) => {
+    e.preventDefault();
+    const yieldNum = parseFloat(milkingYield) || 0;
+    recordCattleMilking({
+      cattleId: milkingCattleId,
+      yieldLitres: yieldNum,
+      shift: milkingShift,
+      fat: parseFloat(milkingFat) || 4.4,
+      snf: parseFloat(milkingSnf) || 8.6,
+    });
+
+    if (activeProfile && (activeProfile.id === milkingCattleId || activeProfile.tagNumber === milkingCattleId)) {
+      setActiveProfile({
+        ...activeProfile,
+        milkYieldLPerDay: yieldNum,
+        status: 'Milking',
+        historicalYields: [...(activeProfile.historicalYields || []).slice(-6), yieldNum],
+      });
+    }
+
+    setIsMilkingModalOpen(false);
+  };
+
   return (
     <PageContainer>
       {/* 1. Header */}
@@ -246,6 +284,16 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
         statusBadge="Automated Parlour & RFID Connected"
         actions={
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setMilkingCattleId(cattleList[0]?.id || 'COW-001');
+                setIsMilkingModalOpen(true);
+              }}
+              className="px-3.5 py-2 bg-sage-50 hover:bg-sage-100 border border-sage-200 text-forest-900 rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer active:scale-98"
+            >
+              <Milk className="w-4 h-4 text-forest-700" />
+              <span>Log Daily Milking</span>
+            </button>
             <button
               onClick={() => setIsAiModalOpen(true)}
               className="px-3.5 py-2 bg-sage-50 hover:bg-sage-100 border border-sage-200 text-forest-900 rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer active:scale-98"
@@ -429,15 +477,30 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
                           <StatusBadge status={cow.status} size="sm" />
                         </td>
                         <td className="px-4 py-3 text-right font-sans">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveProfile(cow);
-                            }}
-                            className="px-2.5 py-1 bg-[#fdfcfb] hover:bg-cream-100 text-forest-900 border border-[#ede8df] rounded-lg text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs"
-                          >
-                            Card
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMilkingCattleId(cow.id);
+                                setMilkingYield(cow.milkYieldLPerDay.toString());
+                                setIsMilkingModalOpen(true);
+                              }}
+                              className="px-2.5 py-1 bg-sage-50 hover:bg-sage-100 text-forest-900 border border-sage-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs flex items-center gap-1"
+                              title="Log daily milking for this cow"
+                            >
+                              <Milk className="w-3 h-3 text-forest-700" />
+                              <span>Log Milk</span>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveProfile(cow);
+                              }}
+                              className="px-2.5 py-1 bg-[#fdfcfb] hover:bg-cream-100 text-forest-900 border border-[#ede8df] rounded-lg text-[11px] font-semibold transition-colors cursor-pointer shadow-2xs"
+                            >
+                              Card
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -646,7 +709,20 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
             <div className="p-4 bg-[#fdfcfb] rounded-2xl border border-[#ede8df] shadow-xs">
               <div className="flex items-center justify-between mb-3">
                 <span className="font-bold text-forest-950">7-Day Milk Production History</span>
-                <span className="font-mono text-forest-900 font-bold bg-sage-50 px-2.5 py-0.5 rounded-full border border-sage-200">{activeProfile.milkYieldLPerDay} L today</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-forest-900 font-bold bg-sage-50 px-2.5 py-0.5 rounded-full border border-sage-200">{activeProfile.milkYieldLPerDay} L today</span>
+                  <button
+                    onClick={() => {
+                      setMilkingCattleId(activeProfile.id);
+                      setMilkingYield(activeProfile.milkYieldLPerDay.toString());
+                      setIsMilkingModalOpen(true);
+                    }}
+                    className="px-2.5 py-1 bg-forest-800 hover:bg-forest-900 text-white rounded-lg text-[11px] font-bold shadow-2xs cursor-pointer flex items-center gap-1 transition-colors"
+                  >
+                    <Milk className="w-3.5 h-3.5" />
+                    <span>Log Today's Yield</span>
+                  </button>
+                </div>
               </div>
               <AreaTrendChart
                 data={activeProfile.historicalYields.map((val, idx) => ({ label: `Day -${6 - idx}`, value: val }))}
@@ -910,6 +986,128 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
             >
               Save Cattle Record
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* 7. RECORD DAILY MILKING MODAL */}
+      <Modal
+        isOpen={isMilkingModalOpen}
+        onClose={() => setIsMilkingModalOpen(false)}
+        title="Record Daily Cow Milking Yield"
+        subtitle="Log parlour extraction for individual cattle to update live mass balance and 7-day lactation curves"
+        maxWidth="md"
+      >
+        <form onSubmit={handleRecordMilking} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">Select Milking Cattle</label>
+            <select
+              value={milkingCattleId}
+              onChange={(e) => {
+                setMilkingCattleId(e.target.value);
+                const found = cattleList.find((c) => c.id === e.target.value);
+                if (found) {
+                  setMilkingYield(found.milkYieldLPerDay.toString());
+                }
+              }}
+              className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
+            >
+              {cattleList.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.id} - {c.tagNumber} ({c.breed}, {c.status}) — Current: {c.milkYieldLPerDay} L/d
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Milking Shift</label>
+              <select
+                value={milkingShift}
+                onChange={(e) => setMilkingShift(e.target.value as 'Morning' | 'Evening')}
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
+              >
+                <option value="Morning">Morning Shift (05:00 - 08:30)</option>
+                <option value="Evening">Evening Shift (16:00 - 19:30)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Parlour / Shed</label>
+              <select
+                value={milkingShed}
+                onChange={(e) => setMilkingShed(e.target.value)}
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
+              >
+                <option value="Milking Parlour A">Milking Parlour A (Shed A)</option>
+                <option value="Milking Parlour B">Milking Parlour B (Shed B)</option>
+                <option value="Hospital Isolation Bay">Hospital Isolation Bay</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Today's Milk Yield (L)</label>
+              <input
+                type="number"
+                step="0.1"
+                required
+                value={milkingYield}
+                onChange={(e) => setMilkingYield(e.target.value)}
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-forest-950 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Fat %</label>
+              <input
+                type="number"
+                step="0.1"
+                value={milkingFat}
+                onChange={(e) => setMilkingFat(e.target.value)}
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">SNF %</label>
+              <input
+                type="number"
+                step="0.1"
+                value={milkingSnf}
+                onChange={(e) => setMilkingSnf(e.target.value)}
+                className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs font-mono text-stone-800 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 pt-1">
+            <span className="text-[11px] text-stone-500 font-medium">Quick Presets:</span>
+            {[12.0, 14.5, 18.0, 22.5].map((preset) => (
+              <button
+                type="button"
+                key={preset}
+                onClick={() => setMilkingYield(preset.toString())}
+                className="px-2 py-0.5 rounded-lg bg-cream-50 hover:bg-cream-100 border border-[#ede8df] text-[11px] font-mono text-forest-900 cursor-pointer"
+              >
+                {preset} L
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#ede8df]">
+            <button
+              type="button"
+              onClick={() => setIsMilkingModalOpen(false)}
+              className="px-4 py-2 text-xs text-stone-600 hover:text-stone-900 cursor-pointer font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
+            >
+              Save Milking Record
             </button>
           </div>
         </form>

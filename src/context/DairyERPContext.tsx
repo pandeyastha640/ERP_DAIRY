@@ -92,6 +92,13 @@ interface DairyERPContextType {
   recordSalesOrder: (order: SalesOrder) => void;
   recordPayment: (txn: PaymentTransaction) => void;
   addCattle: (cow: Cattle) => void;
+  recordCattleMilking: (entry: {
+    cattleId: string;
+    yieldLitres: number;
+    shift?: 'Morning' | 'Evening';
+    fat?: number;
+    snf?: number;
+  }) => void;
   addFarmer: (farmer: Farmer) => void;
   recordFeedPurchase: (item: { feedId: string; quantityKg: number; costPerKg: number }) => void;
   recordFeedConsumption: (item: { feedId: string; quantityKg: number }) => void;
@@ -948,6 +955,64 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   /**
+   * 5b. Record Daily Cattle Milking (Morning/Evening Parlour Intake):
+   */
+  const recordCattleMilking = ({
+    cattleId,
+    yieldLitres,
+    shift = 'Morning',
+    fat = 4.4,
+    snf = 8.6,
+  }: {
+    cattleId: string;
+    yieldLitres: number;
+    shift?: 'Morning' | 'Evening';
+    fat?: number;
+    snf?: number;
+  }) => {
+    const cow = cattleList.find((c) => c.id === cattleId || c.tagNumber === cattleId);
+    if (!cow) {
+      showToast(`Cattle identifier ${cattleId} not found in active herd`, 'error');
+      return;
+    }
+
+    const validLitres = Math.max(0, Number(yieldLitres) || 0);
+
+    setCattleList((prev) =>
+      prev.map((c) => {
+        if (c.id === cow.id) {
+          const oldHistory = Array.isArray(c.historicalYields) && c.historicalYields.length > 0
+            ? c.historicalYields
+            : [12, 13, 14];
+          const newHistory = [...oldHistory.slice(-6), validLitres];
+          return {
+            ...c,
+            milkYieldLPerDay: validLitres,
+            status: validLitres > 0 ? 'Milking' : c.status,
+            historicalYields: newHistory,
+          };
+        }
+        return c;
+      })
+    );
+
+    showToast(
+      `Recorded ${validLitres} L (${shift}) for ${cow.id} (${cow.tagNumber})`,
+      'success',
+      'Milking Yield Recorded'
+    );
+
+    logAudit({
+      module: 'Cattle Herd',
+      action: 'MILKING_LOGGED',
+      recordId: cow.id,
+      description: `Daily parlour milking logged: ${validLitres} L (${shift} shift, ${fat}% Fat, ${snf}% SNF) for ${cow.id} (${cow.breed})`,
+      milkImpactLitres: validLitres,
+      severity: 'info',
+    });
+  };
+
+  /**
    * 6. Add Farmer Producer:
    */
   const addFarmer = (farmer: Farmer) => {
@@ -1229,6 +1294,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     recordSalesOrder,
     recordPayment,
     addCattle,
+    recordCattleMilking,
     addFarmer,
     recordFeedPurchase,
     recordFeedConsumption,
