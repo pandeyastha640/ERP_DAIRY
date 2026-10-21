@@ -50,6 +50,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showFacilityMenu, setShowFacilityMenu] = useState(false);
   const [showDateMenu, setShowDateMenu] = useState(false);
+  const [customDate, setCustomDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   const unreadAlerts = alerts.filter((a) => !a.read);
 
@@ -152,26 +153,58 @@ export const Topbar: React.FC<TopbarProps> = ({
           </button>
 
           {showDateMenu && (
-            <div className="absolute right-0 mt-2 w-44 bg-white border border-[#ede8df] rounded-2xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-3 py-1.5 text-[10px] uppercase font-mono tracking-wider text-stone-400 border-b border-[#f2eee6] font-bold">
-                Time Window
+            <div className="absolute right-0 mt-2 w-64 bg-white border border-[#ede8df] rounded-2xl shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3">
+              <div>
+                <div className="px-1 text-[10px] uppercase font-mono tracking-wider text-stone-400 mb-1.5 font-bold">
+                  Preset Time Window
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {dateFilters
+                    .filter((df) => df !== 'Custom')
+                    .map((df) => (
+                      <button
+                        key={df}
+                        type="button"
+                        onClick={() => {
+                          onChangeDateFilter(df);
+                          setShowDateMenu(false);
+                        }}
+                        className={`text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                          currentDateFilter === df
+                            ? 'bg-[#1b4332] text-white font-bold shadow-xs'
+                            : 'bg-[#faf8f5] hover:bg-[#f0f7f2] text-stone-700 border border-[#ede8df]'
+                        }`}
+                      >
+                        {df}
+                      </button>
+                    ))}
+                </div>
               </div>
-              {dateFilters.map((df) => (
-                <button
-                  key={df}
-                  onClick={() => {
-                    onChangeDateFilter(df);
-                    setShowDateMenu(false);
-                  }}
-                  className={`w-full text-left px-3.5 py-2 text-xs hover:bg-[#faf8f4] transition-colors cursor-pointer ${
-                    currentDateFilter === df
-                      ? 'text-[#1b4332] font-bold bg-[#f0f7f2]'
-                      : 'text-stone-700'
-                  }`}
-                >
-                  {df}
-                </button>
-              ))}
+
+              <div className="pt-2.5 border-t border-[#ede8df]">
+                <div className="px-1 text-[10px] uppercase font-mono tracking-wider text-stone-400 mb-1.5 font-bold flex items-center justify-between">
+                  <span>Pick Exact Date</span>
+                  <Calendar className="w-3 h-3 text-stone-400" />
+                </div>
+                <div className="space-y-2">
+                  <input
+                    type="date"
+                    value={customDate}
+                    onChange={(e) => setCustomDate(e.target.value)}
+                    className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3 py-1.5 text-xs text-stone-800 font-mono outline-none focus:border-[#1b4332]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onChangeDateFilter('Custom');
+                      setShowDateMenu(false);
+                    }}
+                    className="w-full py-1.5 bg-[#1b4332] hover:bg-[#2d6a4f] text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors text-center shadow-xs"
+                  >
+                    Apply Date ({customDate})
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

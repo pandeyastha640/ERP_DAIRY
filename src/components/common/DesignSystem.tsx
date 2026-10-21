@@ -22,6 +22,7 @@ import { StatusBadge, StatusType } from './StatusBadge';
 import { MetricCard, MetricCardProps } from './MetricCard';
 import { Modal } from './Modal';
 import { Facility, DateFilter } from '../../types/dairy';
+import { useDairyERP } from '../../context/DairyERPContext';
 
 // ==========================================
 // 1. PAGE CONTAINER & HEADERS
@@ -49,12 +50,35 @@ export interface PageHeaderProps {
 export const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   subtitle,
-  facility,
-  dateFilter,
+  facility: propFacility,
+  dateFilter: propDateFilter,
   statusBadge = 'Live Operations',
   actions,
   breadcrumbs,
 }) => {
+  const {
+    currentFacility: contextFacility,
+    setCurrentFacility,
+    currentDateFilter: contextDateFilter,
+    setCurrentDateFilter,
+  } = useDairyERP();
+
+  const [showFacilityMenu, setShowFacilityMenu] = useState(false);
+  const [showDateMenu, setShowDateMenu] = useState(false);
+  const [customDate, setCustomDate] = useState(() => new Date().toISOString().split('T')[0]);
+
+  const activeFacility = propFacility || contextFacility;
+  const activeDateFilter = propDateFilter || contextDateFilter;
+
+  const facilities: Facility[] = [
+    'Main Dairy Plant',
+    'Anand Collection Centre',
+    'Baroda Bulk Chilling Unit',
+    'Mehsana Procurement Hub',
+  ];
+
+  const datePresets: DateFilter[] = ['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days'];
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#ede8df] bg-transparent">
       <div>
@@ -78,20 +102,125 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           </nav>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500 mb-1.5">
-          {facility && (
-            <span className="inline-flex items-center gap-1 font-medium text-stone-700 bg-white px-2 py-0.5 rounded-md border border-[#ede8df] shadow-xs">
-              <Building2 className="w-3 h-3 text-[#2d6a4f]" />
-              {facility}
-            </span>
-          )}
-          {facility && dateFilter && <span className="text-stone-300">·</span>}
-          {dateFilter && (
-            <span className="inline-flex items-center gap-1 text-stone-600 bg-white px-2 py-0.5 rounded-md border border-[#ede8df] shadow-xs">
-              <Calendar className="w-3 h-3 text-stone-400" />
-              {dateFilter}
-            </span>
-          )}
+        <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500 mb-2">
+          {/* Interactive Facility Switcher Pill */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShowFacilityMenu(!showFacilityMenu);
+                setShowDateMenu(false);
+              }}
+              className="inline-flex items-center gap-1.5 font-medium text-stone-700 bg-white hover:bg-[#faf8f4] hover:border-[#cbd5e1] px-2.5 py-1 rounded-xl border border-[#ede8df] shadow-xs cursor-pointer transition-colors"
+              title="Click to switch facility"
+            >
+              <Building2 className="w-3.5 h-3.5 text-[#2d6a4f]" />
+              <span className="font-semibold text-stone-800">{activeFacility}</span>
+              <ChevronDown className="w-3 h-3 text-stone-400" />
+            </button>
+
+            {showFacilityMenu && (
+              <div className="absolute left-0 mt-2 w-64 bg-white border border-[#ede8df] rounded-2xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3.5 py-2 text-[10px] uppercase font-mono tracking-wider text-stone-400 border-b border-[#f2eee6] font-bold">
+                  Operating Facility
+                </div>
+                {facilities.map((fac) => (
+                  <button
+                    key={fac}
+                    type="button"
+                    onClick={() => {
+                      setCurrentFacility(fac);
+                      setShowFacilityMenu(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-[#faf8f4] transition-colors cursor-pointer ${
+                      activeFacility === fac
+                        ? 'text-[#1b4332] font-bold bg-[#f0f7f2]'
+                        : 'text-stone-700'
+                    }`}
+                  >
+                    <span>{fac}</span>
+                    {activeFacility === fac && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#2d6a4f]" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <span className="text-stone-300">·</span>
+
+          {/* Interactive Calendar Date Picker Pill */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShowDateMenu(!showDateMenu);
+                setShowFacilityMenu(false);
+              }}
+              className="inline-flex items-center gap-1.5 font-medium text-stone-700 bg-white hover:bg-[#faf8f4] hover:border-[#cbd5e1] px-2.5 py-1 rounded-xl border border-[#ede8df] shadow-xs cursor-pointer transition-colors"
+              title="Click to open calendar and select date"
+            >
+              <Calendar className="w-3.5 h-3.5 text-[#2d6a4f]" />
+              <span className="font-mono text-xs font-semibold text-stone-800">{activeDateFilter}</span>
+              <ChevronDown className="w-3 h-3 text-stone-400" />
+            </button>
+
+            {showDateMenu && (
+              <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-64 bg-white border border-[#ede8df] rounded-2xl shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3">
+                <div>
+                  <div className="text-[10px] uppercase font-mono tracking-wider text-stone-400 mb-1.5 font-bold">
+                    Filter by Time Window
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {datePresets.map((df) => (
+                      <button
+                        key={df}
+                        type="button"
+                        onClick={() => {
+                          setCurrentDateFilter(df);
+                          setShowDateMenu(false);
+                        }}
+                        className={`text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                          activeDateFilter === df
+                            ? 'bg-[#1b4332] text-white font-bold shadow-xs'
+                            : 'bg-[#faf8f5] hover:bg-[#f0f7f2] text-stone-700 border border-[#ede8df]'
+                        }`}
+                      >
+                        {df}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2.5 border-t border-[#ede8df]">
+                  <div className="text-[10px] uppercase font-mono tracking-wider text-stone-400 mb-1.5 font-bold flex items-center justify-between">
+                    <span>Pick Exact Date</span>
+                    <Calendar className="w-3 h-3 text-stone-400" />
+                  </div>
+                  <div className="space-y-2">
+                    <input
+                      type="date"
+                      value={customDate}
+                      onChange={(e) => setCustomDate(e.target.value)}
+                      className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3 py-1.5 text-xs text-stone-800 font-mono outline-none focus:border-[#1b4332]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentDateFilter('Custom');
+                        setShowDateMenu(false);
+                      }}
+                      className="w-full py-1.5 bg-[#1b4332] hover:bg-[#2d6a4f] text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors text-center shadow-xs"
+                    >
+                      Apply Date ({customDate})
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {statusBadge && (
             <>
               <span className="text-stone-300">·</span>
