@@ -1,18 +1,18 @@
 {
   "metadata": {
-    "exportedAt": "2026-10-21T21:04:13.511Z",
+    "exportedAt": "2026-10-21T21:12:59.450Z",
     "platform": "DairyOS Enterprise Cooperative ERP",
     "totalFarmers": 33,
     "totalCattle": 53,
-    "totalCollections": 50,
+    "totalCollections": 51,
     "totalSiloTanks": 4,
     "totalBatches": 7,
     "totalProducts": 8,
     "totalInventoryItems": 0,
     "totalRoutes": 6,
     "totalSalesOrders": 19,
-    "totalPayments": 57,
-    "totalAuditLogs": 123,
+    "totalPayments": 58,
+    "totalAuditLogs": 128,
     "totalIoTDevices": 0
   },
   "tables": {
@@ -2446,6 +2446,27 @@
         "societyId": "SOC-ANAND-01",
         "bmcId": "BMC-ANAND-NORTH",
         "createdAt": "2026-10-21T20:48:04.237Z"
+      },
+      {
+        "id": "420f4494-bfaa-4b95-a5ad-890fd98f84cc",
+        "collectionCode": "IOT-733876",
+        "farmerId": "FARM-001",
+        "farmerName": "Rameshwar Patel",
+        "date": "2026-10-21",
+        "time": "02:35 am",
+        "shift": "Morning",
+        "centre": "BMC Anand Collection Yard",
+        "quantityLitres": 50,
+        "fat": 4.8,
+        "snf": 8.9,
+        "temperatureC": 6.2,
+        "quality": "PASS",
+        "ratePerLitre": 39.1,
+        "payableAmount": 1955,
+        "testedBy": "Automated Lactoscan IoT Station",
+        "societyId": "SOC-ANAND-01",
+        "bmcId": "BMC-ANAND-NORTH",
+        "createdAt": "2026-10-21T21:05:33.879Z"
       }
     ],
     "chillingTanks": [
@@ -2475,7 +2496,7 @@
         "sensorHealth": "Optimal",
         "societyId": "SOC-ANAND-01",
         "plantId": "PLANT-ANAND-CENTRAL",
-        "updatedAt": "2026-10-21T20:48:04.256Z"
+        "updatedAt": "2026-10-21T21:05:33.896Z"
       },
       {
         "id": "7811c92f-87a3-4657-93c1-191e82da52e6",
@@ -3155,7 +3176,7 @@
         "fulfillmentStatus": "Dispatched / In Transit",
         "societyId": "SOC-ANAND-01",
         "createdAt": "2026-10-21T18:59:48.780Z",
-        "updatedAt": "2026-10-21T20:48:04.209Z"
+        "updatedAt": "2026-10-21T21:05:33.852Z"
       }
     ],
     "payments": [
@@ -3899,6 +3920,19 @@
         "status": "Completed",
         "notes": "Automated IMPS settlement to A/C SBI-XXXX4100 (BARB0ANANDX)",
         "createdAt": "2026-10-21T20:48:04.330Z"
+      },
+      {
+        "id": "fb42cd9c-7ae5-4456-b8fe-9c1d30a22318",
+        "transactionRef": "UTR-733964-1823",
+        "recipientName": "Rameshwar Patel (FARM-001)",
+        "partyType": "Farmer",
+        "milkLitres": 1272.5,
+        "amount": 1955,
+        "paymentDate": "2026-10-21",
+        "paymentMethod": "Direct Bank IMPS",
+        "status": "Completed",
+        "notes": "Automated IMPS settlement to A/C SBI-XXXX4100 (BARB0ANANDX)",
+        "createdAt": "2026-10-21T21:05:33.966Z"
       }
     ],
     "auditLogs": [
@@ -5623,6 +5657,76 @@
         "milkImpactLitres": null,
         "severity": "info",
         "createdAt": "2026-10-21T20:48:04.411Z"
+      },
+      {
+        "id": "771576d6-2810-4949-a3f7-dc5c4556bb59",
+        "timestamp": "02:35 am",
+        "userName": "Suresh Parmar",
+        "userRole": "Logistics Driver",
+        "module": "Distribution & Fleet",
+        "action": "ORDER_DISPATCHED",
+        "recordId": "SO-2026-1019",
+        "description": "Dispatched order SO-2026-1019 (500x Full Cream Gold Milk 1L) on vehicle GJ-07-TY-4421",
+        "financialImpact": null,
+        "milkImpactLitres": null,
+        "severity": "info",
+        "createdAt": "2026-10-21T21:05:33.862Z"
+      },
+      {
+        "id": "ec20e56f-332d-49ec-bd47-4669e41483e1",
+        "timestamp": "02:35 am",
+        "userName": "Lactoscan IoT Daemon",
+        "userRole": "IoT Hardware",
+        "module": "Milk Collection",
+        "action": "IOT_INGESTION",
+        "recordId": "IOT-733876",
+        "description": "Direct hardware intake: 50L from Rameshwar Patel (FARM-001) @ ₹39.1/L [4.8% Fat / 8.9% SNF]",
+        "financialImpact": "+₹1,955 payable generated",
+        "milkImpactLitres": 50,
+        "severity": "info",
+        "createdAt": "2026-10-21T21:05:33.885Z"
+      },
+      {
+        "id": "5a1b4aef-9784-4651-9fe5-bb1cc5bcc2b5",
+        "timestamp": "02:35 am",
+        "userName": "Finance Manager",
+        "userRole": "Finance Manager",
+        "module": "Banking & Payouts",
+        "action": "BATCH_DISBURSEMENT",
+        "recordId": "BATCH-IMPS-3969",
+        "description": "Automated IMPS banking clearance disbursed to 1 producers. Total cleared: ₹1,955",
+        "financialImpact": "-₹1,955 paid out",
+        "milkImpactLitres": null,
+        "severity": "info",
+        "createdAt": "2026-10-21T21:05:33.970Z"
+      },
+      {
+        "id": "35fbc04a-16ac-49d2-a88a-edc94f02dac9",
+        "timestamp": "02:35 am",
+        "userName": "Telecom Dispatcher",
+        "userRole": "Notification Gateway",
+        "module": "Milk Collection",
+        "action": "RECEIPT_DISPATCHED",
+        "recordId": "MSG-733996",
+        "description": "Dispatched SMS/WhatsApp receipt via Simulated Local Telecom Bridge to Rameshwar Patel (+91 9825010000): 45L @ ₹39.1/L = ₹1759.5",
+        "financialImpact": null,
+        "milkImpactLitres": null,
+        "severity": "info",
+        "createdAt": "2026-10-21T21:05:33.998Z"
+      },
+      {
+        "id": "534f04a8-cd7a-455d-b45d-7b6513524a08",
+        "timestamp": "02:35 am",
+        "userName": "Chief Quality Officer",
+        "userRole": "QC Lab",
+        "module": "Quality Lab",
+        "action": "TANKER_CLEARED_FSSAI",
+        "recordId": "CERT-QC-102",
+        "description": "Official FSSAI Certificate issued: CLEARED FOR HTST PROCESSING. Consignment QC-102 cleared to HTST Pasteurizer Silo A.",
+        "financialImpact": null,
+        "milkImpactLitres": null,
+        "severity": "info",
+        "createdAt": "2026-10-21T21:05:34.020Z"
       }
     ],
     "iotDevices": []
