@@ -107,6 +107,11 @@ interface DairyERPContextType {
   settings: SystemSettings;
   updateSettings: (newSettings: Partial<SystemSettings>) => void;
   resetAllData: () => void;
+
+  // Global Interactive Toasts
+  toasts: { id: string; type: 'success' | 'info' | 'warning' | 'error'; title?: string; message: string }[];
+  showToast: (message: string, type?: 'success' | 'info' | 'warning' | 'error', title?: string) => void;
+  dismissToast: (id: string) => void;
 }
 
 export const DEFAULT_SETTINGS: SystemSettings = {
@@ -228,6 +233,21 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [paymentsList, setPaymentsList] = useState<PaymentTransaction[]>(() => loadStorage('payments', INITIAL_PAYMENTS));
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => loadStorage('audit', INITIAL_AUDIT_LOGS));
   const [dismissedAlertIds, setDismissedAlertIds] = useState<string[]>([]);
+
+  // Toast notifications state
+  const [toasts, setToasts] = useState<{ id: string; type: 'success' | 'info' | 'warning' | 'error'; title?: string; message: string }[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'info' | 'warning' | 'error' = 'info', title?: string) => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    setToasts((prev) => [...prev, { id, type, title, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  };
+
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
   // Synchronize state changes to localStorage
   useEffect(() => { saveStorage('settings', settings); }, [settings]);
@@ -578,6 +598,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // 1. Add to collections
     setCollectionsList((prev) => [newRecord, ...prev]);
+    showToast(`Received ${record.quantityLitres}L from ${record.farmerName} (₹${record.payableAmount.toFixed(2)})`, 'success', 'Milk Intake Recorded');
 
     // 2. Update specific Farmer's balance & stats
     setFarmersList((prev) =>
@@ -820,6 +841,8 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       severity: 'info',
     });
 
+    showToast(`Commercial Order ${order.orderNumber} created for ${order.customerName}`, 'success', 'Order Invoiced');
+
     // 4. Asynchronously sync to backend database
     api.sales.createOrder({
       orderNumber: order.orderNumber,
@@ -841,6 +864,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    */
   const recordPayment = (txn: PaymentTransaction) => {
     setPaymentsList((prev) => [txn, ...prev]);
+    showToast(`Payment of ₹${txn.amount.toLocaleString()} settled for ${txn.recipientName}`, 'success', 'Payment Settled');
 
     // If paying a farmer, update the matching pending transaction status and reduce farmer payable
     if (txn.partyType === 'Farmer') {
@@ -899,6 +923,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    */
   const addCattle = (cow: Cattle) => {
     setCattleList((prev) => [cow, ...prev]);
+    showToast(`Enrolled ${cow.breed} (${cow.tagNumber}) in ${cow.shedLocation}`, 'success', 'Cattle Enrolled');
     logAudit({
       module: 'Cattle Herd',
       action: 'CATTLE_ENROLLED',
@@ -927,6 +952,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    */
   const addFarmer = (farmer: Farmer) => {
     setFarmersList((prev) => [farmer, ...prev]);
+    showToast(`Registered producer ${farmer.name} (${farmer.village})`, 'success', 'Farmer Enrolled');
     logAudit({
       module: 'Farmers',
       action: 'FARMER_ENROLLED',
@@ -1217,6 +1243,10 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     settings,
     updateSettings,
     resetAllData,
+
+    toasts,
+    showToast,
+    dismissToast,
   };
 
   return <DairyERPContext.Provider value={value}>{children}</DairyERPContext.Provider>;

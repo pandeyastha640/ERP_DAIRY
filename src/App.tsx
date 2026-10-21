@@ -29,6 +29,7 @@ import { QuickCollectionModal } from './components/operations/QuickCollectionMod
 import { MobileFieldView } from './components/operations/MobileFieldView';
 import { MilkMoneyTracerModal } from './components/operations/MilkMoneyTracerModal';
 import { AuditLogDrawer } from './components/operations/AuditLogDrawer';
+import { ToastContainer } from './components/common/ToastContainer';
 
 // Pages
 import { DashboardPage } from './pages/DashboardPage';
@@ -141,6 +142,8 @@ function AppContent() {
     addQualityTest,
     transferMilkBetweenTanks,
     dismissAlert,
+    toasts,
+    dismissToast,
   } = useDairyERP();
 
   // Search navigation helper
@@ -502,6 +505,9 @@ function AppContent() {
           </div>
         </div>
       )}
+
+      {/* Global Interactive Toast Feedback */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }

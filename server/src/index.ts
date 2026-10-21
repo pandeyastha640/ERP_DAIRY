@@ -17,6 +17,7 @@ import { aiRouter } from './routes/ai';
 import { qualityRouter } from './routes/quality';
 import { notificationsRouter } from './routes/notifications';
 import { federationRouter } from './routes/federation';
+import { prisma } from './prisma';
 
 dotenv.config();
 
@@ -28,18 +29,41 @@ app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Liveness & Readiness Probes for Kubernetes / Docker
+// Lightweight production request performance logger
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (req.path !== '/healthz' && req.path !== '/ready') {
+      console.log(`[HTTP] ${req.method} ${req.originalUrl || req.path} -> ${res.statusCode} (${duration}ms)`);
+    }
+  });
+  next();
+});
+
+// Liveness & Readiness Probes for Kubernetes / Docker / Cloud Run
 app.get('/healthz', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-app.get('/ready', (_req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'READY',
-    uptimeSeconds: Math.floor(process.uptime()),
-    memoryUsageMB: +(process.memoryUsage().rss / 1024 / 1024).toFixed(1),
-    timestamp: new Date().toISOString(),
-  });
+app.get('/ready', async (_req: Request, res: Response) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({
+      status: 'READY',
+      database: 'CONNECTED',
+      uptimeSeconds: Math.floor(process.uptime()),
+      memoryUsageMB: +(process.memoryUsage().rss / 1024 / 1024).toFixed(1),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    res.status(503).json({
+      status: 'DEGRADED',
+      database: 'DISCONNECTED',
+      error: err.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // API Routes
@@ -96,8 +120,25 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 DairyOS Backend API running on http://localhost:${PORT}`);
 });
+
+const gracefulShutdown = async (signal: string) => {
+  console.log(`\n🛑 Received ${signal}. Initiating graceful shutdown...`);
+  server.close(async () => {
+    try {
+      await prisma.$disconnect();
+      console.log('✅ Prisma client disconnected. Server closed cleanly.');
+      process.exit(0);
+    } catch (e: any) {
+      console.error('Error disconnecting Prisma:', e.message);
+      process.exit(1);
+    }
+  });
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 export default app;
