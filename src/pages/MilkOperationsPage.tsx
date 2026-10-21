@@ -23,6 +23,8 @@ import {
   Filter,
   Milk,
   Plus,
+  ArrowRight,
+  ExternalLink,
 } from 'lucide-react';
 
 export const MilkOperationsPage: React.FC = () => {
@@ -37,6 +39,7 @@ export const MilkOperationsPage: React.FC = () => {
     currentDateFilter,
     cattleList,
     recordCattleMilking,
+    setCurrentModule,
   } = useDairyERP();
 
   const [activeTab, setActiveTab] = useState<
@@ -47,7 +50,7 @@ export const MilkOperationsPage: React.FC = () => {
     'All' | 'Anand CC' | 'Borsad Chilling' | 'Nadiad Hub'
   >('All');
 
-  // Daily Parlour Milking Modal State
+  // Daily Cow Milking Modal State (Farm Milking Shed)
   const [isParlourModalOpen, setIsParlourModalOpen] = useState(false);
   const [selectedCowId, setSelectedCowId] = useState(cattleList[0]?.id || 'COW-001');
   const [parlourShift, setParlourShift] = useState<'Morning' | 'Evening'>('Morning');
@@ -164,7 +167,7 @@ export const MilkOperationsPage: React.FC = () => {
         }
       />
 
-      {/* 2. Top 6 KPI Strip (Derived from Centralized Reconciliation) */}
+      {/* 2. Top 6 KPI Strip (Derived from Centralized Reconciliation - Clickable Deep-Links) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <MetricCard
           label="Own Herd Milk"
@@ -174,6 +177,7 @@ export const MilkOperationsPage: React.FC = () => {
           changePct={2.5}
           changeText={`${herdEconomics.totalMilkingCows} Milking Cows`}
           icon={<Warehouse className="w-4 h-4 text-forest-700" />}
+          onClick={() => setCurrentModule('cattle')}
         />
         <MetricCard
           label="Farmer Procurement"
@@ -183,6 +187,7 @@ export const MilkOperationsPage: React.FC = () => {
           changePct={1.2}
           changeText={`${procurementSummary.totalSuppliersToday} Active Suppliers`}
           icon={<Users className="w-4 h-4 text-forest-800" />}
+          onClick={() => setCurrentModule('milk-collection')}
         />
         <MetricCard
           label="Total Milk Pool"
@@ -192,6 +197,7 @@ export const MilkOperationsPage: React.FC = () => {
           changePct={-1.5}
           changeText="Chilled in Silos"
           icon={<Snowflake className="w-4 h-4 text-stone-700" />}
+          onClick={() => setCurrentModule('chilling')}
         />
         <MetricCard
           label="Milk Processed"
@@ -201,6 +207,7 @@ export const MilkOperationsPage: React.FC = () => {
           changePct={0.0}
           changeText={`${batchesList.length} Active Batches`}
           icon={<Factory className="w-4 h-4 text-amber-700" />}
+          onClick={() => setCurrentModule('processing')}
         />
         <MetricCard
           label="Milk Equivalent Sold"
@@ -210,6 +217,7 @@ export const MilkOperationsPage: React.FC = () => {
           changePct={1.7}
           changeText={`${salesOrdersList.length} Sales Orders`}
           icon={<ShoppingCart className="w-4 h-4 text-forest-700" />}
+          onClick={() => setCurrentModule('sales')}
         />
         <MetricCard
           label="Wastage & Loss"
@@ -223,19 +231,25 @@ export const MilkOperationsPage: React.FC = () => {
             100
           ).toFixed(1)}% of Pool`}
           icon={<Trash2 className="w-4 h-4 text-rose-700" />}
+          onClick={() => setCurrentModule('processing')}
         />
       </div>
 
-      {/* 3. Central Milk Mass Balance Reconciliation Equation Strip */}
+      {/* 3. Central Milk Mass Balance Reconciliation Equation Strip (Interactive Navigation) */}
       <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-5 font-mono text-xs shadow-xs">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-[#ede8df]/70 pb-3 mb-4">
           <div className="flex items-center gap-2.5">
             <span className="p-2 rounded-xl bg-sage-50 border border-sage-200/80 text-forest-800">
               <Scale className="w-4 h-4 text-forest-700" />
             </span>
-            <span className="text-sm font-bold text-forest-950 font-sans">
-              Centralized Milk Mass Balance Reconciliation Ledger
-            </span>
+            <div>
+              <span className="text-sm font-bold text-forest-950 font-sans block">
+                Centralized Milk Mass Balance Reconciliation Ledger
+              </span>
+              <span className="text-[11px] text-stone-500 font-sans">
+                Click any section below to immediately navigate to its source management module
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-2 text-forest-900 font-sans text-xs font-bold bg-sage-50 px-3 py-1 rounded-full border border-sage-200">
             <ShieldCheck className="w-4 h-4 text-forest-700" />
@@ -243,53 +257,132 @@ export const MilkOperationsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-center text-xs">
-          <div className="p-2.5 bg-cream-50/80 rounded-xl border border-[#ede8df] shadow-2xs">
-            <div className="text-[10px] uppercase font-mono tracking-wider text-stone-500 mb-1">Opening Silos</div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-xs">
+          <button
+            onClick={() => setCurrentModule('chilling')}
+            title="Inspect Opening Silos in Chilling & Milk Pool (Tab 05)"
+            className="p-2.5 bg-cream-50/80 hover:bg-cream-100 rounded-xl border border-[#ede8df] hover:border-forest-600 shadow-2xs transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-[10px] uppercase font-mono tracking-wider text-stone-500 mb-1">
+              <span>Opening Silos</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-40 group-hover:opacity-100 text-forest-700 transition-opacity" />
+            </div>
             <div className="font-bold text-stone-900 font-mono text-sm tracking-tight">
               {reconciliation.openingStockLitres.toLocaleString()} L
             </div>
-          </div>
-          <div className="p-2.5 bg-sage-50/70 rounded-xl border border-sage-200/70 text-forest-900 shadow-2xs">
-            <div className="text-[10px] uppercase font-mono tracking-wider text-forest-800 mb-1">+ Own Herd</div>
+            <div className="text-[10px] text-stone-400 font-sans mt-0.5 group-hover:text-forest-700 flex items-center gap-0.5">
+              <span>Tab 05 Silos</span>
+              <ArrowRight className="w-2.5 h-2.5" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => setCurrentModule('cattle')}
+            title="Manage Herd in Cattle Herd (Tab 07)"
+            className="p-2.5 bg-sage-50/70 hover:bg-sage-100 rounded-xl border border-sage-200/70 hover:border-forest-600 text-forest-900 shadow-2xs transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-[10px] uppercase font-mono tracking-wider text-forest-800 mb-1">
+              <span>+ Own Herd</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-40 group-hover:opacity-100 text-forest-700 transition-opacity" />
+            </div>
             <div className="font-bold font-mono text-sm tracking-tight">
               +{reconciliation.ownProductionLitres.toLocaleString()} L
             </div>
-          </div>
-          <div className="p-2.5 bg-forest-50/60 rounded-xl border border-forest-200/70 text-forest-950 shadow-2xs">
-            <div className="text-[10px] uppercase font-mono tracking-wider text-forest-800 mb-1">+ Farmer Inward</div>
+            <div className="text-[10px] text-forest-700/70 font-sans mt-0.5 group-hover:text-forest-900 flex items-center gap-0.5">
+              <span>Tab 07 Herd</span>
+              <ArrowRight className="w-2.5 h-2.5" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => setCurrentModule('milk-collection')}
+            title="View Inward Collection in Milk Collection (Tab 03)"
+            className="p-2.5 bg-forest-50/60 hover:bg-forest-100/70 rounded-xl border border-forest-200/70 hover:border-forest-600 text-forest-950 shadow-2xs transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-[10px] uppercase font-mono tracking-wider text-forest-800 mb-1">
+              <span>+ Farmer Inward</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-40 group-hover:opacity-100 text-forest-700 transition-opacity" />
+            </div>
             <div className="font-bold font-mono text-sm tracking-tight">
               +{reconciliation.farmerProcurementLitres.toLocaleString()} L
             </div>
-          </div>
-          <div className="p-2.5 bg-amber-50/60 rounded-xl border border-amber-200/70 text-amber-950 shadow-2xs">
-            <div className="text-[10px] uppercase font-mono tracking-wider text-amber-900 mb-1">
-              - Rejections
+            <div className="text-[10px] text-forest-700/70 font-sans mt-0.5 group-hover:text-forest-900 flex items-center gap-0.5">
+              <span>Tab 03 Inward</span>
+              <ArrowRight className="w-2.5 h-2.5" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => setCurrentModule('quality')}
+            title="View QC Rejections in Quality Testing (Tab 04)"
+            className="p-2.5 bg-amber-50/60 hover:bg-amber-100/70 rounded-xl border border-amber-200/70 hover:border-amber-600 text-amber-950 shadow-2xs transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-[10px] uppercase font-mono tracking-wider text-amber-900 mb-1">
+              <span>- Rejections</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-40 group-hover:opacity-100 text-amber-700 transition-opacity" />
             </div>
             <div className="font-bold font-mono text-sm tracking-tight">
               -{reconciliation.qualityRejectedLitres.toLocaleString()} L
             </div>
-          </div>
-          <div className="p-2.5 bg-stone-50 rounded-xl border border-[#ede8df] text-stone-800 shadow-2xs">
-            <div className="text-[10px] uppercase font-mono tracking-wider text-stone-500 mb-1">- Processing</div>
+            <div className="text-[10px] text-amber-800/70 font-sans mt-0.5 group-hover:text-amber-950 flex items-center gap-0.5">
+              <span>Tab 04 QC</span>
+              <ArrowRight className="w-2.5 h-2.5" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => setCurrentModule('processing')}
+            title="View Processing Batches in Dairy Processing (Tab 06)"
+            className="p-2.5 bg-stone-50 hover:bg-stone-100 rounded-xl border border-[#ede8df] hover:border-stone-500 text-stone-800 shadow-2xs transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-[10px] uppercase font-mono tracking-wider text-stone-500 mb-1">
+              <span>- Processing</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-40 group-hover:opacity-100 text-stone-700 transition-opacity" />
+            </div>
             <div className="font-bold font-mono text-sm tracking-tight">
               -{reconciliation.processingConsumptionLitres.toLocaleString()} L
             </div>
-          </div>
-          <div className="p-2.5 bg-rose-50/60 rounded-xl border border-rose-200/70 text-rose-950 shadow-2xs">
-            <div className="text-[10px] uppercase font-mono tracking-wider text-rose-900 mb-1">- Line Wastage</div>
+            <div className="text-[10px] text-stone-500 font-sans mt-0.5 group-hover:text-stone-800 flex items-center gap-0.5">
+              <span>Tab 06 Batches</span>
+              <ArrowRight className="w-2.5 h-2.5" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => setCurrentModule('processing')}
+            title="Inspect Line Losses in Dairy Processing (Tab 06)"
+            className="p-2.5 bg-rose-50/60 hover:bg-rose-100/70 rounded-xl border border-rose-200/70 hover:border-rose-600 text-rose-950 shadow-2xs transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-[10px] uppercase font-mono tracking-wider text-rose-900 mb-1">
+              <span>- Line Wastage</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-40 group-hover:opacity-100 text-rose-700 transition-opacity" />
+            </div>
             <div className="font-bold font-mono text-sm tracking-tight">
               -{reconciliation.spillageWastageLitres.toLocaleString()} L
             </div>
-          </div>
-          <div className="p-2.5 bg-sage-100/70 rounded-xl border border-sage-300 text-forest-950 shadow-xs">
-            <div className="text-[10px] uppercase font-mono tracking-wider text-forest-950 font-bold mb-1">
-              = Closing Silo
+            <div className="text-[10px] text-rose-700/70 font-sans mt-0.5 group-hover:text-rose-950 flex items-center gap-0.5">
+              <span>Tab 06 Loss</span>
+              <ArrowRight className="w-2.5 h-2.5" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => setCurrentModule('chilling')}
+            title="Inspect Closing Stock in Chilling & Milk Pool (Tab 05)"
+            className="p-2.5 bg-sage-100/70 hover:bg-sage-200/80 rounded-xl border border-sage-300 hover:border-forest-700 text-forest-950 shadow-xs transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center justify-between text-[10px] uppercase font-mono tracking-wider text-forest-950 font-bold mb-1">
+              <span>= Closing Silo</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-40 group-hover:opacity-100 text-forest-800 transition-opacity" />
             </div>
             <div className="font-bold text-sm font-mono tracking-tight">
               {reconciliation.closingStockLitres.toLocaleString()} L
             </div>
-          </div>
+            <div className="text-[10px] text-forest-800 font-sans mt-0.5 group-hover:text-forest-950 font-medium flex items-center gap-0.5">
+              <span>Tab 05 Silos</span>
+              <ArrowRight className="w-2.5 h-2.5" />
+            </div>
+          </button>
         </div>
       </div>
 
@@ -386,6 +479,7 @@ export const MilkOperationsPage: React.FC = () => {
                     <th className="px-4 py-3">Processed</th>
                     <th className="px-4 py-3">Wastage / Loss</th>
                     <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
@@ -410,6 +504,14 @@ export const MilkOperationsPage: React.FC = () => {
                       <span className="px-2.5 py-0.5 rounded-full bg-sage-50 text-forest-900 border border-sage-200 text-[11px] font-bold">
                         Reconciled
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-right font-sans">
+                      <button
+                        onClick={() => setCurrentModule('milk-collection')}
+                        className="text-[11px] font-semibold text-forest-800 hover:text-forest-950 underline underline-offset-2 cursor-pointer"
+                      >
+                        View Inward &rarr;
+                      </button>
                     </td>
                   </tr>
                   <tr className="hover:bg-cream-50/60 transition-colors">
@@ -442,6 +544,14 @@ export const MilkOperationsPage: React.FC = () => {
                         Active Inward
                       </span>
                     </td>
+                    <td className="px-4 py-3 text-right font-sans">
+                      <button
+                        onClick={() => setCurrentModule('milk-collection')}
+                        className="text-[11px] font-semibold text-forest-800 hover:text-forest-950 underline underline-offset-2 cursor-pointer"
+                      >
+                        Log Collection &rarr;
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -460,7 +570,7 @@ export const MilkOperationsPage: React.FC = () => {
                 chillers bringing milk to 3.9°C within 12 minutes of extraction.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-mono text-forest-900 bg-sage-50 px-2.5 py-1 rounded-full border border-sage-200 font-bold shrink-0">
                 {reconciliation.ownProductionLitres.toLocaleString()} L/day across{' '}
                 {herdEconomics.totalMilkingCows} milking cows
@@ -470,7 +580,14 @@ export const MilkOperationsPage: React.FC = () => {
                 className="px-3.5 py-1.5 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors active:scale-98 shrink-0"
               >
                 <Milk className="w-3.5 h-3.5" />
-                <span>Log Parlour Milking</span>
+                <span>Record Cow Milking</span>
+              </button>
+              <button
+                onClick={() => setCurrentModule('cattle')}
+                className="px-3 py-1.5 bg-white hover:bg-stone-50 text-forest-900 border border-[#ede8df] rounded-xl text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+              >
+                <Warehouse className="w-3.5 h-3.5 text-forest-700" />
+                <span>Open Cattle Herd (Tab 07) &rarr;</span>
               </button>
             </div>
           </div>
@@ -510,16 +627,33 @@ export const MilkOperationsPage: React.FC = () => {
 
       {activeTab === 'Farmer Milk' && (
         <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-forest-950">Farmer Procurement Network</h3>
-            <span className="text-xs font-mono text-forest-900 bg-sage-50 px-2.5 py-1 rounded-full border border-sage-200 font-bold">
-              {reconciliation.farmerProcurementLitres.toLocaleString()} L procured today
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-forest-950">Farmer Procurement Network</h3>
+              <p className="text-xs text-stone-500 font-medium">
+                Collected from {procurementSummary.totalSuppliersToday} active farmers across Anand,
+                Borsad, Petlad and Nadiad clusters. Tested with automated lactoscan and fat/SNF sensors.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-mono text-forest-900 bg-sage-50 px-2.5 py-1 rounded-full border border-sage-200 font-bold shrink-0">
+                {reconciliation.farmerProcurementLitres.toLocaleString()} L procured today
+              </span>
+              <button
+                onClick={() => setCurrentModule('milk-collection')}
+                className="px-3.5 py-1.5 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors active:scale-98 shrink-0"
+              >
+                <Scale className="w-3.5 h-3.5" />
+                <span>Milk Collection (Tab 03) &rarr;</span>
+              </button>
+              <button
+                onClick={() => setCurrentModule('payments')}
+                className="px-3 py-1.5 bg-white hover:bg-stone-50 text-forest-900 border border-[#ede8df] rounded-xl text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+              >
+                <span>Farmer Payables (Tab 15) &rarr;</span>
+              </button>
+            </div>
           </div>
-          <p className="text-xs text-stone-500 font-medium">
-            Collected from {procurementSummary.totalSuppliersToday} active farmers across Anand,
-            Borsad, Petlad and Nadiad clusters. Tested with automated lactoscan and fat/SNF sensors.
-          </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
             <div className="p-4 bg-cream-50/70 rounded-xl border border-[#ede8df] shadow-2xs">
               <div className="text-stone-500 font-sans text-xs font-semibold">Avg Procurement Rate</div>
@@ -556,13 +690,33 @@ export const MilkOperationsPage: React.FC = () => {
 
       {(activeTab === 'Milk Pool' || activeTab === 'Processing') && (
         <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 space-y-4 shadow-xs">
-          <h3 className="text-sm font-bold text-forest-950">
-            Cold Pool & Processing Overview
-          </h3>
-          <p className="text-xs text-stone-500 font-medium">
-            Detailed tanks, CIP sanitization cycles and product yield breakdowns can also be
-            accessed in their dedicated Chilling and Processing modules.
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-forest-950">
+                Cold Pool & Processing Overview
+              </h3>
+              <p className="text-xs text-stone-500 font-medium">
+                Detailed tanks, CIP sanitization cycles and product yield breakdowns can also be
+                accessed in their dedicated Chilling and Processing modules.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setCurrentModule('chilling')}
+                className="px-3.5 py-1.5 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors active:scale-98 shrink-0"
+              >
+                <Snowflake className="w-3.5 h-3.5" />
+                <span>Chilling Tanks & Silos (Tab 05) &rarr;</span>
+              </button>
+              <button
+                onClick={() => setCurrentModule('processing')}
+                className="px-3 py-1.5 bg-white hover:bg-stone-50 text-forest-900 border border-[#ede8df] rounded-xl text-xs font-semibold shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+              >
+                <Factory className="w-3.5 h-3.5 text-forest-700" />
+                <span>Dairy Processing Batches (Tab 06) &rarr;</span>
+              </button>
+            </div>
+          </div>
           <div className="p-4 bg-cream-50/80 rounded-xl border border-[#ede8df] font-mono text-xs text-stone-800 space-y-2.5">
             <div className="font-medium text-stone-800">Silo A (Raw Intake Buffer): 3,820 L @ 3.9°C (Capacity 5,000 L)</div>
             <div className="font-medium text-stone-800">Vat B (Direct Farmer Reception): 1,940 L @ 4.2°C (Capacity 3,000 L)</div>
@@ -575,12 +729,12 @@ export const MilkOperationsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Parlour Milking Modal */}
+      {/* Daily Cow Milking Modal */}
       <Modal
         isOpen={isParlourModalOpen}
         onClose={() => setIsParlourModalOpen(false)}
-        title="Record Own Herd Milking Yield"
-        subtitle="Log parlour extraction for individual cows to immediately update mass balance reconciliation"
+        title="Record Daily Cow Milking Yield"
+        subtitle="Log daily milk extraction for individual farm cattle to immediately update herd yield and mass balance reconciliation"
         maxWidth="md"
       >
         <form
@@ -678,7 +832,7 @@ export const MilkOperationsPage: React.FC = () => {
               type="submit"
               className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
             >
-              Commit Parlour Milking
+              Save Milking Record
             </button>
           </div>
         </form>
