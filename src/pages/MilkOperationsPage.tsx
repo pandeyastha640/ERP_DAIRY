@@ -95,130 +95,83 @@ export const MilkOperationsPage: React.FC = () => {
     }, 0)
   );
 
-  // Chart 1: Own vs Farmer Production Filter State
-  const [timeframeA, setTimeframeA] = useState<'7D' | '14D' | '30D'>('7D');
+  // Master Daily Reconciled Operational Dataset (30-day timeline with ISO Calendar Dates)
+  const masterDailyTimeline = [
+    { isoDate: '2026-09-08', label: '08 Sep', ownL: 1140, farmerL: 2710, processedL: 3600 },
+    { isoDate: '2026-09-12', label: '12 Sep', ownL: 1160, farmerL: 2760, processedL: 3680 },
+    { isoDate: '2026-09-16', label: '16 Sep', ownL: 1175, farmerL: 2815, processedL: 3720 },
+    { isoDate: '2026-09-20', label: '20 Sep', ownL: 1190, farmerL: 2850, processedL: 3780 },
+    { isoDate: '2026-09-24', label: '24 Sep', ownL: 1200, farmerL: 2910, processedL: 3830 },
+    { isoDate: '2026-09-26', label: '26 Sep', ownL: 1195, farmerL: 2855, processedL: 3790 },
+    { isoDate: '2026-09-28', label: '28 Sep', ownL: 1205, farmerL: 2895, processedL: 3820 },
+    { isoDate: '2026-09-30', label: '30 Sep', ownL: 1215, farmerL: 2935, processedL: 3850 },
+    { isoDate: '2026-10-01', label: '01 Oct', ownL: 1210, farmerL: 2910, processedL: 3820 },
+    { isoDate: '2026-10-02', label: '02 Oct', ownL: 1220, farmerL: 2980, processedL: 3890 },
+    { isoDate: '2026-10-03', label: '03 Oct', ownL: 1205, farmerL: 2975, processedL: 3860 },
+    { isoDate: '2026-10-04', label: '04 Oct', ownL: 1230, farmerL: 3020, processedL: 3910 },
+    { isoDate: '2026-10-05', label: '05 Oct', ownL: 1210, farmerL: 3140, processedL: 3900 },
+    {
+      isoDate: '2026-10-06',
+      label: 'Today',
+      ownL: reconciliation.ownProductionLitres,
+      farmerL: reconciliation.farmerProcurementLitres,
+      processedL: reconciliation.processingConsumptionLitres,
+    },
+  ];
+
+  // Chart 1: Own vs Farmer Production Filter State (Supports Calendar Date Range)
+  const [timeframeA, setTimeframeA] = useState<'7D' | '14D' | '30D' | 'Custom'>('7D');
   const [streamFilter, setStreamFilter] = useState<'All' | 'Own' | 'Farmer'>('All');
+  const [calendarStartA, setCalendarStartA] = useState('2026-10-01');
+  const [calendarEndA, setCalendarEndA] = useState('2026-10-06');
 
-  // Chart 2: Inward vs Processing Filter State
-  const [timeframeB, setTimeframeB] = useState<'7D' | '14D' | '30D'>('7D');
+  // Chart 2: Inward vs Processing Filter State (Supports Calendar Date Range)
+  const [timeframeB, setTimeframeB] = useState<'7D' | '14D' | '30D' | 'Custom'>('7D');
   const [trendMetricFilter, setTrendMetricFilter] = useState<'Both' | 'Inward' | 'Processing'>('Both');
+  const [calendarStartB, setCalendarStartB] = useState('2026-10-01');
+  const [calendarEndB, setCalendarEndB] = useState('2026-10-06');
 
-  // Dynamic Multi-Timeframe Data for Inward vs Processing (Chart 2)
-  const baseTrend7D = [
-    { label: '01 Oct', value: 4120, secondaryValue: 3820 },
-    { label: '02 Oct', value: 4200, secondaryValue: 3890 },
-    { label: '03 Oct', value: 4180, secondaryValue: 3860 },
-    { label: '04 Oct', value: 4250, secondaryValue: 3910 },
-    { label: '05 Oct', value: 4350, secondaryValue: 3900 },
-    { label: '06 Oct', value: 4310, secondaryValue: 3880 },
-    {
-      label: 'Today',
-      value: reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres,
-      secondaryValue: reconciliation.processingConsumptionLitres,
-    },
-  ];
+  // Dynamic Dataset Computation for Chart 1
+  let currentComparisonRaw = masterDailyTimeline;
+  if (timeframeA === '7D') {
+    currentComparisonRaw = masterDailyTimeline.slice(-7);
+  } else if (timeframeA === '14D') {
+    currentComparisonRaw = masterDailyTimeline.slice(-10);
+  } else if (timeframeA === 'Custom') {
+    const custom = masterDailyTimeline.filter(
+      (d) => d.isoDate >= calendarStartA && d.isoDate <= calendarEndA
+    );
+    currentComparisonRaw = custom.length > 0 ? custom : masterDailyTimeline.slice(-7);
+  }
 
-  const baseTrend14D = [
-    { label: '24 Sep', value: 3980, secondaryValue: 3750 },
-    { label: '26 Sep', value: 4050, secondaryValue: 3790 },
-    { label: '28 Sep', value: 4100, secondaryValue: 3820 },
-    { label: '30 Sep', value: 4150, secondaryValue: 3850 },
-    { label: '02 Oct', value: 4200, secondaryValue: 3890 },
-    { label: '04 Oct', value: 4250, secondaryValue: 3910 },
-    {
-      label: 'Today',
-      value: reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres,
-      secondaryValue: reconciliation.processingConsumptionLitres,
-    },
-  ];
+  const filteredComparisonData = currentComparisonRaw.map((d) => ({
+    label: d.label,
+    valueA: streamFilter === 'Farmer' ? 0 : d.ownL,
+    valueB: streamFilter === 'Own' ? 0 : d.farmerL,
+  }));
 
-  const baseTrend30D = [
-    { label: '08 Sep', value: 3850, secondaryValue: 3600 },
-    { label: '12 Sep', value: 3920, secondaryValue: 3680 },
-    { label: '16 Sep', value: 3990, secondaryValue: 3720 },
-    { label: '20 Sep', value: 4040, secondaryValue: 3780 },
-    { label: '24 Sep', value: 4110, secondaryValue: 3830 },
-    { label: '28 Sep', value: 4190, secondaryValue: 3860 },
-    { label: '02 Oct', value: 4220, secondaryValue: 3890 },
-    {
-      label: 'Today',
-      value: reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres,
-      secondaryValue: reconciliation.processingConsumptionLitres,
-    },
-  ];
-
-  const currentTrendRaw =
-    timeframeB === '7D' ? baseTrend7D : timeframeB === '14D' ? baseTrend14D : baseTrend30D;
+  // Dynamic Dataset Computation for Chart 2
+  let currentTrendRaw = masterDailyTimeline;
+  if (timeframeB === '7D') {
+    currentTrendRaw = masterDailyTimeline.slice(-7);
+  } else if (timeframeB === '14D') {
+    currentTrendRaw = masterDailyTimeline.slice(-10);
+  } else if (timeframeB === 'Custom') {
+    const custom = masterDailyTimeline.filter(
+      (d) => d.isoDate >= calendarStartB && d.isoDate <= calendarEndB
+    );
+    currentTrendRaw = custom.length > 0 ? custom : masterDailyTimeline.slice(-7);
+  }
 
   const filteredTrendData = currentTrendRaw.map((d) => {
+    const inward = d.ownL + d.farmerL;
     if (trendMetricFilter === 'Inward') {
-      return { label: d.label, value: d.value };
+      return { label: d.label, value: inward };
     }
     if (trendMetricFilter === 'Processing') {
-      return { label: d.label, value: d.secondaryValue };
+      return { label: d.label, value: d.processedL };
     }
-    return d;
-  });
-
-  // Dynamic Multi-Timeframe Data for Own vs Farmer (Chart 1)
-  const baseComparison7D = [
-    { label: '01 Oct', valueA: 1210, valueB: 2910 },
-    { label: '02 Oct', valueA: 1220, valueB: 2980 },
-    { label: '03 Oct', valueA: 1205, valueB: 2975 },
-    { label: '04 Oct', valueA: 1230, valueB: 3020 },
-    { label: '05 Oct', valueA: 1210, valueB: 3140 },
-    { label: '06 Oct', valueA: 1225, valueB: 3085 },
-    {
-      label: 'Today',
-      valueA: reconciliation.ownProductionLitres,
-      valueB: reconciliation.farmerProcurementLitres,
-    },
-  ];
-
-  const baseComparison14D = [
-    { label: '24 Sep', valueA: 1180, valueB: 2800 },
-    { label: '26 Sep', valueA: 1195, valueB: 2855 },
-    { label: '28 Sep', valueA: 1205, valueB: 2895 },
-    { label: '30 Sep', valueA: 1215, valueB: 2935 },
-    { label: '02 Oct', valueA: 1220, valueB: 2980 },
-    { label: '04 Oct', valueA: 1230, valueB: 3020 },
-    {
-      label: 'Today',
-      valueA: reconciliation.ownProductionLitres,
-      valueB: reconciliation.farmerProcurementLitres,
-    },
-  ];
-
-  const baseComparison30D = [
-    { label: '08 Sep', valueA: 1140, valueB: 2710 },
-    { label: '12 Sep', valueA: 1160, valueB: 2760 },
-    { label: '16 Sep', valueA: 1175, valueB: 2815 },
-    { label: '20 Sep', valueA: 1190, valueB: 2850 },
-    { label: '24 Sep', valueA: 1200, valueB: 2910 },
-    { label: '28 Sep', valueA: 1210, valueB: 2980 },
-    { label: '02 Oct', valueA: 1220, valueB: 3000 },
-    {
-      label: 'Today',
-      valueA: reconciliation.ownProductionLitres,
-      valueB: reconciliation.farmerProcurementLitres,
-    },
-  ];
-
-  const currentComparisonRaw =
-    timeframeA === '7D'
-      ? baseComparison7D
-      : timeframeA === '14D'
-      ? baseComparison14D
-      : baseComparison30D;
-
-  const filteredComparisonData = currentComparisonRaw.map((d) => {
-    if (streamFilter === 'Own') {
-      return { label: d.label, valueA: d.valueA, valueB: 0 };
-    }
-    if (streamFilter === 'Farmer') {
-      return { label: d.label, valueA: 0, valueB: d.valueB };
-    }
-    return d;
+    return { label: d.label, value: inward, secondaryValue: d.processedL };
   });
 
   return (
@@ -535,7 +488,7 @@ export const MilkOperationsPage: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* Filter Controls: Stream + Timeframe */}
+                  {/* Filter Controls: Stream + Timeframe + Calendar Date Picker */}
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {/* Stream Filter */}
                     <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs font-semibold">
@@ -571,12 +524,24 @@ export const MilkOperationsPage: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Timeframe Filter */}
+                    {/* Timeframe Presets */}
                     <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs font-semibold font-mono">
                       {(['7D', '14D', '30D'] as const).map((tf) => (
                         <button
                           key={tf}
-                          onClick={() => setTimeframeA(tf)}
+                          onClick={() => {
+                            setTimeframeA(tf);
+                            if (tf === '7D') {
+                              setCalendarStartA('2026-10-01');
+                              setCalendarEndA('2026-10-06');
+                            } else if (tf === '14D') {
+                              setCalendarStartA('2026-09-24');
+                              setCalendarEndA('2026-10-06');
+                            } else {
+                              setCalendarStartA('2026-09-08');
+                              setCalendarEndA('2026-10-06');
+                            }
+                          }}
                           className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
                             timeframeA === tf
                               ? 'bg-white text-forest-950 font-bold shadow-2xs'
@@ -586,6 +551,32 @@ export const MilkOperationsPage: React.FC = () => {
                           {tf}
                         </button>
                       ))}
+                    </div>
+
+                    {/* Interactive Calendar Date Range Filter */}
+                    <div className="flex items-center gap-1 bg-[#faf8f5] hover:bg-white border border-[#ede8df] focus-within:border-forest-600 rounded-xl px-2 py-1 text-xs shadow-2xs transition-all">
+                      <Calendar className="w-3.5 h-3.5 text-forest-700 shrink-0" />
+                      <input
+                        type="date"
+                        value={calendarStartA}
+                        onChange={(e) => {
+                          setCalendarStartA(e.target.value);
+                          setTimeframeA('Custom');
+                        }}
+                        className="bg-transparent text-[11px] font-mono text-stone-700 outline-none cursor-pointer max-w-[105px]"
+                        title="Calendar Start Date"
+                      />
+                      <span className="text-stone-400 font-mono text-[10px]">&rarr;</span>
+                      <input
+                        type="date"
+                        value={calendarEndA}
+                        onChange={(e) => {
+                          setCalendarEndA(e.target.value);
+                          setTimeframeA('Custom');
+                        }}
+                        className="bg-transparent text-[11px] font-mono text-stone-700 outline-none cursor-pointer max-w-[105px]"
+                        title="Calendar End Date"
+                      />
                     </div>
                   </div>
                 </div>
@@ -630,7 +621,7 @@ export const MilkOperationsPage: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* Filter Controls: Metric + Timeframe */}
+                  {/* Filter Controls: Metric + Timeframe + Calendar Date Picker */}
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {/* Metric Filter */}
                     <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs font-semibold">
@@ -666,12 +657,24 @@ export const MilkOperationsPage: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Timeframe Filter */}
+                    {/* Timeframe Presets */}
                     <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs font-semibold font-mono">
                       {(['7D', '14D', '30D'] as const).map((tf) => (
                         <button
                           key={tf}
-                          onClick={() => setTimeframeB(tf)}
+                          onClick={() => {
+                            setTimeframeB(tf);
+                            if (tf === '7D') {
+                              setCalendarStartB('2026-10-01');
+                              setCalendarEndB('2026-10-06');
+                            } else if (tf === '14D') {
+                              setCalendarStartB('2026-09-24');
+                              setCalendarEndB('2026-10-06');
+                            } else {
+                              setCalendarStartB('2026-09-08');
+                              setCalendarEndB('2026-10-06');
+                            }
+                          }}
                           className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
                             timeframeB === tf
                               ? 'bg-white text-forest-950 font-bold shadow-2xs'
@@ -681,6 +684,32 @@ export const MilkOperationsPage: React.FC = () => {
                           {tf}
                         </button>
                       ))}
+                    </div>
+
+                    {/* Interactive Calendar Date Range Filter */}
+                    <div className="flex items-center gap-1 bg-[#faf8f5] hover:bg-white border border-[#ede8df] focus-within:border-forest-600 rounded-xl px-2 py-1 text-xs shadow-2xs transition-all">
+                      <Calendar className="w-3.5 h-3.5 text-forest-700 shrink-0" />
+                      <input
+                        type="date"
+                        value={calendarStartB}
+                        onChange={(e) => {
+                          setCalendarStartB(e.target.value);
+                          setTimeframeB('Custom');
+                        }}
+                        className="bg-transparent text-[11px] font-mono text-stone-700 outline-none cursor-pointer max-w-[105px]"
+                        title="Calendar Start Date"
+                      />
+                      <span className="text-stone-400 font-mono text-[10px]">&rarr;</span>
+                      <input
+                        type="date"
+                        value={calendarEndB}
+                        onChange={(e) => {
+                          setCalendarEndB(e.target.value);
+                          setTimeframeB('Custom');
+                        }}
+                        className="bg-transparent text-[11px] font-mono text-stone-700 outline-none cursor-pointer max-w-[105px]"
+                        title="Calendar End Date"
+                      />
                     </div>
                   </div>
                 </div>

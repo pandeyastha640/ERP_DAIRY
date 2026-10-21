@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { SalesOrder } from '../types/dairy';
+import { useDairyERP } from '../context/DairyERPContext';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { AreaTrendChart, DonutChart } from '../components/charts/Charts';
 import { Modal } from '../components/common/Modal';
-import { ShoppingCart, Plus, Search, Filter, DollarSign, Layers, FileText } from 'lucide-react';
+import { ShoppingCart, Plus, Search, Filter, DollarSign, Layers, FileText, Calendar, ArrowRight, RotateCcw } from 'lucide-react';
 import { api } from '../services/api';
 import { GSTInvoiceModal } from '../components/sales/GSTInvoiceModal';
 
@@ -14,6 +15,7 @@ interface SalesPageProps {
 }
 
 export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
+  const { setCurrentModule, setSelectedItemId } = useDairyERP();
   const [localOrders, setLocalOrders] = useState<SalesOrder[]>(orders);
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState('All');
@@ -53,14 +55,36 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
     { label: 'Farm Direct Consumer', value: channelSales.Direct, color: '#c59b27' },
   ];
 
-  const salesTrend = [
-    { label: '01 Oct', value: 135000 },
-    { label: '02 Oct', value: 138000 },
-    { label: '03 Oct', value: 140000 },
-    { label: '04 Oct', value: 139000 },
-    { label: '05 Oct', value: 139500 },
-    { label: '06 Oct', value: todayRevenue },
+  // 14-Day Timeline with calendar filtering
+  const masterSalesHistory = [
+    { isoDate: '2026-09-23', label: '23 Sep', value: 128000 },
+    { isoDate: '2026-09-24', label: '24 Sep', value: 131500 },
+    { isoDate: '2026-09-25', label: '25 Sep', value: 129000 },
+    { isoDate: '2026-09-26', label: '26 Sep', value: 134200 },
+    { isoDate: '2026-09-27', label: '27 Sep', value: 136000 },
+    { isoDate: '2026-09-28', label: '28 Sep', value: 132000 },
+    { isoDate: '2026-09-29', label: '29 Sep', value: 135800 },
+    { isoDate: '2026-09-30', label: '30 Sep', value: 137400 },
+    { isoDate: '2026-10-01', label: '01 Oct', value: 135000 },
+    { isoDate: '2026-10-02', label: '02 Oct', value: 138000 },
+    { isoDate: '2026-10-03', label: '03 Oct', value: 140000 },
+    { isoDate: '2026-10-04', label: '04 Oct', value: 139000 },
+    { isoDate: '2026-10-05', label: '05 Oct', value: 139500 },
+    { isoDate: '2026-10-06', label: '06 Oct', value: todayRevenue },
   ];
+
+  const [trendDays, setTrendDays] = useState<7 | 14>(7);
+  const [chartStartDate, setChartStartDate] = useState('');
+  const [chartEndDate, setChartEndDate] = useState('');
+
+  const activeSalesTrend = React.useMemo(() => {
+    let result = masterSalesHistory;
+    if (chartStartDate && chartEndDate) {
+      result = result.filter((d) => d.isoDate >= chartStartDate && d.isoDate <= chartEndDate);
+      return result.length > 0 ? result : masterSalesHistory.slice(-7);
+    }
+    return result.slice(-trendDays);
+  }, [trendDays, chartStartDate, chartEndDate, todayRevenue]);
 
   const [paymentFilter, setPaymentFilter] = useState<'All' | 'Paid' | 'Partially Paid' | 'Pending'>('All');
   const [dateFilter, setDateFilter] = useState('All');
@@ -134,37 +158,139 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
         </button>
       </div>
 
+      {/* Omni-Channel Flow Links */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-medium">
+        <span className="text-stone-400 font-semibold text-[11px] uppercase tracking-wider shrink-0">Commercial Flow:</span>
+        <button
+          onClick={() => setCurrentModule('products')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 06 Product SKUs & Pricing</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('inventory')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 07 Finished Stock</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('distribution')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 10 Route Distribution & Crates</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('payments')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 15 Farmer & Buyer Accounts</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('finance')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 16 Profitability & Unit Economics</span>
+        </button>
+      </div>
+
       {/* KPI Ribbon */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
-        <MetricCard label="Today's Gross Sales" value={`₹${todayRevenue.toLocaleString()}`} unit="" trend="up" changePct={2.4} changeText="Invoiced today" />
-        <MetricCard label="Estimated Monthly Run" value="₹42.8 Lakhs" unit="" trend="up" changeText="30-day projection" />
+        <div onClick={() => setCurrentModule('finance')} className="cursor-pointer group" title="Click to view Gross Sales in Finance Ledger">
+          <MetricCard label="Today's Gross Sales" value={`₹${todayRevenue.toLocaleString()}`} unit="" trend="up" changePct={2.4} changeText="Invoiced today →" />
+        </div>
+        <div onClick={() => setCurrentModule('reports')} className="cursor-pointer group" title="Click to view 30-day projection in Reports">
+          <MetricCard label="Estimated Monthly Run" value="₹42.8 Lakhs" unit="" trend="up" changeText="30-day projection →" />
+        </div>
         <MetricCard label="Commercial Orders" value={orders.length} unit="Invoices" trend="neutral" changeText="Active routes fulfillment" />
-        <MetricCard label="Avg Order Value" value={`₹${avgOrderValue.toLocaleString()}`} unit="" trend="up" changeText="Wholesale average" />
-        <MetricCard
-          label="Payment Receivables"
-          value={`₹${outstandingAmount.toLocaleString()}`}
-          unit=""
-          trend="down"
-          isGoodWhenUp={false}
-          changeText="Pending settlement"
-        />
+        <div onClick={() => setCurrentModule('finance')} className="cursor-pointer group" title="Click to inspect wholesale economics">
+          <MetricCard label="Avg Order Value" value={`₹${avgOrderValue.toLocaleString()}`} unit="" trend="up" changeText="Wholesale average →" />
+        </div>
+        <div onClick={() => setCurrentModule('payments')} className="cursor-pointer group" title="Click to view payment receivables & collections">
+          <MetricCard
+            label="Payment Receivables"
+            value={`₹${outstandingAmount.toLocaleString()}`}
+            unit=""
+            trend="down"
+            isGoodWhenUp={false}
+            changeText="Pending settlement →"
+          />
+        </div>
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Trend */}
+        {/* Sales Trend with Calendar Filter */}
         <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
             <div>
               <h3 className="text-sm font-bold text-forest-950 font-sans">Daily Revenue Trajectory (₹)</h3>
               <p className="text-[11px] text-stone-500">Gross billing trend over current cycle</p>
             </div>
-            <span className="text-xs font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full font-bold">
-              ₹1.42 Lakhs Today
-            </span>
+            
+            {/* Calendar & Timeframe Controls */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center bg-cream-50 border border-[#ede8df] rounded-lg p-0.5 text-xs font-mono">
+                <button
+                  onClick={() => {
+                    setChartStartDate('');
+                    setChartEndDate('');
+                    setTrendDays(7);
+                  }}
+                  className={`px-2 py-0.5 rounded text-[11px] font-semibold cursor-pointer transition-colors ${
+                    trendDays === 7 && !chartStartDate ? 'bg-forest-900 text-white shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  7D
+                </button>
+                <button
+                  onClick={() => {
+                    setChartStartDate('');
+                    setChartEndDate('');
+                    setTrendDays(14);
+                  }}
+                  className={`px-2 py-0.5 rounded text-[11px] font-semibold cursor-pointer transition-colors ${
+                    trendDays === 14 && !chartStartDate ? 'bg-forest-900 text-white shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  14D
+                </button>
+              </div>
+
+              {/* HTML5 Calendar Range Picker */}
+              <div className="flex items-center gap-1 bg-[#fcfbf9] border border-[#ede8df] rounded-lg px-2 py-0.5 text-[11px]">
+                <Calendar className="w-3 h-3 text-forest-700 shrink-0" />
+                <input
+                  type="date"
+                  value={chartStartDate}
+                  onChange={(e) => setChartStartDate(e.target.value)}
+                  className="bg-transparent text-[11px] font-mono text-stone-700 outline-none cursor-pointer"
+                  title="Chart Start Date"
+                />
+                <span className="text-stone-400">→</span>
+                <input
+                  type="date"
+                  value={chartEndDate}
+                  onChange={(e) => setChartEndDate(e.target.value)}
+                  className="bg-transparent text-[11px] font-mono text-stone-700 outline-none cursor-pointer"
+                  title="Chart End Date"
+                />
+                {(chartStartDate || chartEndDate) && (
+                  <button
+                    onClick={() => {
+                      setChartStartDate('');
+                      setChartEndDate('');
+                    }}
+                    className="ml-0.5 text-stone-400 hover:text-stone-700 cursor-pointer"
+                    title="Clear calendar filter"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
           <AreaTrendChart
-            data={salesTrend}
+            data={activeSalesTrend}
             primaryColor="#1b4332"
             primaryLabel="Daily Gross Sales"
             unit="₹"
@@ -235,17 +361,49 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
             </select>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-stone-500 font-medium font-sans">Date:</span>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-1.5 text-xs text-forest-950 outline-none font-sans"
-            >
-              <option value="All">All Dates</option>
-              <option value="2026-10-06">2026-10-06 (Today)</option>
-              <option value="2026-10-05">2026-10-05 (Yesterday)</option>
-            </select>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-xs text-stone-500 font-medium font-sans">Calendar Date:</span>
+            <div className="flex items-center gap-1 bg-[#fdfcfb] border border-[#ede8df] rounded-xl px-2.5 py-1 text-xs shadow-2xs">
+              <Calendar className="w-3.5 h-3.5 text-forest-700 shrink-0" />
+              <input
+                type="date"
+                value={dateFilter === 'All' ? '' : dateFilter}
+                onChange={(e) => setDateFilter(e.target.value || 'All')}
+                className="bg-transparent text-xs font-mono text-forest-950 outline-none cursor-pointer"
+                title="Select Order Date"
+              />
+              {dateFilter !== 'All' && (
+                <button
+                  onClick={() => setDateFilter('All')}
+                  className="text-stone-400 hover:text-stone-700 cursor-pointer ml-1 text-[11px] font-bold"
+                  title="Show all dates"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setDateFilter('2026-10-06')}
+                className={`px-2 py-1 rounded-lg text-xs font-semibold cursor-pointer border transition-colors ${
+                  dateFilter === '2026-10-06'
+                    ? 'bg-forest-900 text-white border-forest-950 shadow-2xs'
+                    : 'bg-cream-50 text-stone-700 border-[#ede8df] hover:bg-cream-100'
+                }`}
+              >
+                Today
+              </button>
+              <button
+                onClick={() => setDateFilter('2026-10-05')}
+                className={`px-2 py-1 rounded-lg text-xs font-semibold cursor-pointer border transition-colors ${
+                  dateFilter === '2026-10-05'
+                    ? 'bg-forest-900 text-white border-forest-950 shadow-2xs'
+                    : 'bg-cream-50 text-stone-700 border-[#ede8df] hover:bg-cream-100'
+                }`}
+              >
+                Yesterday
+              </button>
+            </div>
           </div>
 
           <span className="text-xs font-mono font-medium text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-1 rounded-full">
@@ -301,20 +459,68 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                 <tr key={ord.id} className="hover:bg-cream-50/60 transition-colors">
                   <td className="px-4 py-3.5 font-bold text-forest-900">{ord.orderNumber}</td>
                   <td className="px-4 py-3.5 text-stone-500">{ord.date}</td>
-                  <td className="px-4 py-3.5 font-sans font-bold text-forest-950">{ord.customerName}</td>
+                  <td className="px-4 py-3.5 font-sans">
+                    <button
+                      onClick={() => {
+                        setSelectedItemId(ord.customerName);
+                        setCurrentModule('distribution');
+                      }}
+                      className="font-bold text-forest-950 hover:underline hover:text-forest-700 text-left flex items-center gap-1 cursor-pointer group"
+                      title="Jump to Route Logistics & Customer Orders"
+                    >
+                      <span>{ord.customerName}</span>
+                      <span className="text-[10px] text-stone-400 group-hover:text-forest-700">→</span>
+                    </button>
+                  </td>
                   <td className="px-4 py-3.5 font-sans">
                     <span className="px-2 py-0.5 bg-cream-100/70 border border-[#ede8df] text-stone-700 rounded-md text-[11px]">
                       {ord.channel}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5 font-sans text-stone-800 font-medium">{ord.product}</td>
+                  <td className="px-4 py-3.5 font-sans">
+                    <button
+                      onClick={() => {
+                        setSelectedItemId(ord.product);
+                        setCurrentModule('products');
+                      }}
+                      className="font-medium text-stone-800 hover:underline hover:text-forest-800 text-left flex items-center gap-1 cursor-pointer group"
+                      title="Jump to SKU Catalog"
+                    >
+                      <span>{ord.product}</span>
+                      <span className="text-[10px] text-stone-400 group-hover:text-forest-700">→</span>
+                    </button>
+                  </td>
                   <td className="px-4 py-3.5">{ord.quantityUnits.toLocaleString()}</td>
                   <td className="px-4 py-3.5">₹{ord.unitRate.toFixed(2)}</td>
-                  <td className="px-4 py-3.5 font-bold text-forest-950 text-sm">₹{ord.totalAmount.toLocaleString()}</td>
-                  <td className="px-4 py-3.5 font-sans">
-                    <StatusBadge status={ord.paymentStatus} size="sm" />
+                  <td className="px-4 py-3.5 font-bold text-forest-950 text-sm">
+                    <button
+                      onClick={() => setCurrentModule('finance')}
+                      className="hover:underline text-forest-950 cursor-pointer font-bold inline-flex items-center gap-1 group"
+                      title="Jump to Finance Ledger"
+                    >
+                      <span>₹{ord.totalAmount.toLocaleString()}</span>
+                      <span className="text-[10px] text-stone-400 group-hover:text-forest-700">→</span>
+                    </button>
                   </td>
-                  <td className="px-4 py-3.5 font-sans text-stone-600">{ord.fulfillmentStatus}</td>
+                  <td className="px-4 py-3.5 font-sans">
+                    <button
+                      onClick={() => setCurrentModule('payments')}
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                      title="Jump to Farmer & Customer Payment Ledger"
+                    >
+                      <StatusBadge status={ord.paymentStatus} size="sm" />
+                    </button>
+                  </td>
+                  <td className="px-4 py-3.5 font-sans">
+                    <button
+                      onClick={() => setCurrentModule('distribution')}
+                      className="text-stone-600 hover:text-forest-800 hover:underline cursor-pointer flex items-center gap-1"
+                      title="Jump to Route Dispatch & Fleet Tracking"
+                    >
+                      <span>{ord.fulfillmentStatus}</span>
+                      <span className="text-[10px] text-stone-400">→</span>
+                    </button>
+                  </td>
                   <td className="px-4 py-3.5 text-right font-sans">
                     <button
                       onClick={async () => {

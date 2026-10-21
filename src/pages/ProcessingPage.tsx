@@ -31,6 +31,7 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
     launchProcessingBatch,
     reconciliation,
     inventoryList,
+    setCurrentModule,
   } = useDairyERP();
 
   const batches = propBatches || contextBatches;
@@ -146,33 +147,86 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
         </button>
       </div>
 
+      {/* Stage Flow Navigation Links */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-medium">
+        <span className="text-stone-400 font-semibold text-[11px] uppercase tracking-wider shrink-0">Processing Stream:</span>
+        <button
+          onClick={() => setCurrentModule('chilling')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Raw Milk Silo ({availableMilkPool.toLocaleString()} L)</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('quality')}
+          className="px-2.5 py-1 bg-white hover:bg-amber-50 border border-[#ede8df] hover:border-amber-200 text-amber-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>QC Compliance Standards</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('products')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>SKU Catalog & Recipes</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('inventory')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Finished Goods Inventory</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('finance')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Cost Allocation & Margins</span>
+        </button>
+      </div>
+
       {/* KPI Ribbon */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3.5">
-        <MetricCard label="Raw Milk Available" value={`${availableMilkPool.toLocaleString()} L`} unit="" trend="neutral" changeText="Available in Silos" />
-        <MetricCard label="Milk Processed" value={`${reconciliation.processingConsumptionLitres.toLocaleString()} L`} unit="" trend="neutral" changeText="Completed batches" />
+        <div onClick={() => setCurrentModule('chilling')} className="cursor-pointer group" title="Click to view Silo inventory">
+          <MetricCard label="Raw Milk Available" value={`${availableMilkPool.toLocaleString()} L`} unit="" trend="neutral" changeText="Available in Silos →" />
+        </div>
+        <div onClick={() => setCurrentModule('chilling')} className="cursor-pointer group" title="Click to view Bulk Milk Reconciliation">
+          <MetricCard label="Milk Processed" value={`${reconciliation.processingConsumptionLitres.toLocaleString()} L`} unit="" trend="neutral" changeText="Completed batches →" />
+        </div>
         <MetricCard label="Active Batches" value={batches.length} unit="Batches" trend="up" changeText="Line 1 & 2 operational" />
-        <MetricCard label="Mean Yield Rate" value={`${avgYield}%`} unit="" trend="up" changeText="98.1% benchmark" />
-        <MetricCard label="Line Loss / Wastage" value={`${reconciliation.spillageWastageLitres.toLocaleString()} L`} unit="" trend="down" isGoodWhenUp={false} changeText="Line rinse loss" />
-        <MetricCard label="Processing Cost" value={`₹${(totalCost / 1000).toFixed(1)}k`} unit="" trend="neutral" changeText="Energy & Steam" />
+        <div onClick={() => setCurrentModule('reports')} className="cursor-pointer group" title="Click to view Yield analytics">
+          <MetricCard label="Mean Yield Rate" value={`${avgYield}%`} unit="" trend="up" changeText="98.1% benchmark →" />
+        </div>
+        <div onClick={() => setCurrentModule('reports')} className="cursor-pointer group" title="Click to view Spillage & Line Rinse audit">
+          <MetricCard label="Line Loss / Wastage" value={`${reconciliation.spillageWastageLitres.toLocaleString()} L`} unit="" trend="down" isGoodWhenUp={false} changeText="Line rinse loss →" />
+        </div>
+        <div onClick={() => setCurrentModule('finance')} className="cursor-pointer group" title="Click to view Energy & Cost ledger">
+          <MetricCard label="Processing Cost" value={`₹${(totalCost / 1000).toFixed(1)}k`} unit="" trend="neutral" changeText="Energy & Steam →" />
+        </div>
       </div>
 
       {/* CONNECTED CONVERSION FLOW BANNER */}
       <div className="p-4 bg-cream-50/70 border border-[#ede8df] rounded-2xl text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#ede8df] rounded-lg text-forest-950 font-bold shadow-2xs">
+          <button
+            onClick={() => setCurrentModule('chilling')}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-300 rounded-lg text-forest-950 font-bold shadow-2xs cursor-pointer transition-all active:scale-98"
+            title="Inspect Chilling Silo Tank Level"
+          >
             <Warehouse className="w-3.5 h-3.5 text-forest-700" />
-            <span>Silo Milk Pool ({availableMilkPool.toLocaleString()} L Available)</span>
-          </div>
+            <span>Silo Milk Pool ({availableMilkPool.toLocaleString()} L Available) →</span>
+          </button>
           <ArrowRight className="w-3.5 h-3.5 text-stone-400" />
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#ede8df] rounded-lg text-stone-700 font-medium shadow-2xs">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#ede8df] rounded-lg text-stone-700 font-medium shadow-2xs">
             <Factory className="w-3.5 h-3.5 text-amber-600" />
-            <span>HTST Continuous Processing</span>
+            <span>HTST Continuous Processing (Active)</span>
           </div>
           <ArrowRight className="w-3.5 h-3.5 text-stone-400" />
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-forest-900 border border-forest-950 rounded-lg text-white font-bold shadow-xs">
+          <button
+            onClick={() => setCurrentModule('inventory')}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-forest-900 hover:bg-forest-800 border border-forest-950 rounded-lg text-white font-bold shadow-xs cursor-pointer transition-all active:scale-98"
+            title="Inspect Finished Goods Stock Warehouses"
+          >
             <Boxes className="w-3.5 h-3.5 text-sage-300" />
-            <span>Auto-Updates Finished Goods Inventory</span>
-          </div>
+            <span>Auto-Updates Finished Goods Inventory →</span>
+          </button>
         </div>
         <div className="text-[11px] text-stone-500 font-sans">
           Launching a batch deducts milk from Silos and generates finished SKU stock automatically.
@@ -275,14 +329,50 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
                 >
                   <td className="px-4 py-3.5 font-bold text-forest-900">{batch.batchId}</td>
                   <td className="px-4 py-3.5 font-sans font-medium text-stone-800">{batch.pasteurizerLine}</td>
-                  <td className="px-4 py-3.5 font-bold text-forest-950">{batch.inputMilkLitres.toLocaleString()} L</td>
+                  <td className="px-4 py-3.5 font-bold text-forest-950">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentModule('chilling');
+                      }}
+                      className="hover:underline text-forest-900 cursor-pointer font-bold inline-flex items-center gap-1 group"
+                      title="Jump to Raw Silo Chilling Pool"
+                    >
+                      <span>{batch.inputMilkLitres.toLocaleString()} L</span>
+                      <span className="text-[10px] text-stone-400 group-hover:text-forest-700">→</span>
+                    </button>
+                  </td>
                   <td className="px-4 py-3.5 font-sans">
-                    <div className="text-stone-900 font-semibold">{batch.products[0]?.productName}</div>
-                    <div className="text-[11px] text-stone-500">+{batch.products.length - 1} secondary co-products</div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentModule('products');
+                      }}
+                      className="text-left cursor-pointer group hover:opacity-80"
+                      title="Jump to Products & SKU Catalog"
+                    >
+                      <div className="text-stone-900 font-semibold group-hover:text-forest-800 group-hover:underline flex items-center gap-1">
+                        <span>{batch.products[0]?.productName}</span>
+                        <span className="text-[10px] text-stone-400">→</span>
+                      </div>
+                      <div className="text-[11px] text-stone-500">+{batch.products.length - 1} secondary co-products</div>
+                    </button>
                   </td>
                   <td className="px-4 py-3.5 font-bold text-emerald-700">{batch.yieldPercentage}%</td>
                   <td className="px-4 py-3.5 text-rose-700 font-medium">{batch.wastageLitres} L</td>
-                  <td className="px-4 py-3.5 font-bold text-forest-950">₹{batch.processingCostTotal.toLocaleString()}</td>
+                  <td className="px-4 py-3.5 font-bold text-forest-950">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentModule('finance');
+                      }}
+                      className="hover:underline text-forest-950 cursor-pointer font-bold inline-flex items-center gap-1 group"
+                      title="Jump to Financial Ledger & Cost Analysis"
+                    >
+                      <span>₹{batch.processingCostTotal.toLocaleString()}</span>
+                      <span className="text-[10px] text-stone-400 group-hover:text-forest-700">→</span>
+                    </button>
+                  </td>
                   <td className="px-4 py-3.5 font-sans">
                     <StatusBadge status={batch.status} size="sm" />
                   </td>
@@ -352,16 +442,38 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
                     className="flex items-center justify-between p-3 bg-cream-50/60 rounded-xl border border-[#ede8df]"
                   >
                     <div>
-                      <div className="font-sans font-bold text-forest-950">{p.productName}</div>
+                      <button
+                        onClick={() => {
+                          setActiveBatch(null);
+                          setCurrentModule('products');
+                        }}
+                        className="font-sans font-bold text-forest-950 hover:underline hover:text-forest-700 text-left flex items-center gap-1 cursor-pointer"
+                        title="View SKU in Products Catalog"
+                      >
+                        <span>{p.productName}</span>
+                        <span className="text-[10px] text-stone-400">→</span>
+                      </button>
                       <div className="text-[11px] text-stone-500 font-mono">
                         {p.sku} · Spec: {p.standardFatPct}% Fat / {p.standardSnfPct}% SNF
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-bold text-emerald-800">
-                        {p.outputQuantity} {p.unit}
+                    <div className="text-right flex items-center gap-3">
+                      <div>
+                        <div className="text-sm font-bold text-emerald-800">
+                          {p.outputQuantity} {p.unit}
+                        </div>
+                        <div className="text-[10px] text-stone-500 font-sans">Output packaged</div>
                       </div>
-                      <div className="text-[10px] text-stone-500 font-sans">Output packaged</div>
+                      <button
+                        onClick={() => {
+                          setActiveBatch(null);
+                          setCurrentModule('inventory');
+                        }}
+                        className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] text-forest-800 rounded-lg text-[10px] font-semibold cursor-pointer transition-colors shadow-2xs"
+                        title="Inspect finished inventory warehouse"
+                      >
+                        Stock →
+                      </button>
                     </div>
                   </div>
                 ))}

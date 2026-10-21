@@ -4,6 +4,7 @@ import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
 import { TankerClearanceModal } from '../components/quality/TankerClearanceModal';
+import { useDairyERP } from '../context/DairyERPContext';
 import {
   FlaskConical,
   Plus,
@@ -14,6 +15,8 @@ import {
   ShieldCheck,
   Search,
   FileCheck2,
+  ArrowRight,
+  ExternalLink,
 } from 'lucide-react';
 
 interface QualityManagementPageProps {
@@ -22,6 +25,7 @@ interface QualityManagementPageProps {
 }
 
 export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ tests, onAddTest }) => {
+  const { setCurrentModule, setSelectedItemId } = useDairyERP();
   const [activeRecord, setActiveRecord] = useState<QualityTestRecord | null>(null);
   const [filterResult, setFilterResult] = useState<'All' | 'PASS' | 'WARNING' | 'FAIL'>('All');
   const [sourceFilter, setSourceFilter] = useState('All');
@@ -106,29 +110,82 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
           </p>
         </div>
 
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 self-start sm:self-auto cursor-pointer shadow-forest-950/20 active:scale-98"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Quality Test</span>
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setCurrentModule('milk-ops')}
+            className="px-3 py-2 bg-cream-50 hover:bg-cream-100 border border-[#ede8df] text-xs font-semibold text-stone-700 rounded-xl transition-all duration-150 cursor-pointer shadow-xs active:scale-98 hidden sm:flex items-center gap-1.5"
+            title="Jump to Central Mass Balance Reconciliation (Tab 02)"
+          >
+            <span>&larr; Tab 02 Milk Ops</span>
+          </button>
+          <button
+            onClick={() => setCurrentModule('chilling')}
+            className="px-3 py-2 bg-[#faf8f5] hover:bg-cream-100 border border-[#ede8df] text-xs font-semibold text-stone-700 rounded-xl transition-all duration-150 cursor-pointer shadow-xs active:scale-98 hidden md:flex items-center gap-1.5"
+            title="Jump to Cold Silos & Milk Pool (Tab 05)"
+          >
+            <span>Tab 05 Silos &rarr;</span>
+          </button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-forest-950/20 active:scale-98"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Quality Test</span>
+          </button>
+        </div>
       </div>
 
-      {/* KPI Ribbon */}
+      {/* KPI Ribbon (Interactive Cross-Links) */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <MetricCard label="Tests Today" value={totalTests} unit="Batches" trend="up" changeText="Conducted" />
-        <MetricCard label="Accepted" value={accepted} unit="Batches" trend="up" changeText="Cleared for pool" />
-        <MetricCard label="Warnings" value={warning} unit="Batch" trend="neutral" changeText="Flash chilled" />
-        <MetricCard label="Rejected Milk" value={rejected} unit="Batch" trend="down" isGoodWhenUp={false} changeText="42.5 L blocked" />
-        <MetricCard label="Avg Fat %" value={avgFat} unit="%" trend="neutral" changeText="Standards Met" />
+        <MetricCard
+          label="Tests Today"
+          value={totalTests}
+          unit="Batches"
+          trend="up"
+          changeText="Show All Tests"
+          onClick={() => setFilterResult('All')}
+        />
+        <MetricCard
+          label="Accepted"
+          value={accepted}
+          unit="Batches"
+          trend="up"
+          changeText="Filter PASS"
+          onClick={() => setFilterResult('PASS')}
+        />
+        <MetricCard
+          label="Warnings"
+          value={warning}
+          unit="Batch"
+          trend="neutral"
+          changeText="Filter WARNING"
+          onClick={() => setFilterResult('WARNING')}
+        />
+        <MetricCard
+          label="Rejected Milk"
+          value={rejected}
+          unit="Batch"
+          trend="down"
+          isGoodWhenUp={false}
+          changeText="Filter FAIL"
+          onClick={() => setFilterResult('FAIL')}
+        />
+        <MetricCard
+          label="Avg Fat %"
+          value={avgFat}
+          unit="%"
+          trend="neutral"
+          changeText="View Tab 02 Mass Balance"
+          onClick={() => setCurrentModule('milk-ops')}
+        />
         <MetricCard
           label="Temp Exceptions"
           value={tempExceptions}
           unit="Vat"
           trend="down"
           isGoodWhenUp={false}
-          changeText="> 6.0°C Arrival"
+          changeText="View Tab 05 Cold Tanks"
+          onClick={() => setCurrentModule('chilling')}
         />
       </div>
 
@@ -250,7 +307,23 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
                   <td className="px-4 py-3 font-bold text-forest-900">{test.batchNumber}</td>
                   <td className="px-4 py-3 font-sans">
                     <div className="font-bold text-forest-950">{test.sourceName}</div>
-                    <div className="text-[11px] text-stone-500">{test.sourceType}</div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (test.sourceType === 'Own Cattle') {
+                          setCurrentModule('cattle');
+                        } else if (test.sourceType === 'Farmer Procurement') {
+                          setCurrentModule('milk-collection');
+                        } else {
+                          setCurrentModule('chilling');
+                        }
+                      }}
+                      className="text-[11px] text-forest-800 hover:text-forest-950 hover:underline flex items-center gap-1 cursor-pointer font-medium mt-0.5"
+                      title="Jump to Source Management Module"
+                    >
+                      <span>{test.sourceType}</span>
+                      <ArrowRight className="w-2.5 h-2.5" />
+                    </button>
                   </td>
                   <td className="px-4 py-3 font-bold text-stone-900">{test.quantityLitres.toLocaleString()} L</td>
                   <td className="px-4 py-3 text-forest-800 font-semibold">{test.fat.toFixed(2)}%</td>

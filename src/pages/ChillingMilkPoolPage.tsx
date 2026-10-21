@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChillingTank, MilkPoolReconciliation } from '../types/dairy';
+import { useDairyERP } from '../context/DairyERPContext';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
@@ -36,6 +37,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
   reconciliation,
   onTransferMilk,
 }) => {
+  const { setCurrentModule } = useDairyERP();
   const [localTanks, setLocalTanks] = useState<ChillingTank[]>(tanks);
 
   React.useEffect(() => {
@@ -219,6 +221,41 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
         </div>
       </div>
 
+      {/* Cross-Module Operational Flow Links */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-medium">
+        <span className="text-stone-400 font-semibold text-[11px] uppercase tracking-wider shrink-0">Connected Stages:</span>
+        <button
+          onClick={() => setCurrentModule('milk-ops')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 01 Milk Operations</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('cattle')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 02 Herd Milking (+{reconciliation.ownProductionLitres.toLocaleString()} L)</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('milk-collection')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 03 Farmer Inward (+{reconciliation.farmerProcurementLitres.toLocaleString()} L)</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('quality')}
+          className="px-2.5 py-1 bg-white hover:bg-amber-50 border border-[#ede8df] hover:border-amber-200 text-amber-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 04 QC Lab (-{reconciliation.qualityRejectedLitres} L)</span>
+        </button>
+        <button
+          onClick={() => setCurrentModule('processing')}
+          className="px-2.5 py-1 bg-white hover:bg-forest-50 border border-[#ede8df] hover:border-forest-200 text-forest-900 rounded-lg shrink-0 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Tab 05 Pasteurizer (-{reconciliation.processingConsumptionLitres.toLocaleString()} L)</span>
+        </button>
+      </div>
+
       {/* Critical Cold-Chain Thermal Alert Banner */}
       {breachedTanks.length > 0 && (
         <div className="p-4 rounded-2xl border bg-rose-50 border-rose-200 text-rose-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
@@ -277,11 +314,17 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
 
       {/* KPI Ribbon */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <MetricCard label="Milk Received" value={`${(reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres).toLocaleString()} L`} unit="" trend="neutral" changeText="Today's total inward" />
-        <MetricCard label="Current Chilled Stock" value={`${totalVolume.toLocaleString()} L`} unit="" trend="up" changeText="Across Silos" />
+        <div onClick={() => setCurrentModule('milk-ops')} className="cursor-pointer group" title="Click to view Milk Operations Summary">
+          <MetricCard label="Milk Received" value={`${(reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres).toLocaleString()} L`} unit="" trend="neutral" changeText="Today's total inward →" />
+        </div>
+        <div onClick={() => setCurrentModule('processing')} className="cursor-pointer group" title="Click to view Pasteurizer batches">
+          <MetricCard label="Current Chilled Stock" value={`${totalVolume.toLocaleString()} L`} unit="" trend="up" changeText="Across Silos →" />
+        </div>
         <MetricCard label="Silo Capacity" value={`${totalCapacity.toLocaleString()} L`} unit="" trend="neutral" changeText="4 Insulated Tanks" />
         <MetricCard label="Capacity Utilization" value={`${utilizationPct}%`} unit="" trend="neutral" changeText="Optimal buffer" />
-        <MetricCard label="Avg Silo Temp" value="3.9°C" unit="" trend="up" isGoodWhenUp={false} changeText="Cold chain ≤ 4.5°C" />
+        <div onClick={handleOpenIotDevices} className="cursor-pointer group" title="Click to open IoT sensor dashboard">
+          <MetricCard label="Avg Silo Temp" value="3.9°C" unit="" trend="up" isGoodWhenUp={false} changeText="Cold chain ≤ 4.5°C (IoT)" />
+        </div>
       </div>
 
       {/* TANK CARDS GRID */}
@@ -406,61 +449,85 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
           </div>
         </div>
 
-        {/* Visual Formula Chain */}
+        {/* Visual Formula Chain with deep links */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 items-center font-mono">
           {/* 1. Opening */}
-          <div className="p-3 bg-cream-50/80 rounded-xl border border-[#ede8df] text-center shadow-2xs">
-            <div className="text-[10px] text-stone-500 font-sans uppercase tracking-wider">Opening Milk</div>
+          <button
+            onClick={() => setCurrentModule('chilling')}
+            className="p-3 bg-cream-50/80 hover:bg-cream-100/90 rounded-xl border border-[#ede8df] hover:border-forest-300 text-center shadow-2xs hover:shadow-xs transition-all cursor-pointer text-left w-full group"
+            title="Current Silo Chilling Buffer"
+          >
+            <div className="text-[10px] text-stone-500 font-sans uppercase tracking-wider group-hover:text-forest-900 transition-colors">Opening Milk</div>
             <div className="text-base font-bold text-stone-900 mt-1">
               {reconciliation.openingStockLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-stone-400 font-sans mt-0.5">Prior Day Silo</div>
-          </div>
+            <div className="text-[10px] text-stone-400 font-sans mt-0.5">Prior Day Silo →</div>
+          </button>
 
           {/* 2. + Own Production */}
-          <div className="p-3 bg-sage-50/70 rounded-xl border border-sage-200/70 text-center relative shadow-2xs">
-            <span className="text-[11px] font-sans text-forest-800 block font-bold">+ Own Production</span>
+          <button
+            onClick={() => setCurrentModule('cattle')}
+            className="p-3 bg-sage-50/70 hover:bg-sage-100/80 rounded-xl border border-sage-200/70 hover:border-forest-300 text-center relative shadow-2xs hover:shadow-xs transition-all cursor-pointer text-left w-full group"
+            title="Jump to Tab 02: Cattle & Herd Milking"
+          >
+            <span className="text-[11px] font-sans text-forest-800 block font-bold group-hover:text-forest-950 transition-colors">+ Own Production</span>
             <div className="text-base font-bold text-forest-900 mt-1">
               +{reconciliation.ownProductionLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-forest-700 font-sans mt-0.5">Herd Milking</div>
-          </div>
+            <div className="text-[10px] text-forest-700 font-sans mt-0.5">Herd Milking →</div>
+          </button>
 
           {/* 3. + Farmer Procurement */}
-          <div className="p-3 bg-forest-50/60 rounded-xl border border-forest-200/70 text-center relative shadow-2xs">
-            <span className="text-[11px] font-sans text-forest-800 block font-bold">+ Farmer Milk</span>
+          <button
+            onClick={() => setCurrentModule('milk-collection')}
+            className="p-3 bg-forest-50/60 hover:bg-forest-100/70 rounded-xl border border-forest-200/70 hover:border-forest-400 text-center relative shadow-2xs hover:shadow-xs transition-all cursor-pointer text-left w-full group"
+            title="Jump to Tab 03: Farmer Milk Procurement"
+          >
+            <span className="text-[11px] font-sans text-forest-800 block font-bold group-hover:text-forest-950 transition-colors">+ Farmer Milk</span>
             <div className="text-base font-bold text-forest-950 mt-1">
               +{reconciliation.farmerProcurementLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-forest-700 font-sans mt-0.5">32 Farmers Inward</div>
-          </div>
+            <div className="text-[10px] text-forest-700 font-sans mt-0.5">32 Farmers Inward →</div>
+          </button>
 
           {/* 4. - Quality Rejection */}
-          <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/70 text-center relative shadow-2xs">
-            <span className="text-[11px] font-sans text-amber-900 block font-bold">- Quality Rejection</span>
+          <button
+            onClick={() => setCurrentModule('quality')}
+            className="p-3 bg-amber-50/60 hover:bg-amber-100/70 rounded-xl border border-amber-200/70 hover:border-amber-400 text-center relative shadow-2xs hover:shadow-xs transition-all cursor-pointer text-left w-full group"
+            title="Jump to Tab 04: Quality Testing & Lab Rejections"
+          >
+            <span className="text-[11px] font-sans text-amber-900 block font-bold group-hover:text-amber-950 transition-colors">- Quality Rejection</span>
             <div className="text-base font-bold text-amber-900 mt-1">
               -{reconciliation.qualityRejectedLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-amber-700 font-sans mt-0.5">Diluted Inward</div>
-          </div>
+            <div className="text-[10px] text-amber-700 font-sans mt-0.5">Diluted Inward →</div>
+          </button>
 
           {/* 5. - Processing Consumption */}
-          <div className="p-3 bg-stone-50 rounded-xl border border-[#ede8df] text-center relative shadow-2xs">
-            <span className="text-[11px] font-sans text-stone-600 block font-bold">- Processing HTST</span>
+          <button
+            onClick={() => setCurrentModule('processing')}
+            className="p-3 bg-stone-50 hover:bg-cream-100/80 rounded-xl border border-[#ede8df] hover:border-forest-300 text-center relative shadow-2xs hover:shadow-xs transition-all cursor-pointer text-left w-full group"
+            title="Jump to Tab 05: Dairy Processing & Pasteurizer"
+          >
+            <span className="text-[11px] font-sans text-stone-600 block font-bold group-hover:text-stone-900 transition-colors">- Processing HTST</span>
             <div className="text-base font-bold text-stone-900 mt-1">
               -{reconciliation.processingConsumptionLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-stone-500 font-sans mt-0.5">Finished Goods Batches</div>
-          </div>
+            <div className="text-[10px] text-stone-500 font-sans mt-0.5">Finished Goods Batches →</div>
+          </button>
 
           {/* 6. - Wastage / Spillage */}
-          <div className="p-3 bg-rose-50/60 rounded-xl border border-rose-200/70 text-center relative shadow-2xs">
-            <span className="text-[11px] font-sans text-rose-900 block font-bold">- Spillage / Loss</span>
+          <button
+            onClick={() => setCurrentModule('reports')}
+            className="p-3 bg-rose-50/60 hover:bg-rose-100/70 rounded-xl border border-rose-200/70 hover:border-rose-400 text-center relative shadow-2xs hover:shadow-xs transition-all cursor-pointer text-left w-full group"
+            title="Jump to Tab 17: Reports & Spillage Reconciliation"
+          >
+            <span className="text-[11px] font-sans text-rose-900 block font-bold group-hover:text-rose-950 transition-colors">- Spillage / Loss</span>
             <div className="text-base font-bold text-rose-900 mt-1">
               -{reconciliation.spillageWastageLitres.toLocaleString()} L
             </div>
-            <div className="text-[10px] text-rose-700 font-sans mt-0.5">Line rinse & pipe loss</div>
-          </div>
+            <div className="text-[10px] text-rose-700 font-sans mt-0.5">Line rinse & pipe loss →</div>
+          </button>
 
           {/* 7. = Closing Balance */}
           <div className="p-3 bg-sage-100/70 rounded-xl border-2 border-forest-600 text-center shadow-xs">

@@ -231,58 +231,93 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           </div>
         </div>
 
-        {/* The Equation Strip */}
+        {/* The Equation Strip (Clickable Cross-Links) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-center text-xs">
-          <div className="p-2.5 bg-cream-50/80 rounded-xl border border-[#ede8df] shadow-2xs">
+          <button
+            onClick={() => onNavigate('chilling')}
+            className="p-2.5 bg-cream-50/80 hover:bg-cream-100 rounded-xl border border-[#ede8df] hover:border-forest-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Opening Silos in Chilling & Milk Pool (Tab 05)"
+          >
             <span className="text-[10px] uppercase font-mono tracking-wider text-stone-500 block mb-1">Opening</span>
-            <span className="font-bold font-mono text-stone-900 text-sm tracking-tight">
+            <span className="font-bold font-mono text-stone-900 text-sm tracking-tight block">
               {reconciliation.openingStockLitres.toLocaleString()} L
             </span>
-          </div>
+            <span className="text-[10px] text-stone-400 group-hover:text-forest-700 font-sans mt-0.5 block">Tab 05 &rarr;</span>
+          </button>
 
-          <div className="p-2.5 bg-sage-50/70 rounded-xl border border-sage-200/70 shadow-2xs">
+          <button
+            onClick={() => onNavigate('cattle')}
+            className="p-2.5 bg-sage-50/70 hover:bg-sage-100 rounded-xl border border-sage-200/70 hover:border-forest-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Cattle Herd Production (Tab 07)"
+          >
             <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800 block mb-1">+ Own Herd</span>
-            <span className="font-bold font-mono text-forest-900 text-sm tracking-tight">
+            <span className="font-bold font-mono text-forest-900 text-sm tracking-tight block">
               +{reconciliation.ownProductionLitres.toLocaleString()} L
             </span>
-          </div>
+            <span className="text-[10px] text-forest-700 font-sans mt-0.5 block">Tab 07 &rarr;</span>
+          </button>
 
-          <div className="p-2.5 bg-forest-50/60 rounded-xl border border-forest-200/70 shadow-2xs">
+          <button
+            onClick={() => onNavigate('milk-collection')}
+            className="p-2.5 bg-forest-50/60 hover:bg-forest-100 rounded-xl border border-forest-200/70 hover:border-forest-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Village Milk Collection (Tab 03)"
+          >
             <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800 block mb-1">+ Farmer Milk</span>
-            <span className="font-bold font-mono text-forest-950 text-sm tracking-tight">
+            <span className="font-bold font-mono text-forest-950 text-sm tracking-tight block">
               +{reconciliation.farmerProcurementLitres.toLocaleString()} L
             </span>
-          </div>
+            <span className="text-[10px] text-forest-700 font-sans mt-0.5 block">Tab 03 &rarr;</span>
+          </button>
 
-          <div className="p-2.5 bg-amber-50/60 rounded-xl border border-amber-200/70 shadow-2xs">
+          <button
+            onClick={() => onNavigate('quality')}
+            className="p-2.5 bg-amber-50/60 hover:bg-amber-100 rounded-xl border border-amber-200/70 hover:border-amber-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Quality Rejections (Tab 04)"
+          >
             <span className="text-[10px] uppercase font-mono tracking-wider text-amber-900 block mb-1">- Rejections</span>
-            <span className="font-bold font-mono text-amber-900 text-sm tracking-tight">
+            <span className="font-bold font-mono text-amber-900 text-sm tracking-tight block">
               -{reconciliation.qualityRejectedLitres.toLocaleString()} L
             </span>
-          </div>
+            <span className="text-[10px] text-amber-700 font-sans mt-0.5 block">Tab 04 &rarr;</span>
+          </button>
 
-          <div className="p-2.5 bg-stone-50 rounded-xl border border-[#ede8df] shadow-2xs">
+          <button
+            onClick={() => onNavigate('processing')}
+            className="p-2.5 bg-stone-50 hover:bg-stone-100 rounded-xl border border-[#ede8df] hover:border-stone-500 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Processing Batches (Tab 06)"
+          >
             <span className="text-[10px] uppercase font-mono tracking-wider text-stone-600 block mb-1">- Processing</span>
-            <span className="font-bold font-mono text-stone-900 text-sm tracking-tight">
+            <span className="font-bold font-mono text-stone-900 text-sm tracking-tight block">
               -{reconciliation.processingConsumptionLitres.toLocaleString()} L
             </span>
-          </div>
+            <span className="text-[10px] text-stone-500 font-sans mt-0.5 block">Tab 06 &rarr;</span>
+          </button>
 
-          <div className="p-2.5 bg-rose-50/60 rounded-xl border border-rose-200/70 shadow-2xs">
+          <button
+            onClick={() => onNavigate('processing')}
+            className="p-2.5 bg-rose-50/60 hover:bg-rose-100 rounded-xl border border-rose-200/70 hover:border-rose-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Line Losses & Spillage (Tab 06)"
+          >
             <span className="text-[10px] uppercase font-mono tracking-wider text-rose-900 block mb-1">- Loss / Wastage</span>
-            <span className="font-bold font-mono text-rose-900 text-sm tracking-tight">
+            <span className="font-bold font-mono text-rose-900 text-sm tracking-tight block">
               -{reconciliation.spillageWastageLitres.toLocaleString()} L
             </span>
-          </div>
+            <span className="text-[10px] text-rose-700 font-sans mt-0.5 block">Tab 06 &rarr;</span>
+          </button>
 
-          <div className="p-2.5 bg-sage-100/70 rounded-xl border border-sage-300 shadow-xs">
+          <button
+            onClick={() => onNavigate('chilling')}
+            className="p-2.5 bg-sage-100/70 hover:bg-sage-200 rounded-xl border border-sage-300 hover:border-forest-700 shadow-xs transition-all text-left cursor-pointer group"
+            title="Inspect Closing Silo Stock (Tab 05)"
+          >
             <span className="text-[10px] uppercase font-mono tracking-wider text-forest-950 block mb-1 font-bold">
               = Closing Stock
             </span>
-            <span className="font-bold font-mono text-forest-950 text-sm tracking-tight">
+            <span className="font-bold font-mono text-forest-950 text-sm tracking-tight block">
               {reconciliation.closingStockLitres.toLocaleString()} L
             </span>
-          </div>
+            <span className="text-[10px] text-forest-800 font-sans mt-0.5 font-semibold block">Tab 05 &rarr;</span>
+          </button>
         </div>
       </div>
 
@@ -413,65 +448,89 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           />
         </div>
 
-        {/* Secondary Unit Economics & Quality Strip */}
+        {/* Secondary Unit Economics & Quality Strip (Interactive Cross-Links) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-3">
-          <div className="p-3.5 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs transition-shadow duration-150 hover:shadow-sm">
-            <span className="text-[11px] font-semibold text-stone-500 block">Avg Fat / SNF</span>
+          <button
+            onClick={() => onNavigate('quality')}
+            className="p-3.5 bg-[#fdfcfb] hover:bg-cream-100 border border-[#ede8df] hover:border-forest-600 rounded-2xl shadow-xs transition-all text-left cursor-pointer group"
+            title="Inspect Quality & Lab Testing (Tab 04)"
+          >
+            <span className="text-[11px] font-semibold text-stone-500 block group-hover:text-forest-900">Avg Fat / SNF</span>
             <span className="text-base font-bold font-mono text-stone-900 mt-1 block">
               {avgFat}% / {avgSnf}%
             </span>
             <span className="text-[10px] text-forest-700 font-semibold bg-sage-50 px-1.5 py-0.5 rounded-md inline-block mt-0.5">
-              Within FSSAI specs
+              Within FSSAI specs &rarr;
             </span>
-          </div>
+          </button>
 
-          <div className="p-3.5 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs transition-shadow duration-150 hover:shadow-sm">
-            <span className="text-[11px] font-semibold text-stone-500 block">Quality Rejections</span>
+          <button
+            onClick={() => onNavigate('quality')}
+            className="p-3.5 bg-[#fdfcfb] hover:bg-amber-50/60 border border-[#ede8df] hover:border-amber-600 rounded-2xl shadow-xs transition-all text-left cursor-pointer group"
+            title="Inspect Quality Exceptions & Non-Conformances (Tab 04)"
+          >
+            <span className="text-[11px] font-semibold text-stone-500 block group-hover:text-amber-900">Quality Rejections</span>
             <span className="text-base font-bold font-mono text-amber-800 mt-1 block">
               {rejectedMilkLitres.toLocaleString()} L
             </span>
-            <span className="text-[10px] text-stone-500 font-medium">{qualityExceptionsCount} non-conformances</span>
-          </div>
+            <span className="text-[10px] text-stone-500 font-medium block">{qualityExceptionsCount} non-conformances &rarr;</span>
+          </button>
 
-          <div className="p-3.5 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs transition-shadow duration-150 hover:shadow-sm">
-            <span className="text-[11px] font-semibold text-stone-500 block">Production Yield</span>
+          <button
+            onClick={() => onNavigate('processing')}
+            className="p-3.5 bg-[#fdfcfb] hover:bg-cream-100 border border-[#ede8df] hover:border-forest-600 rounded-2xl shadow-xs transition-all text-left cursor-pointer group"
+            title="Inspect Dairy Processing Batches (Tab 06)"
+          >
+            <span className="text-[11px] font-semibold text-stone-500 block group-hover:text-forest-900">Production Yield</span>
             <span className="text-base font-bold font-mono text-forest-900 mt-1 block">
               {avgBatchYieldPct}%
             </span>
             <span className="text-[10px] text-forest-700 font-semibold bg-sage-50 px-1.5 py-0.5 rounded-md inline-block mt-0.5">
-              Optimal pasteurization
+              Optimal pasteurization &rarr;
             </span>
-          </div>
+          </button>
 
-          <div className="p-3.5 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs transition-shadow duration-150 hover:shadow-sm">
-            <span className="text-[11px] font-semibold text-stone-500 block">Farmer Payables</span>
+          <button
+            onClick={() => onNavigate('payments')}
+            className="p-3.5 bg-[#fdfcfb] hover:bg-cream-100 border border-[#ede8df] hover:border-forest-600 rounded-2xl shadow-xs transition-all text-left cursor-pointer group"
+            title="Inspect Farmer Payables & Banking Payouts (Tab 15)"
+          >
+            <span className="text-[11px] font-semibold text-stone-500 block group-hover:text-forest-900">Farmer Payables</span>
             <span className="text-base font-bold font-mono text-stone-900 mt-1 block">
               ₹{(procurementSummary.totalPayablePending / 1000).toFixed(1)}k
             </span>
-            <span className="text-[10px] text-stone-500 font-medium">Avg ₹{procurementSummary.averageRatePerLitre.toFixed(2)}/L</span>
-          </div>
+            <span className="text-[10px] text-stone-500 font-medium block">Avg ₹{procurementSummary.averageRatePerLitre.toFixed(2)}/L &rarr;</span>
+          </button>
 
-          <div className="p-3.5 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs transition-shadow duration-150 hover:shadow-sm">
-            <span className="text-[11px] font-semibold text-stone-500 block">Cost per Litre</span>
+          <button
+            onClick={() => onNavigate('finance')}
+            className="p-3.5 bg-[#fdfcfb] hover:bg-cream-100 border border-[#ede8df] hover:border-forest-600 rounded-2xl shadow-xs transition-all text-left cursor-pointer group"
+            title="Inspect Cost Per Litre Analysis in Finance (Tab 16)"
+          >
+            <span className="text-[11px] font-semibold text-stone-500 block group-hover:text-forest-900">Cost per Litre</span>
             <span className="text-base font-bold font-mono text-stone-900 mt-1 block">
               ₹{profitability.costPerLitre.toFixed(2)}
             </span>
-            <span className="text-[10px] text-stone-500 font-medium">All-in processing cost</span>
-          </div>
+            <span className="text-[10px] text-stone-500 font-medium block">All-in processing cost &rarr;</span>
+          </button>
 
-          <div className="p-3.5 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs transition-shadow duration-150 hover:shadow-sm">
-            <span className="text-[11px] font-semibold text-stone-500 block">Profit per Litre</span>
+          <button
+            onClick={() => onNavigate('finance')}
+            className="p-3.5 bg-[#fdfcfb] hover:bg-sage-50/70 border border-[#ede8df] hover:border-forest-600 rounded-2xl shadow-xs transition-all text-left cursor-pointer group"
+            title="Inspect Unit Profitability in Finance (Tab 16)"
+          >
+            <span className="text-[11px] font-semibold text-stone-500 block group-hover:text-forest-900">Profit per Litre</span>
             <span className="text-base font-bold font-mono text-forest-900 mt-1 block">
               +₹{profitability.profitPerLitre.toFixed(2)}
             </span>
             <span className="text-[10px] text-forest-700 font-semibold bg-sage-50 px-1.5 py-0.5 rounded-md inline-block mt-0.5">
-              Revenue ₹{profitability.revenuePerLitre.toFixed(2)}/L
+              Rev ₹{profitability.revenuePerLitre.toFixed(2)}/L &rarr;
             </span>
-          </div>
+          </button>
         </div>
       </div>
 
-      {/* 5. Management Level Profitability Breakdown */}
+      {/* 5. Management Level Profitability Breakdown (Clickable Financial Nodes) */}
       <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5 pb-3 border-b border-[#ede8df]/70">
           <div>
@@ -494,49 +553,73 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           </button>
         </div>
 
-        {/* Financial Flow Line */}
+        {/* Financial Flow Line (Clickable Cross-Links) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="p-3.5 rounded-xl bg-sage-50/70 border border-sage-200/80 shadow-2xs">
-            <span className="text-[11px] font-semibold text-forest-900">Gross Sales Revenue</span>
+          <button
+            onClick={() => onNavigate('sales')}
+            className="p-3.5 rounded-xl bg-sage-50/70 hover:bg-sage-100 border border-sage-200/80 hover:border-forest-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Commercial Sales Orders (Tab 14)"
+          >
+            <span className="text-[11px] font-semibold text-forest-900 group-hover:text-forest-950 block">Gross Sales Revenue</span>
             <div className="text-base font-bold font-mono text-forest-950 mt-1">
               ₹{profitability.todayRevenue.toLocaleString()}
             </div>
-            <span className="text-[10px] text-forest-700 font-medium">₹{profitability.revenuePerLitre.toFixed(2)}/L</span>
-          </div>
+            <span className="text-[10px] text-forest-700 font-medium block">Tab 14 Sales &rarr;</span>
+          </button>
 
-          <div className="p-3.5 rounded-xl bg-rose-50/50 border border-rose-200/60 shadow-2xs">
-            <span className="text-[11px] font-semibold text-rose-900">- Farmer Procurement</span>
+          <button
+            onClick={() => onNavigate('payments')}
+            className="p-3.5 rounded-xl bg-rose-50/50 hover:bg-rose-100/70 border border-rose-200/60 hover:border-rose-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Farmer Milk Payables (Tab 15)"
+          >
+            <span className="text-[11px] font-semibold text-rose-900 group-hover:text-rose-950 block">- Farmer Procurement</span>
             <div className="text-base font-bold font-mono text-rose-950 mt-1">
               -₹{profitability.farmerProcurementCost.toLocaleString()}
             </div>
-            <span className="text-[10px] text-stone-500 font-medium">32 pourers @ ₹45/L</span>
-          </div>
+            <span className="text-[10px] text-stone-500 font-medium block">Tab 15 Payables &rarr;</span>
+          </button>
 
-          <div className="p-3.5 rounded-xl bg-rose-50/50 border border-rose-200/60 shadow-2xs">
-            <span className="text-[11px] font-semibold text-rose-900">- Cattle Feed & Herd</span>
+          <button
+            onClick={() => onNavigate('feed')}
+            className="p-3.5 rounded-xl bg-rose-50/50 hover:bg-rose-100/70 border border-rose-200/60 hover:border-rose-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Cattle Feed Expenses & Rations (Tab 09)"
+          >
+            <span className="text-[11px] font-semibold text-rose-900 group-hover:text-rose-950 block">- Cattle Feed & Herd</span>
             <div className="text-base font-bold font-mono text-rose-950 mt-1">
               -₹{profitability.cattleFeedCost.toLocaleString()}
             </div>
-            <span className="text-[10px] text-stone-500 font-medium">TMR, silage & mineral</span>
-          </div>
+            <span className="text-[10px] text-stone-500 font-medium block">Tab 09 Feed &rarr;</span>
+          </button>
 
-          <div className="p-3.5 rounded-xl bg-rose-50/50 border border-rose-200/60 shadow-2xs">
-            <span className="text-[11px] font-semibold text-rose-900">- Processing & Packaging</span>
+          <button
+            onClick={() => onNavigate('processing')}
+            className="p-3.5 rounded-xl bg-rose-50/50 hover:bg-rose-100/70 border border-rose-200/60 hover:border-rose-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Processing Utilities & Packaging Materials (Tab 06 / 11)"
+          >
+            <span className="text-[11px] font-semibold text-rose-900 group-hover:text-rose-950 block">- Processing & Packaging</span>
             <div className="text-base font-bold font-mono text-rose-950 mt-1">
               -₹{(profitability.processingUtilityCost + profitability.packagingCost).toLocaleString()}
             </div>
-            <span className="text-[10px] text-stone-500 font-medium">Steam, power, pouch film</span>
-          </div>
+            <span className="text-[10px] text-stone-500 font-medium block">Tab 06 Batches &rarr;</span>
+          </button>
 
-          <div className="p-3.5 rounded-xl bg-rose-50/50 border border-rose-200/60 shadow-2xs">
-            <span className="text-[11px] font-semibold text-rose-900">- Logistics & Cold Chain</span>
+          <button
+            onClick={() => onNavigate('distribution')}
+            className="p-3.5 rounded-xl bg-rose-50/50 hover:bg-rose-100/70 border border-rose-200/60 hover:border-rose-600 shadow-2xs transition-all text-left cursor-pointer group"
+            title="Inspect Reefer Logistics & Fleet Cold Chain (Tab 13)"
+          >
+            <span className="text-[11px] font-semibold text-rose-900 group-hover:text-rose-950 block">- Logistics & Cold Chain</span>
             <div className="text-base font-bold font-mono text-rose-950 mt-1">
               -₹{(profitability.logisticsCost + profitability.coldChainCost).toLocaleString()}
             </div>
-            <span className="text-[10px] text-stone-500 font-medium">Diesel, reefers & chilling</span>
-          </div>
+            <span className="text-[10px] text-stone-500 font-medium block">Tab 13 Fleet &rarr;</span>
+          </button>
 
-          <div className="p-3.5 rounded-xl bg-forest-900 text-white border border-forest-950 shadow-xs">
+          <button
+            onClick={() => onNavigate('finance')}
+            className="p-3.5 rounded-xl bg-forest-900 hover:bg-forest-950 text-white border border-forest-950 shadow-xs transition-all text-left cursor-pointer group"
+            title="Inspect Net Profitability Ledger in Finance (Tab 16)"
+          >
             <span className="text-[11px] font-bold text-cream-200 uppercase tracking-wider block mb-0.5">
               = Operating Profit
             </span>
@@ -544,9 +627,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
               ₹{profitability.grossProfit.toLocaleString()}
             </div>
             <span className="text-[10px] font-semibold text-sage-300 block mt-0.5">
-              {profitability.grossMarginPct}% Margin (+₹{profitability.profitPerLitre.toFixed(2)}/L)
+              {profitability.grossMarginPct}% Margin &rarr;
             </span>
-          </div>
+          </button>
         </div>
       </div>
 
