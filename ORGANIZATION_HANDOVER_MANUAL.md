@@ -165,7 +165,32 @@ npm run launch:check
 3. **Database Restore:**
    ```bash
    cat /var/backups/dairyos_backup.sql | docker exec -i dairyos_postgres psql -U dairy_admin -d dairyos_prod
-   ```
+---
+
+## 7. GitHub Data Repository, Calendar Filters & Entity Deep Linking Guide
+
+### 7.1 Accessing Backend Data on GitHub
+The repository now directly tracks and maintains both binary and human-readable backend data on GitHub:
+* **Repository Link**: [https://github.com/pandeyastha640/ERP_DAIRY](https://github.com/pandeyastha640/ERP_DAIRY)
+* **Live Pre-Loaded Database**: `prisma/dev.db` (Pre-seeded with 33 registered farmers, 53 cattle records, 50 milk collections, 4 silos, and 19 sales orders).
+* **Human-Readable JSON Snapshot**: `prisma/data_dump.json` (5,600+ lines of formatted JSON data queryable directly on GitHub).
+* **Syncing Local Database to GitHub**:
+  ```bash
+  npm run db:export
+  git add prisma/dev.db prisma/data_dump.json
+  git commit -m "chore(data): sync latest milk operations database"
+  git push origin main
+  ```
+
+### 7.2 Interactive Calendar Date Filters & 3D Volumetric Charts
+* **3D Isometric Bar Charts**: Rendered with specular top caps and shadow geometry to distinguish Own Herd milking from Farmer Procurement.
+* **3D Area Trend Ribbons**: Luminous glowing curve with spherical node highlights.
+* **Date-Range Slicers (`<input type="date">`)**: Click the calendar icon on Milk Operations or Sales Orders to select custom Start and End dates, or use quick presets (`7D`, `14D`, `30D`).
+
+### 7.3 Omnidirectional Entity Deep Linking ("Click Anything to Jump")
+* **Mass Balance Formula Cards**: Clicking any of the 7 balance nodes (+Own Production, +Farmer Milk, -Quality Rejection, -Processing HTST) navigates directly to the originating module.
+* **Silo Actions**: Silo tank cards feature *"Route to Line &rarr;"* and *"Boost 3.8°C"* chiller telemetry buttons.
+* **Order Book**: Customer names jump to Distribution, product names jump to SKU Catalog, totals jump to Finance, and payment badges jump to Accounts.
 
 ---
 

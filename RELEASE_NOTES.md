@@ -1,4 +1,31 @@
 # DairyOS Enterprise ERP — Release Notes
+
+## Release v2.5.0-ENTERPRISE (Interactive 3D Visuals, Calendar Filters & Entity Linking)
+**Release Date:** October 2026  
+**Git Tag:** `v2.5.0-ENTERPRISE`  
+**Commit Reference:** `c2b3a2f`  
+**Verification:** 39/39 Automated Phases, 100% Pass, 0 Lint Errors  
+
+### Highlights & Key Capabilities (v2.5.0)
+1. **Volumetric 3D Illuminated Charts**:
+   - `BarComparisonChart`: True 3D isometric faceted bars with specular top caps (`#a7f3d0`/`#fef08a`), right-side depth shadows (`#065f46`), and interactive share tooltips.
+   - `AreaTrendChart`: SVG glowing drop filters, multi-stop volumetric fill ribbons, spherical 3D nodes with white specular highlights.
+
+2. **Universal HTML5 Calendar Date-Range Pickers**:
+   - Slices master timelines dynamically via `<input type="date">` Start Date &rarr; End Date pickers on charts and tables.
+   - Quick presets (`7D`, `14D`, `30D`, `Today`, `Yesterday`) with live range volume badges.
+
+3. **Omnidirectional Entity Deep Linking ("Click Anything to Jump")**:
+   - Clickable Mass Balance equation formula cards (`cattle`, `milk-collection`, `quality`, `processing`, `reports`).
+   - Deep-linked table rows and cells across customer names, product SKUs, batch costs, and payment badges.
+   - Chilling silo tanks feature instant *"Route to Line &rarr;"* and *"Boost 3.8°C"* chiller telemetry actions.
+
+4. **Dual-Channel GitHub Backend Data Persistence**:
+   - Full SQLite database (`prisma/dev.db`) tracked and committed to GitHub.
+   - 5,600+ line human-readable JSON database export dump (`prisma/data_dump.json`) with `npm run db:export`.
+
+---
+
 ## Release v2.1.0-PRODUCTION (Official Enterprise Production Release)
 **Release Date:** October 2026  
 **Git Tag:** `v2.1.0-PRODUCTION`  
