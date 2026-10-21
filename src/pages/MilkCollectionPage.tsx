@@ -5,6 +5,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { QuickCollectionModal } from '../components/operations/QuickCollectionModal';
 import { LactoscanSerialBridgeModal } from '../components/operations/LactoscanSerialBridgeModal';
 import { ThermalReceiptModal } from '../components/operations/ThermalReceiptModal';
+import { useDairyERP } from '../context/DairyERPContext';
 import {
   Scale,
   Plus,
@@ -20,6 +21,8 @@ import {
   Radio,
   Zap,
   Printer,
+  ArrowRight,
+  ExternalLink,
 } from 'lucide-react';
 
 interface MilkCollectionPageProps {
@@ -35,6 +38,7 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
   onAddCollection,
   onOpenMobileView,
 }) => {
+  const { setCurrentModule, setSelectedItemId } = useDairyERP();
   const [shiftFilter, setShiftFilter] = useState<'All' | 'Morning' | 'Evening'>('All');
   const [qcFilter, setQcFilter] = useState<'All' | 'PASS' | 'WARNING' | 'FAIL'>('All');
   const [centreFilter, setCentreFilter] = useState<string>('All');
@@ -86,7 +90,14 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setCurrentModule('milk-ops')}
+            className="px-3 py-2 bg-cream-50 hover:bg-cream-100 border border-[#ede8df] text-xs font-semibold text-stone-700 rounded-xl transition-all duration-150 cursor-pointer shadow-xs active:scale-98 hidden md:flex items-center gap-1.5"
+            title="Jump to Central Mass Balance Reconciliation (Tab 02)"
+          >
+            <span>&larr; Tab 02 Milk Ops</span>
+          </button>
           <button
             onClick={() => setIsIotBridgeOpen(true)}
             className="px-3.5 py-2 bg-sage-50 hover:bg-sage-100 border border-sage-200 text-xs font-semibold text-forest-900 rounded-xl transition-all duration-150 flex items-center gap-2 shadow-xs cursor-pointer active:scale-98"
@@ -107,6 +118,13 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
           >
             <Plus className="w-4 h-4" />
             <span>Manual Entry</span>
+          </button>
+          <button
+            onClick={() => setCurrentModule('payments')}
+            className="px-3 py-2 bg-[#faf8f5] hover:bg-cream-100 border border-[#ede8df] text-xs font-semibold text-forest-900 rounded-xl transition-all duration-150 cursor-pointer shadow-xs active:scale-98 hidden sm:flex items-center gap-1.5"
+            title="Jump to Farmer Payables (Tab 15)"
+          >
+            <span>Tab 15 Payables &rarr;</span>
           </button>
         </div>
       </div>
@@ -137,21 +155,64 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
         </button>
       </div>
 
-      {/* KPI Ribbon */}
+      {/* KPI Ribbon (Interactive Cross-Links) */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        <MetricCard label="Morning Shift" value={`${morningLitres.toFixed(1)} L`} unit="" trend="neutral" changeText="Completed" />
-        <MetricCard label="Evening Shift" value={`${eveningLitres.toFixed(1)} L`} unit="" trend="neutral" changeText="Active inward" />
-        <MetricCard label="Total Inward" value={`${totalLitres.toFixed(1)} L`} unit="" trend="up" changeText="Today's milk" />
-        <MetricCard label="Suppliers Today" value={collections.length} unit="Entries" trend="up" changeText="30 Distinct" />
-        <MetricCard label="Avg Fat %" value={avgFat} unit="%" trend="neutral" changeText="Analyzer avg" />
-        <MetricCard label="Avg SNF %" value={avgSNF} unit="%" trend="neutral" changeText="Solid-not-fat" />
+        <MetricCard
+          label="Morning Shift"
+          value={`${morningLitres.toFixed(1)} L`}
+          unit=""
+          trend="neutral"
+          changeText="Filter Morning"
+          onClick={() => setShiftFilter('Morning')}
+        />
+        <MetricCard
+          label="Evening Shift"
+          value={`${eveningLitres.toFixed(1)} L`}
+          unit=""
+          trend="neutral"
+          changeText="Filter Evening"
+          onClick={() => setShiftFilter('Evening')}
+        />
+        <MetricCard
+          label="Total Inward"
+          value={`${totalLitres.toFixed(1)} L`}
+          unit=""
+          trend="up"
+          changeText="Show All Shifts"
+          onClick={() => setShiftFilter('All')}
+        />
+        <MetricCard
+          label="Suppliers Today"
+          value={collections.length}
+          unit="Entries"
+          trend="up"
+          changeText="Open Tab 08 Farmers"
+          onClick={() => setCurrentModule('farmers')}
+        />
+        <MetricCard
+          label="Avg Fat %"
+          value={avgFat}
+          unit="%"
+          trend="neutral"
+          changeText="Open Tab 04 QC"
+          onClick={() => setCurrentModule('quality')}
+        />
+        <MetricCard
+          label="Avg SNF %"
+          value={avgSNF}
+          unit="%"
+          trend="neutral"
+          changeText="Open Tab 04 QC"
+          onClick={() => setCurrentModule('quality')}
+        />
         <MetricCard
           label="Rejected Milk"
           value={`${rejectedLitres.toFixed(1)} L`}
           unit=""
           trend="down"
           isGoodWhenUp={false}
-          changeText="Quality threshold"
+          changeText={qcFilter === 'FAIL' ? 'Reset QC' : 'Filter Rejections'}
+          onClick={() => setQcFilter(qcFilter === 'FAIL' ? 'All' : 'FAIL')}
         />
       </div>
 
@@ -299,8 +360,20 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
                     <span className="text-stone-400 ml-2 text-[11px] font-sans">({item.shift})</span>
                   </td>
                   <td className="px-4 py-3 font-sans">
-                    <div className="font-bold text-forest-950">{item.farmerName}</div>
-                    <div className="text-[11px] text-stone-500 font-mono">{item.farmerId}</div>
+                    <button
+                      onClick={() => {
+                        setSelectedItemId(item.farmerId);
+                        setCurrentModule('farmers');
+                      }}
+                      className="text-left group cursor-pointer"
+                      title="View Farmer Profile & Passbook in Tab 08"
+                    >
+                      <div className="font-bold text-forest-950 group-hover:text-forest-700 flex items-center gap-1">
+                        <span>{item.farmerName}</span>
+                        <ExternalLink className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 text-forest-600 transition-opacity" />
+                      </div>
+                      <div className="text-[11px] text-stone-500 font-mono">{item.farmerId}</div>
+                    </button>
                   </td>
                   <td className="px-4 py-3 font-sans text-stone-600">{item.centre}</td>
                   <td className="px-4 py-3 font-bold text-stone-900">{item.quantityLitres.toFixed(1)} L</td>
@@ -312,13 +385,29 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
                     </span>
                   </td>
                   <td className="px-4 py-3 font-sans">
-                    <StatusBadge status={item.quality} size="sm" />
+                    <button
+                      onClick={() => setCurrentModule('quality')}
+                      className="cursor-pointer"
+                      title="Jump to Quality Testing (Tab 04)"
+                    >
+                      <StatusBadge status={item.quality} size="sm" />
+                    </button>
                   </td>
                   <td className="px-4 py-3 font-medium">
                     {item.ratePerLitre > 0 ? `₹${item.ratePerLitre.toFixed(2)}` : '-'}
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-forest-900">
-                    {item.payableAmount > 0 ? `₹${item.payableAmount.toLocaleString()}` : <span className="text-rose-700">REJECTED</span>}
+                    {item.payableAmount > 0 ? (
+                      <button
+                        onClick={() => setCurrentModule('payments')}
+                        className="hover:underline cursor-pointer font-bold text-forest-900"
+                        title="View in Payments Ledger (Tab 15)"
+                      >
+                        ₹{item.payableAmount.toLocaleString()}
+                      </button>
+                    ) : (
+                      <span className="text-rose-700">REJECTED</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
