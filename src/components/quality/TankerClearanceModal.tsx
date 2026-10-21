@@ -149,11 +149,31 @@ export const TankerClearanceModal: React.FC<TankerClearanceModalProps> = ({
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => {
+                import('../../services/pdfGenerator').then(({ pdfGenerator }) => {
+                  pdfGenerator.generateTankerClearanceCertificatePDF({
+                    certificateNumber: c.certificateNumber || 'CERT-FSSAI-2026-902',
+                    vehicleNumber: cons.tankerVehicleNumber || 'GJ-07-TY-4421',
+                    driverName: cons.driverName || 'Suresh Parmar',
+                    volumeLitres: cons.netLitres || 12500,
+                    temperatureC: chem.temperatureCelsius || 3.8,
+                    fat: chem.fatPercentage || 4.5,
+                    snf: chem.snfPercentage || 8.7,
+                    chemistName: verd.certifiedBy || 'Dr. Anita Rao, Chief Dairy Chemist',
+                  });
+                });
+              }}
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download Form E PDF</span>
+            </button>
+            <button
               onClick={handlePrint}
               className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded flex items-center gap-1.5 cursor-pointer transition-colors"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print Certificate</span>
+              <span>Print</span>
             </button>
             <button
               onClick={handleCertify}
@@ -161,7 +181,7 @@ export const TankerClearanceModal: React.FC<TankerClearanceModalProps> = ({
               className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{certifiedSuccess ? 'Consignment Cleared!' : 'Certify & Authorize Silo Intake'}</span>
+              <span>{certifiedSuccess ? 'Consignment Cleared!' : 'Certify & Authorize Intake'}</span>
             </button>
           </div>
         </div>

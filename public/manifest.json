@@ -1,0 +1,31 @@
+{
+  "name": "DairyOS Enterprise Dairy ERP",
+  "short_name": "DairyOS",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1117",
+  "theme_color": "#0969da",
+  "description": "Enterprise Dairy ERP System covering milk procurement, cold chain chilling, processing, packaging, logistics, sales, and farmer banking settlements.",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Field Milk Collection",
+      "url": "/?mode=collection",
+      "description": "Rapid touch intake for village collection centers"
+    },
+    {
+      "name": "Chilling Silo Monitor",
+      "url": "/?mode=chilling",
+      "description": "Real-time thermal cold chain telemetry"
+    }
+  ]
+}

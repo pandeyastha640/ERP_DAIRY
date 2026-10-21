@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Farmer } from '../types/dairy';
+import { useDairyERP } from '../context/DairyERPContext';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { AreaTrendChart } from '../components/charts/Charts';
@@ -14,6 +15,7 @@ import {
   Plus,
   CreditCard,
   Phone,
+  Download,
 } from 'lucide-react';
 
 interface FarmerManagementPageProps {
@@ -27,6 +29,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
   onAddFarmer,
   selectedFarmerId,
 }) => {
+  const { settings, collectionsList } = useDairyERP();
   const [search, setSearch] = useState('');
   const [villageFilter, setVillageFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Under Review' | 'Inactive'>('All');
@@ -420,7 +423,18 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <button
+                onClick={() => {
+                  import('../services/pdfGenerator').then(({ pdfGenerator }) => {
+                    pdfGenerator.generateFarmerPassbookPDF(activeProfile, collectionsList, settings);
+                  });
+                }}
+                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Monthly Passbook PDF</span>
+              </button>
               <button
                 onClick={() => setActiveProfile(null)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-medium cursor-pointer"

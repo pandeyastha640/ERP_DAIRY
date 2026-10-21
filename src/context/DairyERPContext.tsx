@@ -439,6 +439,64 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       .catch(() => {
         // Backend not available, fallback seamlessly
       });
+
+    // 2. Live SSE Real-Time Telemetry & Hardware Event Stream
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource('/api/v1/iot/stream');
+
+      eventSource.addEventListener('NEW_COLLECTION', (e: MessageEvent) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const col = parsed.payload;
+          if (col && col.collectionCode) {
+            setCollectionsList((prev) => {
+              if (prev.some((c) => c.collectionCode === col.collectionCode)) return prev;
+              return [
+                {
+                  id: col.id || `COL-${Date.now()}`,
+                  collectionCode: col.collectionCode,
+                  farmerId: col.farmerId,
+                  farmerName: col.farmerName,
+                  date: col.date,
+                  time: col.time,
+                  shift: col.shift as 'Morning' | 'Evening',
+                  centre: col.centre,
+                  quantityLitres: col.quantityLitres,
+                  fat: col.fat,
+                  snf: col.snf,
+                  temperatureC: col.temperatureC,
+                  quality: col.quality as 'PASS' | 'WARNING' | 'FAIL',
+                  ratePerLitre: col.ratePerLitre,
+                  payableAmount: col.payableAmount,
+                  testedBy: col.testedBy,
+                },
+                ...prev,
+              ];
+            });
+          }
+        } catch {}
+      });
+
+      eventSource.addEventListener('TANK_TELEMETRY', (e: MessageEvent) => {
+        try {
+          const parsed = JSON.parse(e.data);
+          const tank = parsed.payload;
+          if (tank && (tank.tankCode || tank.id)) {
+            const code = tank.tankCode || tank.id;
+            setTanksList((prev) =>
+              prev.map((t) => (t.id === code ? { ...t, ...tank } : t))
+            );
+          }
+        } catch {}
+      });
+    } catch {}
+
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
   }, []);
 
   // 1. DYNAMIC MILK POOL RECONCILIATION

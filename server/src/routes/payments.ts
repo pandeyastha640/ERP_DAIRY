@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 import { prisma } from '../prisma';
+import { broadcastSSE } from './iot';
 
 export const paymentsRouter = Router();
 
@@ -53,6 +55,8 @@ paymentsRouter.post('/', async (req: Request, res: Response) => {
       },
     });
 
+    broadcastSSE('PAYMENT_RECORDED', payment);
+
     return res.status(201).json({
       success: true,
       message: 'Payment transaction logged successfully',
@@ -102,7 +106,6 @@ paymentsRouter.get('/pending-summary', async (req: Request, res: Response) => {
 // Automated Batch Banking Disbursement Gateway Simulation (IMPS/UPI)
 paymentsRouter.post('/disburse-all-pending', async (req: Request, res: Response) => {
   try {
-    // 1. Group unpaid collections by farmer
     const farmers = await prisma.farmer.findMany();
     const collections = await prisma.milkCollectionRecord.findMany();
     const existingPayments = await prisma.paymentTransaction.findMany({
@@ -142,7 +145,6 @@ paymentsRouter.post('/disburse-all-pending', async (req: Request, res: Response)
         }
       }
 
-      // Record audit entry
       if (disbursements.length > 0) {
         const totalSettled = disbursements.reduce((acc, d) => acc + d.amount, 0);
         await tx.auditLogEntry.create({
@@ -161,6 +163,11 @@ paymentsRouter.post('/disburse-all-pending', async (req: Request, res: Response)
       }
     });
 
+    broadcastSSE('BATCH_PAYOUT_COMPLETED', {
+      count: disbursements.length,
+      totalAmount: disbursements.reduce((acc, d) => acc + d.amount, 0),
+    });
+
     return res.json({
       success: true,
       message: `Batch settlement complete. Disbursed payments to ${disbursements.length} farmers.`,
@@ -168,6 +175,70 @@ paymentsRouter.post('/disburse-all-pending', async (req: Request, res: Response)
       totalAmountDisbursed: disbursements.reduce((acc, d) => acc + d.amount, 0),
       disbursements,
     });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/v1/payments/webhook
+// Webhook endpoint for RazorpayX, Cashfree Payouts, or Banking API Callbacks
+paymentsRouter.post('/webhook', async (req: Request, res: Response) => {
+  try {
+    const signature = req.headers['x-webhook-signature'] as string || req.headers['x-razorpay-signature'] as string || 'verified';
+    const payload = req.body || {};
+    const eventType = payload.event || payload.type || 'payout.processed';
+    const eventId = payload.id || `EVT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    const secret = process.env.PAYMENT_WEBHOOK_SECRET || 'dairyos_webhook_secret_2026';
+    let signatureVerified = true;
+
+    if (req.headers['x-razorpay-signature'] && process.env.PAYMENT_WEBHOOK_SECRET) {
+      const expectedSignature = crypto
+        .createHmac('sha256', secret)
+        .update(JSON.stringify(payload))
+        .digest('hex');
+      signatureVerified = (signature === expectedSignature);
+    }
+
+    // Save webhook audit record
+    await prisma.paymentWebhookLog.upsert({
+      where: { eventId },
+      update: { status: 'Processed' },
+      create: {
+        eventId,
+        gateway: payload.gateway || 'RazorpayX',
+        eventType,
+        payloadJson: JSON.stringify(payload),
+        signatureVerified,
+        status: signatureVerified ? 'Processed' : 'Failed Verification',
+      },
+    });
+
+    // If payout succeeded, update corresponding transaction in DB
+    const txnRef = payload?.payload?.payout?.entity?.reference_id || payload?.data?.referenceId;
+    if (txnRef) {
+      await prisma.paymentTransaction.updateMany({
+        where: { transactionRef: txnRef },
+        data: { status: 'Completed' },
+      });
+    }
+
+    broadcastSSE('PAYMENT_WEBHOOK', { eventType, eventId, signatureVerified });
+
+    return res.status(200).json({ success: true, message: 'Webhook received & processed', eventId });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// GET /api/v1/payments/webhook-logs
+paymentsRouter.get('/webhook-logs', async (req: Request, res: Response) => {
+  try {
+    const logs = await prisma.paymentWebhookLog.findMany({
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+    });
+    return res.json({ success: true, data: logs });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }

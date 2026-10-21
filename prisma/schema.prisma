@@ -27,6 +27,9 @@ model Farmer {
   bankAccount   String   @default("")
   ifscCode      String   @default("")
   status        String   @default("Active")
+  societyId     String?  @default("SOC-ANAND-01")
+  societyName   String?  @default("Anand Primary Milk Society")
+  bmcId         String?  @default("BMC-ANAND-NORTH")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -84,6 +87,8 @@ model MilkCollectionRecord {
   ratePerLitre   Float
   payableAmount  Float
   testedBy       String   @default("QC Lab Desk")
+  societyId      String?  @default("SOC-ANAND-01")
+  bmcId          String?  @default("BMC-ANAND-NORTH")
   createdAt      DateTime @default(now())
 
   farmer Farmer @relation(fields: [farmerId], references: [farmerCode])
@@ -119,6 +124,8 @@ model ChillingTank {
   agitatorStatus      String   @default("Running")
   lastCleaned         String   @default("")
   sensorHealth        String   @default("Optimal")
+  societyId           String?  @default("SOC-ANAND-01")
+  plantId             String?  @default("PLANT-ANAND-CENTRAL")
   updatedAt           DateTime @updatedAt
 }
 
@@ -219,6 +226,7 @@ model SalesOrder {
   totalAmount       Float
   paymentStatus     String   @default("Pending")
   fulfillmentStatus String   @default("Pending Dispatch")
+  societyId         String?  @default("SOC-ANAND-01")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
@@ -256,4 +264,56 @@ model SystemSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+model CattleReproductionRecord {
+  id                   String   @id @default(uuid())
+  cattleTag            String
+  eventType            String   // "Heat", "Insemination", "PD_Check", "Calving", "DryOff"
+  eventDate            String
+  semenStrawCode       String?  @default("")
+  bullBreed            String?  @default("")
+  pdStatus             String?  @default("Pending") // "Pending", "Positive", "Negative"
+  expectedCalvingDate  String?  @default("")
+  inseminatorName      String?  @default("")
+  notes                String?  @default("")
+  createdAt            DateTime @default(now())
+}
+
+model VaccinationRecord {
+  id                String   @id @default(uuid())
+  cattleTag         String
+  diseaseName       String   // "FMD", "Black Quarter", "Hemorrhagic Septicemia", "Brucellosis"
+  vaccinationDate   String
+  boosterDueDate    String
+  veterinarianName  String   @default("Dr. K. V. Patel, BVSc")
+  batchNumber       String   @default("VAC-2026-904")
+  status            String   @default("Administered") // "Administered", "Scheduled"
+  createdAt         DateTime @default(now())
+}
+
+model IoTDevice {
+  id              String   @id @default(uuid())
+  deviceCode      String   @unique
+  deviceName      String
+  societyId       String   @default("SOC-ANAND-01")
+  deviceType      String   // "LactoscanAnalyzer", "WeighingScale", "ChillingProbe", "FlowMeter"
+  apiKeyHash      String   @default("")
+  ipAddress       String?  @default("192.168.1.101")
+  status          String   @default("Online")
+  lastHeartbeat   DateTime @default(now())
+  firmwareVersion String   @default("v2.4.1")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PaymentWebhookLog {
+  id                String   @id @default(uuid())
+  gateway           String   // "RazorpayX", "Cashfree", "DirectIMPS"
+  eventId           String   @unique
+  eventType         String
+  payloadJson       String
+  signatureVerified Boolean  @default(true)
+  status            String   @default("Processed")
+  createdAt         DateTime @default(now())
 }

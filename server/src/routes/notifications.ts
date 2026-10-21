@@ -25,9 +25,55 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const dateStr = new Date().toISOString().split('T')[0];
 
-    // Standard Bilingual Message Templates
+    // Standard Bilingual Message Templates (English & Gujarati/Hindi)
     const smsText = `[DairyOS] Namaste ${farmerName}, received ${volumeLitres}L (${shift}) at ${centre}. Fat: ${fat}%, SNF: ${snf}%, Rate: Rs ${ratePerLitre}/L. Amount: Rs ${payableAmount.toLocaleString('en-IN')}. Bank IMPS credit queued. Ref: ${messageId}`;
     const whatsappText = `🥛 *DairyOS Milk Delivery Receipt*\n━━━━━━━━━━━━━━━━━━━━\n👤 *Farmer*: ${farmerName} (${farmerCode})\n📍 *Centre*: ${centre}\n⏰ *Shift*: ${shift} | ${dateStr} ${timestamp}\n📊 *Quantity*: ${volumeLitres} Litres\n🧪 *Quality*: ${fat}% Fat | ${snf}% SNF\n💰 *Rate*: ₹${ratePerLitre.toFixed(2)} / Litre\n💵 *Payable*: *₹${payableAmount.toLocaleString('en-IN')}*\n🏦 *Settlement*: Direct IMPS Payout Queued\n━━━━━━━━━━━━━━━━━━━━\n_Ref: ${messageId} · Anand Dairy Union_`;
+
+    let provider = 'Simulated Local Telecom Bridge';
+
+    // Live Twilio SMS Integration if configured
+    if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+      try {
+        const auth = Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64');
+        await fetch(`https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID}/Messages.json`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            To: mobileNumber,
+            From: process.env.TWILIO_PHONE_NUMBER,
+            Body: smsText,
+          }).toString(),
+        });
+        provider = 'Twilio SMS Cloud';
+      } catch (e: any) {
+        console.warn('Twilio dispatch warning:', e.message);
+      }
+    }
+
+    // Live Meta WhatsApp Cloud API if configured
+    if (process.env.WHATSAPP_API_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID) {
+      try {
+        await fetch(`https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.WHATSAPP_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messaging_product: 'whatsapp',
+            to: mobileNumber.replace(/[^0-9]/g, ''),
+            type: 'text',
+            text: { body: whatsappText },
+          }),
+        });
+        provider = 'WhatsApp Business Cloud API';
+      } catch (e: any) {
+        console.warn('WhatsApp cloud dispatch warning:', e.message);
+      }
+    }
 
     // Log to Audit Trail
     await prisma.auditLogEntry.create({
@@ -38,7 +84,7 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
         module: 'Milk Collection',
         action: 'RECEIPT_DISPATCHED',
         recordId: messageId,
-        description: `Dispatched SMS/WhatsApp receipt to ${farmerName} (${mobileNumber}): ${volumeLitres}L @ ₹${ratePerLitre}/L = ₹${payableAmount}`,
+        description: `Dispatched SMS/WhatsApp receipt via ${provider} to ${farmerName} (${mobileNumber}): ${volumeLitres}L @ ₹${ratePerLitre}/L = ₹${payableAmount}`,
         severity: 'info',
       },
     });
@@ -47,6 +93,7 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
       success: true,
       messageId,
       dispatchedAt: new Date().toISOString(),
+      provider,
       channels: channel === 'ALL' ? ['SMS', 'WhatsApp'] : [channel],
       recipient: {
         farmerCode,
@@ -74,7 +121,6 @@ notificationsRouter.get('/collections/:id/slip', async (req: Request, res: Respo
     });
 
     if (!collection) {
-      // Fallback sample for immediate POS printing
       collection = await prisma.milkCollectionRecord.findFirst({
         orderBy: { createdAt: 'desc' },
       });
@@ -115,7 +161,7 @@ notificationsRouter.get('/collections/:id/slip', async (req: Request, res: Respo
         farmerCode: c.farmerId,
         farmerName: c.farmerName,
         milkType: Number(c.fat) >= 5.5 ? 'Buffalo Milk' : 'Cow Milk (Grade A)',
-        grossWeightKg: netWeightKg + 1.2, // Tare can weight ~1.2kg
+        grossWeightKg: netWeightKg + 1.2,
         tareWeightKg: 1.2,
         netWeightKg,
         volumeLitres: c.quantityLitres,

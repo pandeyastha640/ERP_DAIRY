@@ -3,12 +3,57 @@ import { prisma } from '../prisma';
 
 export const iotRouter = Router();
 
+// In-memory registry for Server-Sent Events (SSE) active subscriber clients
+const sseClients: Response[] = [];
+
+/**
+ * Broadcast an event to all connected SSE browser clients
+ */
+export function broadcastSSE(event: string, payload: any) {
+  const data = JSON.stringify({ event, payload, timestamp: new Date().toISOString() });
+  for (let i = sseClients.length - 1; i >= 0; i--) {
+    const client = sseClients[i];
+    try {
+      client.write(`event: ${event}\ndata: ${data}\n\n`);
+    } catch {
+      sseClients.splice(i, 1);
+    }
+  }
+}
+
+// GET /api/v1/iot/stream
+// Real-time Server-Sent Events (SSE) streaming for chilling vats, milk intake, and alerts
+iotRouter.get('/stream', (req: Request, res: Response) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+  });
+
+  res.write(`data: ${JSON.stringify({ event: 'CONNECTED', message: 'DairyOS Live IoT Telemetry Bus active' })}\n\n`);
+  sseClients.push(res);
+
+  // Heartbeat ping every 25 seconds to keep connection alive through proxies
+  const heartbeatInterval = setInterval(() => {
+    res.write(`: heartbeat ${new Date().toISOString()}\n\n`);
+  }, 25000);
+
+  req.on('close', () => {
+    clearInterval(heartbeatInterval);
+    const index = sseClients.indexOf(res);
+    if (index !== -1) {
+      sseClients.splice(index, 1);
+    }
+  });
+});
+
 // GET /api/v1/iot/devices
 // List connected IoT hardware peripherals
-iotRouter.get('/devices', (req: Request, res: Response) => {
-  res.json({
-    success: true,
-    devices: [
+iotRouter.get('/devices', async (req: Request, res: Response) => {
+  try {
+    const dbDevices = await prisma.ioTDevice.findMany();
+    const staticDevices = [
       {
         id: 'IOT-LACTO-01',
         name: 'Milkotronic Lactoscan MCC Combo Analyzer',
@@ -49,8 +94,110 @@ iotRouter.get('/devices', (req: Request, res: Response) => {
         lastHeartbeat: new Date().toISOString(),
         currentReading: '3,320 Litres',
       },
-    ],
-  });
+    ];
+
+    res.json({
+      success: true,
+      devices: [...staticDevices, ...dbDevices],
+      sseSubscribersCount: sseClients.length,
+    });
+  } catch {
+    res.json({ success: true, devices: [] });
+  }
+});
+
+// POST /api/v1/iot/register-device
+// Register a new edge IoT device (Analyzer, Scale, or RTD probe)
+iotRouter.post('/register-device', async (req: Request, res: Response) => {
+  try {
+    const { deviceCode, deviceName, deviceType, societyId = 'SOC-ANAND-01', ipAddress } = req.body;
+    if (!deviceCode || !deviceName || !deviceType) {
+      return res.status(400).json({ success: false, message: 'deviceCode, deviceName, and deviceType are required' });
+    }
+
+    const device = await prisma.ioTDevice.upsert({
+      where: { deviceCode },
+      update: {
+        deviceName,
+        deviceType,
+        societyId,
+        ipAddress: ipAddress || '192.168.1.100',
+        lastHeartbeat: new Date(),
+        status: 'Online',
+      },
+      create: {
+        deviceCode,
+        deviceName,
+        deviceType,
+        societyId,
+        ipAddress: ipAddress || '192.168.1.100',
+        status: 'Online',
+      },
+    });
+
+    broadcastSSE('DEVICE_REGISTERED', device);
+    return res.status(201).json({ success: true, message: 'Device registered successfully', data: device });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/v1/iot/telemetry
+// Direct IoT Edge Gateway Webhook (ESP32 / Raspberry Pi / PLC Gateway)
+iotRouter.post('/telemetry', async (req: Request, res: Response) => {
+  try {
+    const { deviceCode, temperatureC, volumeLitres, agitatorRunning, tankCode = 'TANK-A' } = req.body;
+
+    if (tankCode) {
+      const tank = await prisma.chillingTank.findFirst({
+        where: { OR: [{ tankCode }, { id: tankCode }] },
+      });
+      if (tank) {
+        const updated = await prisma.chillingTank.update({
+          where: { id: tank.id },
+          data: {
+            ...(temperatureC !== undefined && { temperatureC: Number(temperatureC) }),
+            ...(volumeLitres !== undefined && { currentVolumeLitres: Number(volumeLitres) }),
+            ...(agitatorRunning !== undefined && { agitatorStatus: agitatorRunning ? 'Running' : 'Stopped' }),
+            sensorHealth: temperatureC > 4.5 ? 'Warning: High Temp' : 'Optimal',
+          },
+        });
+        broadcastSSE('TANK_TELEMETRY', updated);
+      }
+    }
+
+    if (deviceCode) {
+      await prisma.ioTDevice.updateMany({
+        where: { deviceCode },
+        data: { lastHeartbeat: new Date(), status: 'Online' },
+      });
+    }
+
+    return res.json({ success: true, message: 'Edge telemetry ingested and broadcast to live subscribers' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/v1/iot/scale-reading
+// Live Gross/Tare weight intake from digital platform scales
+iotRouter.post('/scale-reading', (req: Request, res: Response) => {
+  const { weightKg, tareKg = 1.2, canId, stable = true } = req.body;
+  const netWeightKg = +(Number(weightKg) - Number(tareKg)).toFixed(2);
+  const calculatedLitres = +(netWeightKg / 1.030).toFixed(1);
+
+  const payload = {
+    grossWeightKg: Number(weightKg),
+    tareKg: Number(tareKg),
+    netWeightKg,
+    calculatedLitres,
+    canId,
+    stable,
+    timestamp: new Date().toISOString(),
+  };
+
+  broadcastSSE('SCALE_WEIGHT', payload);
+  return res.json({ success: true, data: payload });
 });
 
 // POST /api/v1/iot/lactoscan
@@ -67,6 +214,7 @@ iotRouter.post('/lactoscan', async (req: Request, res: Response) => {
       temperatureC = 5.2,
       shift = 'Morning',
       centre = 'BMC Anand Yard',
+      societyId = 'SOC-ANAND-01',
     } = req.body;
 
     if (!farmerCode || (!volumeLitres && !weightKg) || fat === undefined || snf === undefined) {
@@ -76,16 +224,13 @@ iotRouter.post('/lactoscan', async (req: Request, res: Response) => {
       });
     }
 
-    // Determine litres (if weight provided, divide by specific gravity 1.030)
     const quantity = volumeLitres ? Number(volumeLitres) : +(Number(weightKg) / 1.030).toFixed(1);
 
-    // Locate farmer with resilient fallback
     let farmer = await prisma.farmer.findFirst({
       where: { OR: [{ farmerCode }, { id: farmerCode }] },
     });
 
     if (!farmer) {
-      // Auto-register or fallback to first active farmer in registry
       farmer = await prisma.farmer.findFirst();
       if (!farmer) {
         farmer = await prisma.farmer.create({
@@ -98,13 +243,12 @@ iotRouter.post('/lactoscan', async (req: Request, res: Response) => {
             bankAccount: 'SBI-XXXX4101',
             ifscCode: 'BARB0ANANDX',
             status: 'Active',
+            societyId,
           },
         });
       }
     }
 
-    // Two-Axis Pricing Formula:
-    // Rate = Base + (Fat - 4.0)*4.50 + (SNF - 8.5)*2.50
     const baseMilkRate = 34.50;
     const fatMultiplier = 4.50;
     const snfMultiplier = 2.50;
@@ -112,8 +256,6 @@ iotRouter.post('/lactoscan', async (req: Request, res: Response) => {
     const snfDiff = Number(snf) - 8.5;
     const calculatedRate = Math.max(28.0, +(baseMilkRate + fatDiff * fatMultiplier + snfDiff * snfMultiplier).toFixed(2));
     const payableAmount = +(quantity * calculatedRate).toFixed(2);
-
-    // Quality Grade
     const quality = Number(fat) >= 3.5 && Number(snf) >= 8.2 && Number(temperatureC) <= 8.0 ? 'PASS' : 'WARNING';
 
     const collectionCode = `IOT-${Date.now().toString().slice(-6)}`;
@@ -121,7 +263,6 @@ iotRouter.post('/lactoscan', async (req: Request, res: Response) => {
     const dateStr = now.toISOString().split('T')[0];
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Atomic DB write
     const collection = await prisma.$transaction(async (tx) => {
       const rec = await tx.milkCollectionRecord.create({
         data: {
@@ -140,10 +281,10 @@ iotRouter.post('/lactoscan', async (req: Request, res: Response) => {
           ratePerLitre: calculatedRate,
           payableAmount,
           testedBy: 'Automated Lactoscan IoT Station',
+          societyId,
         },
       });
 
-      // Credit destination tank
       const tank = await tx.chillingTank.findFirst({
         where: { tankCode: 'TANK-B' },
       });
@@ -156,7 +297,6 @@ iotRouter.post('/lactoscan', async (req: Request, res: Response) => {
         });
       }
 
-      // Log Audit
       await tx.auditLogEntry.create({
         data: {
           timestamp: timeStr,
@@ -174,6 +314,9 @@ iotRouter.post('/lactoscan', async (req: Request, res: Response) => {
 
       return rec;
     });
+
+    // Broadcast collection event to all active UI screens via SSE
+    broadcastSSE('NEW_COLLECTION', collection);
 
     return res.status(201).json({
       success: true,
@@ -212,6 +355,8 @@ iotRouter.post('/silo-telemetry', async (req: Request, res: Response) => {
         sensorHealth: temperatureC > 4.5 ? 'Check Sensor' : 'Optimal',
       },
     });
+
+    broadcastSSE('TANK_TELEMETRY', updated);
 
     return res.json({
       success: true,

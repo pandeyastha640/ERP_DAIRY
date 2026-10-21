@@ -126,7 +126,12 @@ async function runFeatureMutationsAudit() {
     }
     await sleep(500);
 
-    await page.click('button:has-text("Save Cattle Profile"), button:has-text("Save Cattle"), button:has-text("Add Cattle"):nth-of-type(2)');
+    const saveCattleBtn = page.locator('div[role="dialog"] button:has-text("Save Cattle Record"), .fixed button:has-text("Save Cattle Record"), button:has-text("Save Cattle Record")');
+    if (await saveCattleBtn.count() > 0) {
+      await saveCattleBtn.first().click();
+    } else {
+      await page.locator('.fixed button[type="submit"]').first().click();
+    }
     await sleep(1500);
 
     const cattleCreated = (await page.content()).includes('TAG-QA-999');

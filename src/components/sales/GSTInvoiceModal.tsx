@@ -115,11 +115,39 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
             <button
+              onClick={() => {
+                const lineItem = invoiceData.lineItems?.[0] || {};
+                const order: any = {
+                  orderNumber: invoiceData.invoiceNumber || 'INV-20261011',
+                  date: invoiceData.invoiceDate,
+                  customerName: invoiceData.buyer?.tradeName || 'Distributor Account',
+                  channel: 'Wholesale & Retail Network',
+                  product: lineItem.description || 'Full Cream Milk 1L Pouch',
+                  quantityUnits: lineItem.quantityUnits || 500,
+                  unitRate: lineItem.unitRate || 64,
+                  totalAmount: invoiceData.totals?.grandTotalINR || 32000,
+                };
+                const settings: any = {
+                  orgName: invoiceData.seller?.legalName || 'DairyOS Operational Cooperative Ltd.',
+                  fssaiLicense: invoiceData.seller?.fssaiNumber || '10018021003456',
+                  gstin: invoiceData.seller?.gstin || '24AAACC1209B1ZK',
+                  headOffice: invoiceData.seller?.plantAddress || 'GIDC Industrial Estate, Anand, Gujarat',
+                };
+                import('../../services/pdfGenerator').then(({ pdfGenerator }) => {
+                  pdfGenerator.generateGSTInvoicePDF(order, settings);
+                });
+              }}
+              className="px-3 py-1.5 bg-[#1f6feb] hover:bg-[#388bfd] text-white text-xs font-semibold rounded flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download Vector PDF</span>
+            </button>
+            <button
               onClick={handlePrint}
               className="px-3 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold rounded flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print / Save PDF</span>
+              <span>Print Browser</span>
             </button>
           </div>
         </div>

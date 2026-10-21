@@ -64,7 +64,19 @@ import {
   Smartphone,
   GitFork,
   FileClock,
+  ShieldAlert,
 } from 'lucide-react';
+
+const ROLE_ALLOWED_MODULES: Record<Role, string[]> = {
+  'CEO': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai', 'settings'],
+  'COO': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai', 'settings'],
+  'Operations Manager': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai', 'settings'],
+  'Admin': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai', 'settings'],
+  'Plant Manager': ['dashboard', 'milk-ops', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'quality', 'control-tower', 'reports', 'settings'],
+  'Procurement Manager': ['dashboard', 'milk-ops', 'farmers', 'milk-collection', 'quality', 'cattle', 'feed', 'payments', 'reports'],
+  'Finance Manager': ['dashboard', 'payments', 'finance', 'sales', 'reports', 'farmers', 'settings'],
+  'Field Staff': ['milk-collection', 'farmers', 'quality'],
+};
 
 function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -239,6 +251,32 @@ function AppContent() {
 
           {/* Module Viewport */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-20 md:pb-8">
+            {!ROLE_ALLOWED_MODULES[currentRole]?.includes(currentModule) ? (
+              <div className="p-8 bg-[#161b22] border border-[#30363d] rounded-xl text-center max-w-lg mx-auto my-12 space-y-4">
+                <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto">
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+                <h2 className="text-base font-bold text-slate-100">Role-Based Access Control (RBAC) Notice</h2>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Your current session role <strong className="text-blue-400 font-mono">{currentRole}</strong> is restricted from accessing the <strong className="text-white font-mono">{currentModule}</strong> module under organizational food safety and audit guidelines.
+                </p>
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={() => setCurrentRole('Operations Manager')}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors shadow-xs"
+                  >
+                    Switch to Operations Manager
+                  </button>
+                  <button
+                    onClick={() => setCurrentModule(ROLE_ALLOWED_MODULES[currentRole]?.[0] || 'milk-collection')}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium cursor-pointer transition-colors"
+                  >
+                    Return to Permitted View
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
             {currentModule === 'dashboard' && (
               <DashboardPage
                 onNavigate={(mod) => setCurrentModule(mod)}
@@ -361,6 +399,8 @@ function AppContent() {
             {currentModule === 'ai-intelligence' && <AIIntelligencePage />}
 
             {currentModule === 'settings' && <SettingsPage />}
+              </>
+            )}
           </main>
         </div>
       </div>

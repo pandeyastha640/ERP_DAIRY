@@ -1,0 +1,45 @@
+name: DairyOS Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  audit-and-verify:
+    name: Subsystem Verification & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Project Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Validate TypeScript Static Typing
+        run: npm run lint
+
+      - name: Push Prisma Schema to Dev Database
+        run: npx prisma db push
+
+      - name: Generate Prisma ORM Client
+        run: npx prisma generate
+
+      - name: Build Production Client Assets (Vite)
+        run: npm run build
+
+      - name: Start Background Express API Server
+        run: |
+          npm run server &
+          npx wait-on http://localhost:5000/healthz --timeout 15000
+
+      - name: Execute Full 11-Phase Enterprise Verification Test Suite
+        run: npx tsx scripts/verify_all_phases.ts
