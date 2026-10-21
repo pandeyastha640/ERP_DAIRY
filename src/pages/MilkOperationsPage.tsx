@@ -95,13 +95,22 @@ export const MilkOperationsPage: React.FC = () => {
     }, 0)
   );
 
-  // Dynamic 7-day trend data reflecting current reconciled totals
-  const trendData = [
+  // Chart 1: Own vs Farmer Production Filter State
+  const [timeframeA, setTimeframeA] = useState<'7D' | '14D' | '30D'>('7D');
+  const [streamFilter, setStreamFilter] = useState<'All' | 'Own' | 'Farmer'>('All');
+
+  // Chart 2: Inward vs Processing Filter State
+  const [timeframeB, setTimeframeB] = useState<'7D' | '14D' | '30D'>('7D');
+  const [trendMetricFilter, setTrendMetricFilter] = useState<'Both' | 'Inward' | 'Processing'>('Both');
+
+  // Dynamic Multi-Timeframe Data for Inward vs Processing (Chart 2)
+  const baseTrend7D = [
     { label: '01 Oct', value: 4120, secondaryValue: 3820 },
     { label: '02 Oct', value: 4200, secondaryValue: 3890 },
     { label: '03 Oct', value: 4180, secondaryValue: 3860 },
     { label: '04 Oct', value: 4250, secondaryValue: 3910 },
     { label: '05 Oct', value: 4350, secondaryValue: 3900 },
+    { label: '06 Oct', value: 4310, secondaryValue: 3880 },
     {
       label: 'Today',
       value: reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres,
@@ -109,18 +118,108 @@ export const MilkOperationsPage: React.FC = () => {
     },
   ];
 
-  const ownVsFarmerData = [
+  const baseTrend14D = [
+    { label: '24 Sep', value: 3980, secondaryValue: 3750 },
+    { label: '26 Sep', value: 4050, secondaryValue: 3790 },
+    { label: '28 Sep', value: 4100, secondaryValue: 3820 },
+    { label: '30 Sep', value: 4150, secondaryValue: 3850 },
+    { label: '02 Oct', value: 4200, secondaryValue: 3890 },
+    { label: '04 Oct', value: 4250, secondaryValue: 3910 },
+    {
+      label: 'Today',
+      value: reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres,
+      secondaryValue: reconciliation.processingConsumptionLitres,
+    },
+  ];
+
+  const baseTrend30D = [
+    { label: '08 Sep', value: 3850, secondaryValue: 3600 },
+    { label: '12 Sep', value: 3920, secondaryValue: 3680 },
+    { label: '16 Sep', value: 3990, secondaryValue: 3720 },
+    { label: '20 Sep', value: 4040, secondaryValue: 3780 },
+    { label: '24 Sep', value: 4110, secondaryValue: 3830 },
+    { label: '28 Sep', value: 4190, secondaryValue: 3860 },
+    { label: '02 Oct', value: 4220, secondaryValue: 3890 },
+    {
+      label: 'Today',
+      value: reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres,
+      secondaryValue: reconciliation.processingConsumptionLitres,
+    },
+  ];
+
+  const currentTrendRaw =
+    timeframeB === '7D' ? baseTrend7D : timeframeB === '14D' ? baseTrend14D : baseTrend30D;
+
+  const filteredTrendData = currentTrendRaw.map((d) => {
+    if (trendMetricFilter === 'Inward') {
+      return { label: d.label, value: d.value };
+    }
+    if (trendMetricFilter === 'Processing') {
+      return { label: d.label, value: d.secondaryValue };
+    }
+    return d;
+  });
+
+  // Dynamic Multi-Timeframe Data for Own vs Farmer (Chart 1)
+  const baseComparison7D = [
     { label: '01 Oct', valueA: 1210, valueB: 2910 },
     { label: '02 Oct', valueA: 1220, valueB: 2980 },
     { label: '03 Oct', valueA: 1205, valueB: 2975 },
     { label: '04 Oct', valueA: 1230, valueB: 3020 },
     { label: '05 Oct', valueA: 1210, valueB: 3140 },
+    { label: '06 Oct', valueA: 1225, valueB: 3085 },
     {
       label: 'Today',
       valueA: reconciliation.ownProductionLitres,
       valueB: reconciliation.farmerProcurementLitres,
     },
   ];
+
+  const baseComparison14D = [
+    { label: '24 Sep', valueA: 1180, valueB: 2800 },
+    { label: '26 Sep', valueA: 1195, valueB: 2855 },
+    { label: '28 Sep', valueA: 1205, valueB: 2895 },
+    { label: '30 Sep', valueA: 1215, valueB: 2935 },
+    { label: '02 Oct', valueA: 1220, valueB: 2980 },
+    { label: '04 Oct', valueA: 1230, valueB: 3020 },
+    {
+      label: 'Today',
+      valueA: reconciliation.ownProductionLitres,
+      valueB: reconciliation.farmerProcurementLitres,
+    },
+  ];
+
+  const baseComparison30D = [
+    { label: '08 Sep', valueA: 1140, valueB: 2710 },
+    { label: '12 Sep', valueA: 1160, valueB: 2760 },
+    { label: '16 Sep', valueA: 1175, valueB: 2815 },
+    { label: '20 Sep', valueA: 1190, valueB: 2850 },
+    { label: '24 Sep', valueA: 1200, valueB: 2910 },
+    { label: '28 Sep', valueA: 1210, valueB: 2980 },
+    { label: '02 Oct', valueA: 1220, valueB: 3000 },
+    {
+      label: 'Today',
+      valueA: reconciliation.ownProductionLitres,
+      valueB: reconciliation.farmerProcurementLitres,
+    },
+  ];
+
+  const currentComparisonRaw =
+    timeframeA === '7D'
+      ? baseComparison7D
+      : timeframeA === '14D'
+      ? baseComparison14D
+      : baseComparison30D;
+
+  const filteredComparisonData = currentComparisonRaw.map((d) => {
+    if (streamFilter === 'Own') {
+      return { label: d.label, valueA: d.valueA, valueB: 0 };
+    }
+    if (streamFilter === 'Farmer') {
+      return { label: d.label, valueA: 0, valueB: d.valueB };
+    }
+    return d;
+  });
 
   return (
     <PageContainer>
@@ -409,49 +508,208 @@ export const MilkOperationsPage: React.FC = () => {
       {activeTab === 'Overview' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 shadow-xs">
-              <h3 className="text-sm font-bold text-forest-950 mb-1">
-                Own Cattle Milk vs Farmer Procurement (7-Day Daily)
-              </h3>
-              <p className="text-xs text-stone-500 mb-4 font-medium">
-                Dual stream analytics demonstrating source ratio (
-                {(
-                  (reconciliation.ownProductionLitres /
-                    (reconciliation.ownProductionLitres +
-                      reconciliation.farmerProcurementLitres || 1)) *
-                  100
-                ).toFixed(1)}
-                % Own vs{' '}
-                {(
-                  (reconciliation.farmerProcurementLitres /
-                    (reconciliation.ownProductionLitres +
-                      reconciliation.farmerProcurementLitres || 1)) *
-                  100
-                ).toFixed(1)}
-                % Farmer today)
-              </p>
+            {/* CHART 1: Own Herd vs Farmer Procurement (3D Volumetric Bar Chart with Filters) */}
+            <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-forest-950 flex items-center gap-2">
+                      <span>Own Herd vs Farmer Procurement</span>
+                      <span className="text-[10px] font-mono font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        3D Volumetric
+                      </span>
+                    </h3>
+                    <p className="text-xs text-stone-500 font-medium mt-0.5">
+                      Dual stream comparison demonstrating source ratio (
+                      {(
+                        (reconciliation.ownProductionLitres /
+                          (reconciliation.ownProductionLitres +
+                            reconciliation.farmerProcurementLitres || 1)) *
+                        100
+                      ).toFixed(1)}% Own vs {(
+                        (reconciliation.farmerProcurementLitres /
+                          (reconciliation.ownProductionLitres +
+                            reconciliation.farmerProcurementLitres || 1)) *
+                        100
+                      ).toFixed(1)}% Farmer today)
+                    </p>
+                  </div>
+
+                  {/* Filter Controls: Stream + Timeframe */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Stream Filter */}
+                    <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs font-semibold">
+                      <button
+                        onClick={() => setStreamFilter('All')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          streamFilter === 'All'
+                            ? 'bg-white text-forest-950 font-bold shadow-2xs'
+                            : 'text-stone-500 hover:text-stone-800'
+                        }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => setStreamFilter('Own')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          streamFilter === 'Own'
+                            ? 'bg-white text-emerald-800 font-bold shadow-2xs'
+                            : 'text-stone-500 hover:text-stone-800'
+                        }`}
+                      >
+                        Own
+                      </button>
+                      <button
+                        onClick={() => setStreamFilter('Farmer')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          streamFilter === 'Farmer'
+                            ? 'bg-white text-amber-800 font-bold shadow-2xs'
+                            : 'text-stone-500 hover:text-stone-800'
+                        }`}
+                      >
+                        Farmer
+                      </button>
+                    </div>
+
+                    {/* Timeframe Filter */}
+                    <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs font-semibold font-mono">
+                      {(['7D', '14D', '30D'] as const).map((tf) => (
+                        <button
+                          key={tf}
+                          onClick={() => setTimeframeA(tf)}
+                          className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                            timeframeA === tf
+                              ? 'bg-white text-forest-950 font-bold shadow-2xs'
+                              : 'text-stone-500 hover:text-stone-800'
+                          }`}
+                        >
+                          {tf}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Stream Badges */}
+                <div className="flex items-center gap-2 mb-4 pt-1">
+                  <span className="text-[11px] font-mono text-emerald-900 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-md font-semibold">
+                    Own Herd: {reconciliation.ownProductionLitres.toLocaleString()} L
+                  </span>
+                  <span className="text-[11px] font-mono text-amber-900 bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 rounded-md font-semibold">
+                    Farmer: {reconciliation.farmerProcurementLitres.toLocaleString()} L
+                  </span>
+                  <span className="text-[11px] font-mono text-stone-600 bg-stone-100 border border-stone-200 px-2.5 py-0.5 rounded-md hidden sm:inline-block">
+                    Total: {(reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres).toLocaleString()} L
+                  </span>
+                </div>
+              </div>
+
               <BarComparisonChart
-                data={ownVsFarmerData}
+                data={filteredComparisonData}
                 labelA="Own Production (L)"
                 labelB="Farmer Milk (L)"
-                colorA="#1b4332"
-                colorB="#52b788"
+                colorA="#10b981"
+                colorB="#f59e0b"
+                is3D={true}
               />
             </div>
 
-            <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 shadow-xs">
-              <h3 className="text-sm font-bold text-forest-950 mb-1">
-                Collection Inward vs Plant Processing Throughput
-              </h3>
-              <p className="text-xs text-stone-500 mb-4 font-medium">
-                Validating that cold buffer silos prevent processing starvations
-              </p>
+            {/* CHART 2: Collection Inward vs Plant Processing (3D Glowing Ribbon with Filters) */}
+            <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-forest-950 flex items-center gap-2">
+                      <span>Inward Pool vs Plant Processing</span>
+                      <span className="text-[10px] font-mono font-bold bg-sage-50 text-forest-900 border border-sage-200 px-2 py-0.5 rounded-full">
+                        3D Glowing Ribbon
+                      </span>
+                    </h3>
+                    <p className="text-xs text-stone-500 font-medium mt-0.5">
+                      Validating that cold buffer silos prevent processing starvations
+                    </p>
+                  </div>
+
+                  {/* Filter Controls: Metric + Timeframe */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {/* Metric Filter */}
+                    <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs font-semibold">
+                      <button
+                        onClick={() => setTrendMetricFilter('Both')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          trendMetricFilter === 'Both'
+                            ? 'bg-white text-forest-950 font-bold shadow-2xs'
+                            : 'text-stone-500 hover:text-stone-800'
+                        }`}
+                      >
+                        Combined
+                      </button>
+                      <button
+                        onClick={() => setTrendMetricFilter('Inward')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          trendMetricFilter === 'Inward'
+                            ? 'bg-white text-emerald-800 font-bold shadow-2xs'
+                            : 'text-stone-500 hover:text-stone-800'
+                        }`}
+                      >
+                        Inward
+                      </button>
+                      <button
+                        onClick={() => setTrendMetricFilter('Processing')}
+                        className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                          trendMetricFilter === 'Processing'
+                            ? 'bg-white text-amber-800 font-bold shadow-2xs'
+                            : 'text-stone-500 hover:text-stone-800'
+                        }`}
+                      >
+                        Processing
+                      </button>
+                    </div>
+
+                    {/* Timeframe Filter */}
+                    <div className="flex bg-[#f5f2eb] border border-[#ede8df] rounded-xl p-0.5 text-xs font-semibold font-mono">
+                      {(['7D', '14D', '30D'] as const).map((tf) => (
+                        <button
+                          key={tf}
+                          onClick={() => setTimeframeB(tf)}
+                          className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                            timeframeB === tf
+                              ? 'bg-white text-forest-950 font-bold shadow-2xs'
+                              : 'text-stone-500 hover:text-stone-800'
+                          }`}
+                        >
+                          {tf}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Metric Badges */}
+                <div className="flex items-center gap-2 mb-4 pt-1">
+                  <span className="text-[11px] font-mono text-emerald-900 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-md font-semibold">
+                    Inward Pool: {(reconciliation.ownProductionLitres + reconciliation.farmerProcurementLitres).toLocaleString()} L
+                  </span>
+                  <span className="text-[11px] font-mono text-amber-900 bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 rounded-md font-semibold">
+                    Processed: {reconciliation.processingConsumptionLitres.toLocaleString()} L
+                  </span>
+                  <span className="text-[11px] font-mono text-stone-600 bg-stone-100 border border-stone-200 px-2.5 py-0.5 rounded-md hidden sm:inline-block">
+                    Net: +{(
+                      reconciliation.ownProductionLitres +
+                      reconciliation.farmerProcurementLitres -
+                      reconciliation.processingConsumptionLitres
+                    ).toLocaleString()} L
+                  </span>
+                </div>
+              </div>
+
               <AreaTrendChart
-                data={trendData}
-                primaryColor="#1b4332"
-                secondaryColor="#52b788"
+                data={filteredTrendData}
+                primaryColor="#10b981"
+                secondaryColor="#f59e0b"
                 primaryLabel="Total Inward Pool"
-                secondaryLabel="Processed Outward"
+                secondaryLabel={trendMetricFilter === 'Inward' ? undefined : 'Processed Outward'}
+                is3D={true}
               />
             </div>
           </div>
