@@ -12,3 +12,5 @@ coverage/
 !prisma/dev.db
 *.db-journal
 *.sqlite
+mongodb_data/
+
