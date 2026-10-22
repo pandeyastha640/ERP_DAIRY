@@ -3,9 +3,26 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 
+// Automatically load credentials from atlas-credential.env or atlas-credentials.env if present
+const possibleCredentialFiles = ['atlas-credential.env', 'atlas-credentials.env'];
+for (const file of possibleCredentialFiles) {
+  const filePath = path.resolve(process.cwd(), file);
+  if (fs.existsSync(filePath)) {
+    dotenv.config({ path: filePath });
+    break;
+  }
+}
 dotenv.config();
 
-const mongoUri = process.env.MONGODB_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/dairyos';
+function resolveMongoUri(): string {
+  let uri = process.env.MONGODB_URI || process.env.DATABASE_URL || 'mongodb://127.0.0.1:27017/dairyos';
+  if (uri.startsWith('mongodb+srv://') && !uri.includes('.mongodb.net/')) {
+    uri = uri.replace(/\/?(\?.*)?$/, '/dairyos$1');
+  }
+  return uri;
+}
+
+const mongoUri = resolveMongoUri();
 
 async function main() {
   console.log('--- DairyOS MongoDB Importer & Cloud Sync ---');
@@ -24,7 +41,7 @@ async function main() {
 
   try {
     await client.connect();
-    const db = client.db();
+    const db = client.db('dairyos');
     console.log(`[MongoDB] Connected successfully to database: "${db.databaseName}"`);
 
     // Helper to sync table
@@ -68,10 +85,8 @@ async function main() {
   } catch (err: any) {
     console.error(`[MongoDB Import Error]: ${err.message}`);
     console.log('\nTip: To connect to MongoDB Atlas in the cloud:');
-    console.log('1. Create a free cluster on https://www.mongodb.com/atlas');
-    console.log('2. Copy your connection string');
-    console.log('3. Set MONGODB_URI="mongodb+srv://..." in your .env file');
-    console.log('4. Re-run: npm run db:mongo:import');
+    console.log('1. Put your credentials in atlas-credential.env or .env');
+    console.log('2. Re-run: npm run db:mongo:import');
   } finally {
     await client.close();
   }

@@ -1,21 +1,40 @@
 import { MongoClient } from 'mongodb';
+import fs from 'fs';
+import path from 'path';
 import dotenv from 'dotenv';
 
+// Automatically load credentials from atlas-credential.env or atlas-credentials.env if present
+const possibleCredentialFiles = ['atlas-credential.env', 'atlas-credentials.env'];
+for (const file of possibleCredentialFiles) {
+  const filePath = path.resolve(process.cwd(), file);
+  if (fs.existsSync(filePath)) {
+    dotenv.config({ path: filePath });
+    break;
+  }
+}
 dotenv.config();
 
-const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/dairyos';
+function resolveMongoUri(): string {
+  let uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/dairyos';
+  if (uri.startsWith('mongodb+srv://') && !uri.includes('.mongodb.net/')) {
+    uri = uri.replace(/\/?(\?.*)?$/, '/dairyos$1');
+  }
+  return uri;
+}
+
+const uri = resolveMongoUri();
 
 async function inspect() {
   console.log('================================================================');
   console.log('       DAIRYOS ENTERPRISE ERP - MONGODB DATA INSPECTOR          ');
   console.log('================================================================');
-  console.log(`Connecting to: ${uri}\n`);
+  console.log(`Connecting to: ${uri.replace(/\/\/.*@/, '//<credentials>@')}\n`);
 
   const client = new MongoClient(uri);
 
   try {
     await client.connect();
-    const db = client.db();
+    const db = client.db('dairyos');
     console.log(`✅ Connected to Database: "${db.databaseName}"\n`);
 
     const collections = await db.listCollections().toArray();
@@ -54,7 +73,6 @@ async function inspect() {
     orders.forEach((o: any) => {
       console.log(` • Order #${o.orderNumber} | Customer: ${o.customerName} | Product: ${o.product} | Qty: ${o.quantityUnits} | Total: ₹${o.totalAmount} [${o.paymentStatus} / ${o.fulfillmentStatus}]`);
     });
-
 
     console.log('\n================================================================');
     console.log('  Data inspection complete! All records are verified in MongoDB. ');
