@@ -6,7 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+!.env.production.example
 *.db
+
 !prisma/dev.db
 *.db-journal
 *.sqlite

@@ -18,6 +18,7 @@ import { qualityRouter } from './routes/quality';
 import { notificationsRouter } from './routes/notifications';
 import { federationRouter } from './routes/federation';
 import { prisma } from './prisma';
+import { connectMongo, disconnectMongo, isMongoConnected } from './mongodb';
 
 dotenv.config();
 
@@ -52,6 +53,7 @@ app.get('/ready', async (_req: Request, res: Response) => {
     res.status(200).json({
       status: 'READY',
       database: 'CONNECTED',
+      mongodb: isMongoConnected() ? 'CONNECTED' : (process.env.MONGODB_URI ? 'CONNECTING_OR_FAILED' : 'STANDBY (Local SQLite Mode)'),
       uptimeSeconds: Math.floor(process.uptime()),
       memoryUsageMB: +(process.memoryUsage().rss / 1024 / 1024).toFixed(1),
       timestamp: new Date().toISOString(),
@@ -65,6 +67,7 @@ app.get('/ready', async (_req: Request, res: Response) => {
     });
   }
 });
+
 
 // API Routes
 app.use('/api/v1/health', healthRouter);
@@ -120,19 +123,25 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   console.log(`🚀 DairyOS Backend API running on http://localhost:${PORT}`);
+  try {
+    await connectMongo();
+  } catch (err: any) {
+    console.warn(`[MongoDB Startup Notice]: ${err.message}`);
+  }
 });
 
 const gracefulShutdown = async (signal: string) => {
   console.log(`\n🛑 Received ${signal}. Initiating graceful shutdown...`);
   server.close(async () => {
     try {
+      await disconnectMongo();
       await prisma.$disconnect();
-      console.log('✅ Prisma client disconnected. Server closed cleanly.');
+      console.log('✅ Prisma & MongoDB clients disconnected. Server closed cleanly.');
       process.exit(0);
     } catch (e: any) {
-      console.error('Error disconnecting Prisma:', e.message);
+      console.error('Error disconnecting database clients:', e.message);
       process.exit(1);
     }
   });
@@ -140,5 +149,6 @@ const gracefulShutdown = async (signal: string) => {
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
 
 export default app;
