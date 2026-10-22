@@ -69,7 +69,22 @@
      ```
      Access at: 👉 **[http://localhost:5555](http://localhost:5555)**
 
+6. **🍃 MongoDB Dual-Store & Live Data Inspection**:
+   * **Start Local MongoDB Engine**:
+     ```bash
+     npm run db:mongo:start
+     ```
+   * **Sync All Data to MongoDB**:
+     ```bash
+     npm run db:mongo:import
+     ```
+   * **Inspect Live Collections & Records in MongoDB**:
+     ```bash
+     npm run db:mongo:view
+     ```
+
 ---
+
 
 ## 🐳 Docker Deployment (Single Command)
 

@@ -13,4 +13,5 @@ coverage/
 *.db-journal
 *.sqlite
 mongodb_data/
-
+atlas-credentials.env
+*credentials*

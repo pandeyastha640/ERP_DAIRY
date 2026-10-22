@@ -69,12 +69,20 @@ npm install
 npm run dev:all
 ```
 
+To sync and inspect data in MongoDB:
+```bash
+npm run db:mongo:start   # Launch persistent local MongoDB engine
+npm run db:mongo:import  # Sync all 12 tables to MongoDB
+npm run db:mongo:view    # Inspect collections and sample records
+```
+
 Or with Docker in a single command:
 ```bash
 docker compose up --build
 ```
 
 ---
+
 
 ### 4. Complete Documentation Files in this Repository
 * **[ERP_REPO.md](ERP_REPO.md)**: *(This file)* Master guide of the ERP repository.
