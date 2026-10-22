@@ -171,17 +171,25 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-stone-900 flex flex-col antialiased">
+    <div className="min-h-screen bg-[#faf8f5] text-stone-900 flex flex-col antialiased relative selection:bg-emerald-100 selection:text-forest-900">
+      {/* 3D Ambient Mesh Lighting Blobs (visible through glassmorphic panels) */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+        <div className="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full bg-emerald-400/15 blur-[120px]" />
+        <div className="absolute top-1/4 -right-32 w-[460px] h-[460px] rounded-full bg-amber-300/15 blur-[130px]" />
+        <div className="absolute -bottom-32 left-1/3 w-[580px] h-[580px] rounded-full bg-teal-300/15 blur-[140px]" />
+      </div>
+
       {/* Top Global Demo Environment Banner */}
-      <div className="bg-cream-100/70 border-b border-[#ede8df] px-4 py-1.5 flex items-center justify-between text-[11px] font-mono select-none text-stone-600">
+      <div className="relative z-10 bg-white/70 backdrop-blur-md border-b border-white/60 px-4 py-1.5 flex items-center justify-between text-[11px] font-mono select-none text-stone-600 shadow-[0_1px_4px_rgba(27,67,50,0.02)]">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse shadow-[0_0_8px_#059669]" />
           <span className="text-forest-900 font-bold">CONNECTED DAIRY OPERATING SYSTEM</span>
           <span className="text-stone-500 hidden sm:inline">
             &bull; Continuous Volumetric Mass Balance &amp; Real-time Margin Reconciliation Active
           </span>
         </div>
         <div className="flex items-center gap-3">
+
           <button
             onClick={() => setIsTracerOpen(true)}
             className="text-forest-800 hover:text-forest-950 hover:underline flex items-center gap-1 cursor-pointer font-sans font-medium"

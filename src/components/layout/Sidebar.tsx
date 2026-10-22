@@ -105,30 +105,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <aside
-      className={`fixed top-0 bottom-0 left-0 z-30 flex flex-col bg-[#fcfbf9] border-r border-[#ede8df] transition-all duration-300 select-none shadow-[2px_0_12px_rgba(27,67,50,0.03)] ${
+      className={`fixed top-0 bottom-0 left-0 z-30 flex flex-col bg-white/75 backdrop-blur-2xl border-r border-white/70 transition-all duration-300 select-none shadow-[4px_0_24px_rgba(27,67,50,0.04)] ${
         collapsed ? 'w-18' : 'w-64'
       }`}
     >
       {/* Brand Header */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-[#ede8df] shrink-0 bg-[#fcfbf9]">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-white/80 shrink-0 bg-white/50 backdrop-blur-md">
         {!collapsed ? (
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 rounded-xl bg-[#1b4332] flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_8px_rgba(27,67,50,0.25)] shrink-0">
-              <Milk className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2d6a4f] via-[#1b4332] to-[#0d2818] flex items-center justify-center text-white font-bold text-sm shadow-[0_4px_14px_rgba(27,67,50,0.35),inset_0_1px_2px_rgba(255,255,255,0.4)] shrink-0 transition-transform duration-300 hover:rotate-3 hover:scale-105">
+              <Milk className="w-5 h-5 text-emerald-100" />
             </div>
             <div className="truncate">
-              <div className="text-base font-bold text-[#0f2319] tracking-tight leading-none flex items-center gap-1.5">
+              <div className="text-base font-bold text-[#0f2319] tracking-tight leading-none flex items-center gap-1.5 font-sans">
                 <span>DairyOS</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#52b788]" />
+                <span className="w-2 h-2 rounded-full bg-[#52b788] shadow-[0_0_8px_#52b788]" />
               </div>
               <div className="text-[10px] text-stone-500 font-mono mt-0.5 tracking-wider uppercase font-semibold">
-                Enterprise Cloud
+                Enterprise Cloud 3D
               </div>
             </div>
           </div>
         ) : (
           <div className="mx-auto">
-            <div className="w-9 h-9 rounded-xl bg-[#1b4332] flex items-center justify-center text-white font-bold text-sm shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2d6a4f] to-[#1b4332] flex items-center justify-center text-white font-bold text-sm shadow-[0_4px_12px_rgba(27,67,50,0.3)] transition-transform duration-300 hover:scale-105">
               <Milk className="w-5 h-5" />
             </div>
           </div>
@@ -136,13 +136,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <button
           onClick={onToggleCollapse}
-          className="p-1.5 rounded-lg text-stone-400 hover:text-[#1b4332] hover:bg-[#ede8df]/60 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-stone-400 hover:text-[#1b4332] hover:bg-white/80 transition-all cursor-pointer shadow-2xs"
           title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
       </div>
+
 
       {/* Navigation Groups */}
       <nav className="flex-1 overflow-y-auto py-4 px-2.5 space-y-4">
@@ -162,15 +163,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   key={item.id}
                   onClick={() => onSelectModule(item.id)}
                   title={collapsed ? `${item.number} ${item.label}` : undefined}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-all text-left relative group cursor-pointer ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition-all duration-200 text-left relative group cursor-pointer active:scale-[0.98] ${
                     isActive
-                      ? 'bg-[#eef6f0] text-[#1b4332] font-bold shadow-xs border border-[#cde6d5]'
-                      : 'text-stone-600 hover:text-[#0f2319] hover:bg-white/80'
+                      ? 'bg-gradient-to-r from-[#eef6f0] to-white/95 text-[#1b4332] font-bold shadow-[0_4px_14px_-2px_rgba(27,67,50,0.08),inset_0_1px_1px_rgba(255,255,255,1)] border border-[#cde6d5] -translate-y-0.5'
+                      : 'text-stone-600 hover:text-[#0f2319] hover:bg-white/80 hover:translate-x-0.5'
                   }`}
                 >
                   <Icon
-                    className={`w-4 h-4 shrink-0 transition-colors ${
-                      isActive ? 'text-[#1b4332]' : 'text-stone-400 group-hover:text-[#2d6a4f]'
+                    className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
+                      isActive ? 'text-[#1b4332] scale-110' : 'text-stone-400 group-hover:text-[#2d6a4f] group-hover:scale-110'
                     }`}
                   />
 
@@ -183,13 +184,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <span className="truncate">{item.label}</span>
                       </div>
                       {item.badge && (
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full font-semibold shrink-0 bg-[#fbf7ec] text-[#855e16] border border-[#f0e2bd]">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-semibold shrink-0 bg-[#fbf7ec] text-[#855e16] border border-[#f0e2bd] shadow-2xs">
                           {item.badge}
                         </span>
                       )}
                     </div>
                   )}
                 </button>
+
               );
             })}
           </div>

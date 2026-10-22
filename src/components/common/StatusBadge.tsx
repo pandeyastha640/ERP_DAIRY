@@ -47,8 +47,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     s === 'SUFFICIENT' ||
     s === 'RECONCILED'
   ) {
-    dotColor = 'bg-[#2d6a4f]';
-    badgeClasses = 'bg-[#f0f7f2] text-[#1b4332] border-[#cde6d5]';
+    dotColor = 'bg-[#2d6a4f] shadow-[0_0_6px_#2d6a4f]';
+    badgeClasses = 'bg-[#f0f7f2]/90 backdrop-blur-xs text-[#1b4332] border-[#cde6d5] shadow-2xs';
   } else if (
     s === 'WARNING' ||
     s === 'UNDER REVIEW' ||
@@ -59,8 +59,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     s === 'PENDING' ||
     s === 'VARIANCE DETECTED'
   ) {
-    dotColor = 'bg-[#c59b27]';
-    badgeClasses = 'bg-[#fbf7ec] text-[#855e16] border-[#f2e5c4]';
+    dotColor = 'bg-[#c59b27] shadow-[0_0_6px_#c59b27]';
+    badgeClasses = 'bg-[#fbf7ec]/90 backdrop-blur-xs text-[#855e16] border-[#f2e5c4] shadow-2xs';
   } else if (
     s === 'FAIL' ||
     s === 'SICK' ||
@@ -70,8 +70,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     s === 'OUT OF STOCK' ||
     s === 'CRITICAL VARIANCE'
   ) {
-    dotColor = 'bg-rose-600';
-    badgeClasses = 'bg-[#fdf2f2] text-rose-800 border-[#fbcfe8]';
+    dotColor = 'bg-rose-600 shadow-[0_0_6px_#e11d48]';
+    badgeClasses = 'bg-[#fdf2f2]/90 backdrop-blur-xs text-rose-800 border-[#fbcfe8] shadow-2xs';
   } else if (
     s === 'DRY' ||
     s === 'PREGNANT' ||
@@ -80,13 +80,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     s === 'CHILLING' ||
     s === 'INFO'
   ) {
-    dotColor = 'bg-emerald-600';
-    badgeClasses = 'bg-[#f2f8f6] text-[#205440] border-[#cbe4dc]';
+    dotColor = 'bg-emerald-600 shadow-[0_0_6px_#059669]';
+    badgeClasses = 'bg-[#f2f8f6]/90 backdrop-blur-xs text-[#205440] border-[#cbe4dc] shadow-2xs';
   }
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-medium border rounded-full tracking-tight transition-colors ${badgeClasses} ${
+      className={`inline-flex items-center gap-1.5 font-medium border rounded-full tracking-tight transition-all duration-200 ${badgeClasses} ${
         size === 'sm' ? 'text-[11px] px-2 py-0.5 leading-tight' : 'text-xs px-2.5 py-0.5 leading-normal'
       }`}
     >
@@ -95,3 +95,4 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     </span>
   );
 };
+

@@ -199,14 +199,17 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
       />
 
       {/* 3. Centralized Mass Balance Milk Reconciliation Strip */}
-      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-5 shadow-xs transition-shadow duration-200 hover:shadow-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-3 border-b border-[#ede8df]/70">
+      <div className="relative overflow-hidden bg-white/80 backdrop-blur-xl border border-white/85 rounded-2xl p-5 shadow-[0_8px_24px_-4px_rgba(27,67,50,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] transition-all duration-300 hover:shadow-[0_16px_36px_-6px_rgba(27,67,50,0.1)]">
+        {/* Specular highlight */}
+        <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/70 to-transparent pointer-events-none rounded-t-2xl" />
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-3 border-b border-stone-200/60 relative z-10">
           <div className="flex items-center gap-3">
-            <span className="p-2 rounded-xl bg-sage-50 border border-sage-200/80 text-forest-800 shrink-0">
+            <span className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-100/80 to-teal-50 border border-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),0_2px_8px_rgba(27,67,50,0.06)] text-forest-800 shrink-0">
               <Scale className="w-4 h-4 text-forest-700" />
             </span>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-forest-950">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-forest-950 font-sans">
                 Daily Mass Balance Milk Reconciliation (Silo Verification)
               </h3>
               <p className="text-[11px] text-stone-500 font-medium">
@@ -216,14 +219,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
           </div>
           <div className="flex items-center gap-3">
             <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${reconciliationBadgeStyle}`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-2xs backdrop-blur-xs ${reconciliationBadgeStyle}`}
             >
               {reconciliationStatusIcon}
               <span>{reconciliation.reconciliationStatus}</span>
             </span>
             <button
               onClick={() => onNavigate('milk-ops')}
-              className="text-xs font-semibold text-forest-800 hover:text-forest-950 hover:underline cursor-pointer flex items-center gap-1"
+              className="text-xs font-semibold text-forest-800 hover:text-forest-950 hover:underline cursor-pointer flex items-center gap-1 font-sans"
             >
               <span>Full Ledger</span>
               <span>&rarr;</span>
@@ -232,10 +235,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
         </div>
 
         {/* The Equation Strip (Clickable Cross-Links) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-center text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-center text-xs relative z-10">
           <button
             onClick={() => onNavigate('chilling')}
-            className="p-2.5 bg-cream-50/80 hover:bg-cream-100 rounded-xl border border-[#ede8df] hover:border-forest-600 shadow-2xs transition-all text-left cursor-pointer group"
+            className="p-2.5 bg-white/75 hover:bg-white rounded-xl border border-white/90 hover:border-emerald-300 shadow-[0_2px_8px_rgba(27,67,50,0.03),inset_0_1px_1px_rgba(255,255,255,0.9)] hover:-translate-y-0.5 active:scale-[0.98] transition-all text-left cursor-pointer group"
             title="Inspect Opening Silos in Chilling & Milk Pool (Tab 05)"
           >
             <span className="text-[10px] uppercase font-mono tracking-wider text-stone-500 block mb-1">Opening</span>
@@ -247,7 +250,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
 
           <button
             onClick={() => onNavigate('cattle')}
-            className="p-2.5 bg-sage-50/70 hover:bg-sage-100 rounded-xl border border-sage-200/70 hover:border-forest-600 shadow-2xs transition-all text-left cursor-pointer group"
+            className="p-2.5 bg-gradient-to-br from-emerald-50/70 to-white/80 hover:bg-white rounded-xl border border-emerald-100/80 hover:border-emerald-300 shadow-[0_2px_8px_rgba(27,67,50,0.03),inset_0_1px_1px_rgba(255,255,255,0.9)] hover:-translate-y-0.5 active:scale-[0.98] transition-all text-left cursor-pointer group"
             title="Inspect Cattle Herd Production (Tab 07)"
           >
             <span className="text-[10px] uppercase font-mono tracking-wider text-forest-800 block mb-1">+ Own Herd</span>
@@ -256,6 +259,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
             </span>
             <span className="text-[10px] text-forest-700 font-sans mt-0.5 block">Tab 07 &rarr;</span>
           </button>
+
 
           <button
             onClick={() => onNavigate('milk-collection')}

@@ -337,18 +337,21 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
             return (
               <div
                 key={tank.id}
-                className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xs hover:shadow-sm transition-shadow duration-150"
+                className="relative overflow-hidden bg-white/80 backdrop-blur-xl border border-white/85 rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-[0_8px_24px_-4px_rgba(27,67,50,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-6px_rgba(27,67,50,0.14)] transition-all duration-300 group"
               >
-                <div>
+                {/* Subtle specular card highlight */}
+                <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/70 to-transparent pointer-events-none rounded-t-2xl" />
+
+                <div className="relative z-10">
                   <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="font-mono font-bold text-forest-900 bg-cream-100 px-2.5 py-0.5 rounded-md border border-[#ede8df]">{tank.id}</span>
+                    <span className="font-mono font-bold text-forest-900 bg-gradient-to-br from-cream-100 to-white px-2.5 py-0.5 rounded-md border border-[#ede8df] shadow-2xs">{tank.id}</span>
                     <StatusBadge status={tank.status} size="sm" />
                   </div>
-                  <h3 className="text-xs font-bold text-forest-950 leading-tight">{tank.name}</h3>
+                  <h3 className="text-xs font-bold text-forest-950 leading-tight font-sans">{tank.name}</h3>
                 </div>
 
                 {/* Level Indicator Graphic */}
-                <div className="space-y-2">
+                <div className="space-y-2 relative z-10">
                   <div className="flex justify-between text-xs font-mono">
                     <span className="text-stone-500 font-sans font-medium">Level:</span>
                     <span className="font-bold text-stone-900">
@@ -356,15 +359,15 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
                     </span>
                   </div>
 
-                  {/* Visual Bar */}
-                  <div className="w-full h-3 bg-cream-100 rounded-full overflow-hidden border border-[#ede8df]">
+                  {/* 3D Visual Fluid Bar */}
+                  <div className="w-full h-3.5 bg-stone-100/90 rounded-full overflow-hidden border border-stone-200/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] p-0.5">
                     <div
-                      className={`h-full transition-all duration-300 ${
+                      className={`h-full rounded-full transition-all duration-500 shadow-xs ${
                         tank.status === 'CIP Cleaning'
-                          ? 'bg-purple-600'
+                          ? 'bg-gradient-to-r from-purple-500 to-indigo-500'
                           : tank.temperatureC > 4.5
-                          ? 'bg-amber-600'
-                          : 'bg-forest-700'
+                          ? 'bg-gradient-to-r from-amber-500 to-rose-500'
+                          : 'bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400'
                       }`}
                       style={{ width: `${fillPct}%` }}
                     />
@@ -373,7 +376,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
                 </div>
 
                 {/* Sensors */}
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-cream-50/70 p-3 rounded-xl border border-[#ede8df]">
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-white/70 backdrop-blur-xs p-3 rounded-xl border border-white/80 shadow-2xs relative z-10">
                   <div>
                     <div className="text-[10px] text-stone-500 font-sans font-medium flex items-center gap-1">
                       <Thermometer className="w-3 h-3 text-forest-700" /> Temp
@@ -386,6 +389,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
                       {tank.temperatureC}°C
                     </div>
                   </div>
+
                   <div>
                     <div className="text-[10px] text-stone-500 font-sans font-medium flex items-center gap-1">
                       <RotateCw className="w-3 h-3 text-forest-700" /> Agitator

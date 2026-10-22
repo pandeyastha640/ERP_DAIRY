@@ -75,16 +75,16 @@ export const Topbar: React.FC<TopbarProps> = ({
   const dateFilters: DateFilter[] = ['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days', 'Custom'];
 
   return (
-    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#ede8df] px-4 sm:px-6 flex items-center justify-between gap-4 sticky top-0 z-20 select-none shadow-[0_1px_4px_rgba(27,67,50,0.02)]">
+    <header className="h-16 bg-white/80 backdrop-blur-2xl border-b border-white/70 px-4 sm:px-6 flex items-center justify-between gap-4 sticky top-0 z-20 select-none shadow-[0_4px_20px_rgba(27,67,50,0.03)]">
       {/* Left: Global Search & Facility Breadcrumb */}
       <div className="flex items-center gap-3 flex-1 max-w-xl">
         <button
           onClick={onOpenSearch}
-          className="flex-1 flex items-center gap-2.5 px-3.5 py-2 bg-[#faf8f5] hover:bg-white border border-[#ede8df] hover:border-[#cbd5e1] rounded-xl text-xs text-stone-500 transition-all text-left cursor-pointer shadow-xs group"
+          className="flex-1 flex items-center gap-2.5 px-3.5 py-2 bg-white/60 hover:bg-white/95 backdrop-blur-md border border-white/80 hover:border-[#52b788]/50 rounded-xl text-xs text-stone-500 transition-all text-left cursor-pointer shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_2px_6px_rgba(27,67,50,0.02)] group hover:-translate-y-0.5"
         >
           <Search className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#1b4332] shrink-0 transition-colors" />
           <span className="truncate">Search cattle, farmers, batches, SKU, routes...</span>
-          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white text-stone-400 rounded-md border border-[#ede8df] ml-auto shadow-2xs font-semibold">
+          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-white/80 text-stone-500 rounded-md border border-[#ede8df] ml-auto shadow-2xs font-semibold">
             ⌘K
           </kbd>
         </button>
@@ -98,12 +98,13 @@ export const Topbar: React.FC<TopbarProps> = ({
               setShowNotifications(false);
               setShowDateMenu(false);
             }}
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-[#ede8df] hover:border-[#cbd5e1] rounded-xl text-xs text-stone-700 transition-all cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white/80 backdrop-blur-md border border-white/80 hover:border-[#52b788]/50 rounded-xl text-xs text-stone-700 transition-all cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_2px_6px_rgba(27,67,50,0.03)] hover:-translate-y-0.5 active:scale-[0.98]"
           >
             <MapPin className="w-3.5 h-3.5 text-[#2d6a4f] shrink-0" />
             <span className="truncate max-w-[140px] font-medium">{currentFacility}</span>
             <ChevronDown className="w-3 h-3 text-stone-400" />
           </button>
+
 
           {showFacilityMenu && (
             <div className="absolute left-0 mt-2 w-64 bg-white border border-[#ede8df] rounded-2xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
@@ -213,7 +214,7 @@ export const Topbar: React.FC<TopbarProps> = ({
         <button
           onClick={onOpenMobileField}
           title="Open Field Staff Touch Mode"
-          className="p-2 bg-[#f0f7f2] hover:bg-[#e4f1e8] border border-[#c8e4d2] text-[#1b4332] rounded-xl transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer shadow-2xs"
+          className="p-2 bg-gradient-to-br from-[#f0f7f2] to-[#e4f1e8] border border-[#c8e4d2] text-[#1b4332] rounded-xl transition-all duration-200 flex items-center gap-1.5 text-xs font-semibold cursor-pointer shadow-[0_2px_8px_rgba(27,67,50,0.06),inset_0_1px_1px_rgba(255,255,255,0.9)] hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(27,67,50,0.12)] active:scale-[0.98]"
         >
           <Smartphone className="w-4 h-4 text-[#2d6a4f]" />
           <span className="hidden xl:inline text-xs">Field Mode</span>
@@ -224,7 +225,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           <button
             onClick={onOpenTracer}
             title="Inspect Milk & Money Flow across all stages"
-            className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-[#faf8f4] hover:bg-[#f0f7f2] border border-[#ede8df] hover:border-[#c8e4d2] text-[#1b4332] rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+            className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-gradient-to-br from-white/90 to-[#faf8f4] border border-white/80 hover:border-[#52b788]/60 text-[#1b4332] rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer shadow-[0_2px_8px_rgba(27,67,50,0.04),inset_0_1px_1px_rgba(255,255,255,0.9)] hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(27,67,50,0.1)] active:scale-[0.98]"
           >
             <GitFork className="w-3.5 h-3.5 text-[#2d6a4f]" />
             <span>Trace Flow</span>
@@ -236,7 +237,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           <button
             onClick={onOpenAudit}
             title="Open Operational Audit Trail"
-            className="hidden xl:flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-[#faf8f4] border border-[#ede8df] text-stone-700 rounded-xl text-xs font-medium transition-colors cursor-pointer shadow-2xs"
+            className="hidden xl:flex items-center gap-1.5 px-3 py-2 bg-white/80 hover:bg-white border border-white/80 hover:border-stone-300 text-stone-700 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer shadow-[0_2px_8px_rgba(27,67,50,0.03),inset_0_1px_1px_rgba(255,255,255,0.9)] hover:-translate-y-0.5 active:scale-[0.98]"
           >
             <FileClock className="w-3.5 h-3.5 text-stone-400" />
             <span>Audit</span>
@@ -246,11 +247,12 @@ export const Topbar: React.FC<TopbarProps> = ({
         {/* Quick Collection Action */}
         <button
           onClick={onOpenQuickCollection}
-          className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 bg-[#1b4332] hover:bg-[#2d6a4f] text-white rounded-xl text-xs font-semibold shadow-[0_2px_8px_rgba(27,67,50,0.2)] transition-all cursor-pointer"
+          className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-[#1b4332] via-[#2d6a4f] to-[#1b4332] hover:from-[#2d6a4f] hover:to-[#1b4332] text-white rounded-xl text-xs font-semibold shadow-[0_4px_14px_rgba(27,67,50,0.3),inset_0_1px_1px_rgba(255,255,255,0.35)] transition-all duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(27,67,50,0.38)] active:scale-[0.98]"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Record Milk</span>
         </button>
+
 
         {/* Notifications Popover */}
         <div className="relative">

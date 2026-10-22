@@ -383,12 +383,12 @@ export interface FilterBarProps {
 
 export const FilterBar: React.FC<FilterBarProps> = ({ children, onReset }) => {
   return (
-    <div className="bg-white border border-[#ede8df] rounded-2xl p-3.5 sm:p-4 shadow-[0_2px_10px_-2px_rgba(27,67,50,0.03)] flex flex-wrap items-center justify-between gap-3">
+    <div className="bg-white/80 backdrop-blur-md border border-white/80 rounded-2xl p-3.5 sm:p-4 shadow-[0_4px_20px_-2px_rgba(27,67,50,0.04),inset_0_1px_1px_rgba(255,255,255,0.9)] flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[240px]">{children}</div>
       {onReset && (
         <button
           onClick={onReset}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-[#1b4332] hover:bg-[#f0f7f2] rounded-xl transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-[#1b4332] hover:bg-white/90 rounded-xl transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Reset Filters</span>
@@ -397,6 +397,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ children, onReset }) => {
     </div>
   );
 };
+
 
 // ==========================================
 // 3. ENTERPRISE DATA TABLE
@@ -430,8 +431,8 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   if (data.length === 0) {
     return (
-      <div className="bg-white border border-[#ede8df] rounded-2xl p-10 text-center text-stone-500 shadow-xs">
-        <div className="w-12 h-12 rounded-2xl bg-[#faf8f4] border border-[#ede8df] flex items-center justify-center text-stone-400 mx-auto mb-3">
+      <div className="bg-white/80 backdrop-blur-md border border-white/80 rounded-2xl p-10 text-center text-stone-500 shadow-[0_4px_20px_-2px_rgba(27,67,50,0.03)]">
+        <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white flex items-center justify-center text-stone-400 mx-auto mb-3 shadow-xs">
           <Inbox className="w-6 h-6" />
         </div>
         <p className="text-xs font-semibold text-stone-700">{emptyMessage}</p>
@@ -441,11 +442,11 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="bg-white border border-[#ede8df] rounded-2xl shadow-[0_2px_12px_-2px_rgba(27,67,50,0.04)] overflow-hidden">
+    <div className="bg-white/80 backdrop-blur-xl border border-white/80 rounded-2xl shadow-[0_4px_24px_-2px_rgba(27,67,50,0.05),inset_0_1px_1px_rgba(255,255,255,0.95)] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-[#faf8f5] border-b border-[#ede8df] text-stone-600 font-semibold uppercase tracking-wider text-[11px]">
+            <tr className="bg-stone-50/80 border-b border-stone-200/60 text-stone-600 font-semibold uppercase tracking-wider text-[11px]">
               {columns.map((col) => (
                 <th
                   key={col.key}
@@ -470,9 +471,10 @@ export function DataTable<T>({
                   key={key}
                   onClick={() => onRowClick && onRowClick(item)}
                   className={`transition-colors text-stone-800 ${
-                    onRowClick ? 'cursor-pointer hover:bg-[#fbf9f4]/80' : 'hover:bg-[#fbf9f4]/50'
+                    onRowClick ? 'cursor-pointer hover:bg-emerald-50/40' : 'hover:bg-emerald-50/20'
                   }`}
                 >
+
                   {columns.map((col) => {
                     const content = col.render
                       ? col.render(item)
