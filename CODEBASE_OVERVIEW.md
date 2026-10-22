@@ -6,12 +6,13 @@ This document provides a single, exhaustive architectural overview and directory
 
 ## 📑 Core Documentation Index
 
-The repository maintains 4 specialized Markdown documentation files at its root:
+The repository maintains 5 specialized Markdown documentation files at its root:
 
-1. **[README.md](README.md)**: Official GitHub landing page, quickstart guide, Docker setup, cloud deployment options, and module summaries.
-2. **[ORGANIZATION_HANDOVER_MANUAL.md](ORGANIZATION_HANDOVER_MANUAL.md)**: Executive handover manual, Standard Operating Procedures (SOP-01 to SOP-06), RBAC directory, hardware setup (Lactoscan, scale, thermal POS), and disaster recovery runbooks.
-3. **[ROADMAP.md](ROADMAP.md)**: 15-phase enterprise engineering roadmap, system architecture diagrams (`mermaid`), and automated verification audits.
-4. **[RELEASE_NOTES.md](RELEASE_NOTES.md)**: Version release notes (including the latest `v2.5.0-ENTERPRISE` with 3D visuals, calendar filters, and entity linking).
+1. **[DEVELOPER_HANDOVER_AND_FUTURE_ROADMAP.md](DEVELOPER_HANDOVER_AND_FUTURE_ROADMAP.md)**: Technical developer onboarding, architectural rules, day-1 workflow, and prioritized future direction backlog (cloud DB, payment gateways, i18n, mobile APK).
+2. **[README.md](README.md)**: Official GitHub landing page, quickstart guide, Docker setup, cloud deployment options, and module summaries.
+3. **[ORGANIZATION_HANDOVER_MANUAL.md](ORGANIZATION_HANDOVER_MANUAL.md)**: Executive handover manual, Standard Operating Procedures (SOP-01 to SOP-06), RBAC directory, hardware setup (Lactoscan, scale, thermal POS), and disaster recovery runbooks.
+4. **[ROADMAP.md](ROADMAP.md)**: 15-phase enterprise engineering roadmap, system architecture diagrams (`mermaid`), and automated verification audits.
+5. **[RELEASE_NOTES.md](RELEASE_NOTES.md)**: Version release notes (including the latest `v2.5.0-ENTERPRISE` with 3D visuals, calendar filters, and entity linking).
 
 ---
 

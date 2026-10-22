@@ -17,6 +17,7 @@
 * **Repository URL**: [https://github.com/pandeyastha640/ERP_DAIRY](https://github.com/pandeyastha640/ERP_DAIRY)
 * **Default Branch**: `main`
 * **Pre-Loaded Data**: Comes pre-packaged with full SQLite database ([prisma/dev.db](prisma/dev.db)) and human-readable export dump ([prisma/data_dump.json](prisma/data_dump.json)) containing 33 registered farmers, 53 cattle records, 50 milk collections, 4 silos, and 19 sales orders.
+* **Developer Handover & Future Roadmap**: See **[DEVELOPER_HANDOVER_AND_FUTURE_ROADMAP.md](DEVELOPER_HANDOVER_AND_FUTURE_ROADMAP.md)** for onboarding, architecture rules, and prioritized next tasks.
 * **Direct Clone Command**:
   ```bash
   git clone https://github.com/pandeyastha640/ERP_DAIRY.git
