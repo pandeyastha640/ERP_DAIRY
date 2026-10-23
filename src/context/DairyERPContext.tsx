@@ -50,6 +50,12 @@ import {
 } from '../services/dairyEngine';
 import { api } from '../services/api';
 import { Language } from '../i18n';
+import {
+  IS_STATIC_DEMO_MODE,
+  STATIC_DEMO_LANGUAGE_KEY,
+  STATIC_DEMO_STORAGE_PREFIX,
+  STATIC_DEMO_VERSION,
+} from '../config/demo';
 
 interface DairyERPContextType {
   language: Language;
@@ -126,10 +132,10 @@ interface DairyERPContextType {
 }
 
 export const DEFAULT_SETTINGS: SystemSettings = {
-  orgName: 'DairyOS Operational Cooperative Ltd.',
-  fssaiLicense: '10018021003456',
-  gstin: '24AAACC1209B1ZK',
-  headOffice: 'Plant Yard 4, GIDC Industrial Estate, Anand, Gujarat - 388001',
+  orgName: IS_STATIC_DEMO_MODE ? 'Sample Dairy Cooperative (Demo)' : 'DairyOS Operational Cooperative Ltd.',
+  fssaiLicense: IS_STATIC_DEMO_MODE ? 'SAMPLE — NOT A LICENSE' : '10018021003456',
+  gstin: IS_STATIC_DEMO_MODE ? 'SAMPLE — NOT A GSTIN' : '24AAACC1209B1ZK',
+  headOffice: IS_STATIC_DEMO_MODE ? 'Sample location for demonstration only' : 'Plant Yard 4, GIDC Industrial Estate, Anand, Gujarat - 388001',
   baseMilkRate: 34.50,
   fatMultiplier: 4.50,
   snfMultiplier: 2.50,
@@ -144,13 +150,18 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   overheadsDailyCost: 1450,
 };
 
-const STORAGE_PREFIX = 'dairy_erp_v3_';
+const STORAGE_PREFIX = IS_STATIC_DEMO_MODE ? STATIC_DEMO_STORAGE_PREFIX : 'dairy_erp_v3_';
 
 function loadStorage<T>(key: string, defaultValue: T): T {
   try {
     const raw = localStorage.getItem(STORAGE_PREFIX + key);
     if (!raw) return defaultValue;
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (IS_STATIC_DEMO_MODE) {
+      if (parsed?.version !== STATIC_DEMO_VERSION || !('data' in parsed)) return defaultValue;
+      return parsed.data as T;
+    }
+    return parsed;
   } catch (e) {
     return defaultValue;
   }
@@ -158,7 +169,9 @@ function loadStorage<T>(key: string, defaultValue: T): T {
 
 function saveStorage<T>(key: string, value: T) {
   try {
-    localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+    localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(IS_STATIC_DEMO_MODE
+      ? { version: STATIC_DEMO_VERSION, data: value }
+      : value));
   } catch (e) {
     console.error(e);
   }
@@ -167,7 +180,18 @@ function saveStorage<T>(key: string, value: T) {
 const DairyERPContext = createContext<DairyERPContextType | undefined>(undefined);
 
 // Initial Audit Trail Logs
-const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
+const INITIAL_AUDIT_LOGS: AuditLogEntry[] = IS_STATIC_DEMO_MODE ? [
+  {
+    id: 'DEMO-AUD-001', timestamp: '07:15 AM', userName: 'Sample Operator', userRole: 'Field Staff',
+    module: 'Milk Collection', action: 'SAMPLE_COLLECTION', recordId: 'DEMO-COL-INIT-001',
+    description: 'Synthetic sample collection record for demonstration.', financialImpact: 'Sample payable only; no payment made.', milkImpactLitres: 30, severity: 'info',
+  },
+  {
+    id: 'DEMO-AUD-002', timestamp: '08:20 AM', userName: 'Sample Lab Operator', userRole: 'Operations Manager',
+    module: 'Quality Lab', action: 'SAMPLE_QUALITY_WARNING', recordId: 'DEMO-QC-002',
+    description: 'Synthetic quality warning for demonstration.', severity: 'warning',
+  },
+] : [
   {
     id: 'AUD-101',
     timestamp: '05:42 AM',
@@ -220,7 +244,7 @@ const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
 ];
 
 export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>(() => localStorage.getItem('dairy_language') === 'hi' ? 'hi' : 'en');
+  const [language, setLanguage] = useState<Language>(() => localStorage.getItem(IS_STATIC_DEMO_MODE ? STATIC_DEMO_LANGUAGE_KEY : 'dairy_language') === 'hi' ? 'hi' : 'en');
   // Session & UI States
   const [currentRole, setCurrentRole] = useState<Role>('Operations Manager');
   const [currentFacility, setCurrentFacility] = useState<Facility>('Main Dairy Plant');
@@ -262,7 +286,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // Synchronize state changes to localStorage
-  useEffect(() => { localStorage.setItem('dairy_language', language); }, [language]);
+  useEffect(() => { localStorage.setItem(IS_STATIC_DEMO_MODE ? STATIC_DEMO_LANGUAGE_KEY : 'dairy_language', language); }, [language]);
   useEffect(() => { saveStorage('settings', settings); }, [settings]);
   useEffect(() => { saveStorage('cattle', cattleList); }, [cattleList]);
   useEffect(() => { saveStorage('farmers', farmersList); }, [farmersList]);
@@ -281,6 +305,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Live Backend Synchronization on mount
   useEffect(() => {
+    if (IS_STATIC_DEMO_MODE) return;
     const syncBackend = () => api.checkHealth()
       .then(async () => {
         try {
@@ -617,6 +642,71 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * Farmer -> Collection -> Quality -> Milk Pool -> Farmer Payable in Finance
    */
   const recordMilkCollection = async (record: NewMilkCollection): Promise<MilkCollectionRecord> => {
+    if (IS_STATIC_DEMO_MODE) {
+      const farmer = farmersList.find((item) => item.id === record.farmerId);
+      if (!farmer) throw new Error('Choose a farmer from the sample registry.');
+      if (!Number.isFinite(record.quantityLitres) || record.quantityLitres <= 0 || record.quantityLitres > 10000) throw new Error('Enter a milk quantity above zero and no more than 10,000 litres.');
+      if (!Number.isFinite(record.fat) || record.fat < 0 || record.fat > 15) throw new Error('Enter a valid FAT reading between 0 and 15.');
+      if (!Number.isFinite(record.snf) || record.snf < 0 || record.snf > 15) throw new Error('Enter a valid SNF reading between 0 and 15.');
+      if (!Number.isFinite(record.temperatureC) || record.temperatureC < -5 || record.temperatureC > 60) throw new Error('Enter a valid temperature between -5°C and 60°C.');
+      if (!['Morning', 'Evening'].includes(record.shift)) throw new Error('Choose a valid collection shift.');
+
+      const fail = record.fat < 3.2 || record.snf < 7.8 || record.temperatureC > 24;
+      const warning = !fail && (record.temperatureC > 20 || record.fat < 3.8);
+      const ratePerLitre = fail ? 0 : Math.max(0, +(settings.baseMilkRate
+        + (record.fat - 4) * settings.fatMultiplier
+        + (record.snf - 8.5) * settings.snfMultiplier).toFixed(2));
+      const collectionCode = `DEMO-COL-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      const saved: MilkCollectionRecord = {
+        ...record,
+        id: collectionCode,
+        collectionCode,
+        farmerName: farmer.name,
+        quality: fail ? 'FAIL' : warning ? 'WARNING' : 'PASS',
+        ratePerLitre,
+        payableAmount: Math.round(record.quantityLitres * ratePerLitre),
+      };
+      setCollectionsList((prev) => [saved, ...prev]);
+      setFarmersList((prev) => prev.map((item) => item.id !== farmer.id ? item : {
+        ...item,
+        todayMilkL: +(item.todayMilkL + saved.quantityLitres).toFixed(1),
+        [saved.shift === 'Morning' ? 'morningMilkL' : 'eveningMilkL']:
+          +((saved.shift === 'Morning' ? item.morningMilkL : item.eveningMilkL) + saved.quantityLitres).toFixed(1),
+        todayPayable: item.todayPayable + saved.payableAmount,
+        avgFat: saved.fat,
+        avgSNF: saved.snf,
+        ratePerL: saved.ratePerLitre,
+        supplyHistory: [{ date: saved.date, litres: saved.quantityLitres, fat: saved.fat, snf: saved.snf }, ...item.supplyHistory],
+      }));
+      if (saved.payableAmount > 0) {
+        setPaymentsList((prev) => [{
+          id: `DEMO-PAY-${collectionCode}`,
+          transactionRef: `DEMO-PAYABLE-${collectionCode}`,
+          recipientName: `${farmer.name} (${farmer.id})`,
+          partyType: 'Farmer',
+          milkLitres: saved.quantityLitres,
+          amount: saved.payableAmount,
+          paymentDate: `${saved.date} ${saved.time}`,
+          paymentMethod: 'Cash',
+          status: 'Pending',
+          notes: 'Sample payable only. No bank transfer occurred.',
+        }, ...prev]);
+      }
+      if (saved.quality !== 'FAIL') {
+        setTanksList((prev) => prev.map((tank) => tank.id === 'TANK-B'
+          ? { ...tank, currentVolumeLitres: Math.min(tank.capacityLitres, tank.currentVolumeLitres + Math.round(saved.quantityLitres)) }
+          : tank));
+      }
+      showToast(`Sample record saved in this browser: ${saved.quality}, ₹${saved.payableAmount.toLocaleString()} payable.`, 'success', 'Demo collection saved locally');
+      logAudit({
+        module: 'Milk Collection', action: 'DEMO_COLLECTION_RECORDED', recordId: saved.collectionCode,
+        description: `Sample intake ${saved.quantityLitres} L from ${saved.farmerName}; quality ${saved.quality}.`,
+        financialImpact: `Sample payable ₹${saved.payableAmount.toLocaleString()}; no payment made.`,
+        milkImpactLitres: saved.quantityLitres, severity: saved.quality === 'FAIL' ? 'warning' : 'info',
+      });
+      return saved;
+    }
+
     // The server owns quality classification, pricing, payable rounding and the
     // atomic collection/payment/tank/audit mutation. Do not update UI state until
     // it confirms the transaction.
@@ -783,7 +873,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
 
     // 5. Asynchronously sync to backend database
-    api.processing.launchBatch({
+    if (!IS_STATIC_DEMO_MODE) api.processing.launchBatch({
       batchId: batch.batchId,
       inputMilkLitres: batch.inputMilkLitres,
       inputFatPct: batch.inputFatPct,
@@ -801,16 +891,19 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * Sales -> Deducts Finished Goods Inventory -> Increases Gross Revenue & Receivables
    */
   const recordSalesOrder = (order: SalesOrder) => {
-    setSalesOrdersList((prev) => [order, ...prev]);
+    const savedOrder = IS_STATIC_DEMO_MODE && order.paymentStatus === 'Paid'
+      ? { ...order, paymentStatus: 'Pending' as const }
+      : order;
+    setSalesOrdersList((prev) => [savedOrder, ...prev]);
 
     // 1. Deduct finished goods inventory
     setInventoryList((prev) =>
       prev.map((inv) => {
-        if (inv.name.toLowerCase().includes(order.product.toLowerCase())) {
-          const newClosing = Math.max(0, inv.closingBalance - order.quantityUnits);
+        if (inv.name.toLowerCase().includes(savedOrder.product.toLowerCase())) {
+          const newClosing = Math.max(0, inv.closingBalance - savedOrder.quantityUnits);
           return {
             ...inv,
-            outward: inv.outward + order.quantityUnits,
+            outward: inv.outward + savedOrder.quantityUnits,
             closingBalance: newClosing,
             totalValue: newClosing * inv.unitValue,
           };
@@ -820,7 +913,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
 
     // 2. If paid immediately, create clearance payment entry
-    if (order.paymentStatus === 'Paid') {
+    if (!IS_STATIC_DEMO_MODE && order.paymentStatus === 'Paid') {
       const receiptPayment: PaymentTransaction = {
         id: `PAY-REC-${Date.now().toString().slice(-4)}`,
         transactionRef: `TXN-REC-${Math.floor(10000 + Math.random() * 90000)}`,
@@ -845,10 +938,14 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       severity: 'info',
     });
 
-    showToast(`Commercial Order ${order.orderNumber} created for ${order.customerName}`, 'success', 'Order Invoiced');
+    if (IS_STATIC_DEMO_MODE) {
+      showToast(`Sample order ${order.orderNumber} saved in this browser. No invoice or dispatch was created.`, 'info', 'Sample order saved locally');
+    } else {
+      showToast(`Commercial Order ${order.orderNumber} created for ${order.customerName}`, 'success', 'Order Invoiced');
+    }
 
     // 4. Asynchronously sync to backend database
-    api.sales.createOrder({
+    if (!IS_STATIC_DEMO_MODE) api.sales.createOrder({
       orderNumber: order.orderNumber,
       date: order.date,
       customerName: order.customerName,
@@ -867,6 +964,22 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * Settles pending payables or records supplier clearance
    */
   const recordPayment = async (txn: PaymentTransaction): Promise<PaymentTransaction> => {
+    if (IS_STATIC_DEMO_MODE) {
+      const simulated: PaymentTransaction = {
+        ...txn,
+        id: `DEMO-PAY-${Date.now()}`,
+        transactionRef: `DEMO-PREVIEW-${Date.now()}`,
+        status: 'Simulated',
+        paymentMethod: 'Cash',
+        notes: 'Sample simulation only. No bank transfer, funds movement, or settlement occurred.',
+      };
+      setPaymentsList((prev) => [simulated, ...prev]);
+      showToast(`Demo payment preview for ₹${simulated.amount.toLocaleString()} saved locally; no funds moved.`, 'info', 'Simulation only');
+      logAudit({ module: 'Payments', action: 'DEMO_PAYMENT_PREVIEW', recordId: simulated.transactionRef,
+        description: `Created a local payment preview for ${simulated.recipientName}; no settlement occurred.`,
+        financialImpact: 'No funds moved; no settlement confirmed.', severity: 'info' });
+      return simulated;
+    }
     const response = await api.payments.create({
       transactionRef: txn.transactionRef,
       recipientName: txn.recipientName,
@@ -913,7 +1026,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       severity: 'info',
     });
 
-    api.cattle.create({
+    if (!IS_STATIC_DEMO_MODE) api.cattle.create({
       tagNumber: cow.tagNumber,
       breed: cow.breed,
       ageYears: cow.ageYears,
@@ -990,6 +1103,29 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * 6. Add Farmer Producer:
    */
   const addFarmer = async (farmer: Omit<Farmer, 'id'>): Promise<Farmer> => {
+    if (IS_STATIC_DEMO_MODE) {
+      const name = farmer.name.trim();
+      const village = farmer.village.trim();
+      if (!name || !village) throw new Error('Enter the farmer name and village.');
+      const duplicate = farmersList.some((item) => item.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase()
+        && item.village.trim().toLocaleLowerCase() === village.toLocaleLowerCase());
+      if (duplicate) throw new Error('A sample farmer with this name and village already exists.');
+      const persistedFarmer: Farmer = {
+        ...farmer,
+        id: `DEMO-FARM-LOCAL-${Date.now()}`,
+        name,
+        village,
+        contactNumber: 'Not provided in sample data',
+        bankAccount: 'No account details in demo',
+        todayMilkL: 0, morningMilkL: 0, eveningMilkL: 0, avgFat: 0, avgSNF: 0,
+        ratePerL: 0, todayPayable: 0, supplyHistory: [], paymentHistory: [],
+      };
+      setFarmersList((prev) => [persistedFarmer, ...prev]);
+      showToast(`${name} was added to this browser’s sample registry.`, 'success', 'Demo farmer saved locally');
+      logAudit({ module: 'Farmers', action: 'DEMO_FARMER_ADDED', recordId: persistedFarmer.id,
+        description: `Added synthetic sample farmer ${name} in ${village}.`, severity: 'info' });
+      return persistedFarmer;
+    }
     const response = await api.farmers.create({
       name: farmer.name,
       village: farmer.village,
@@ -1164,7 +1300,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       severity: test.result === 'FAIL' ? 'critical' : test.result === 'WARNING' ? 'warning' : 'info',
     });
 
-    api.quality.create({
+    if (!IS_STATIC_DEMO_MODE) api.quality.create({
       batchNumber: test.batchNumber,
       sourceType: test.sourceType,
       sourceName: test.sourceName,
@@ -1207,7 +1343,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       severity: 'info',
     });
 
-    api.chilling.transfer(sourceId, litres, targetId).catch((err) =>
+    if (!IS_STATIC_DEMO_MODE) api.chilling.transfer(sourceId, litres, targetId).catch((err) =>
       console.warn('Backend transfer sync notice:', err.message)
     );
   };

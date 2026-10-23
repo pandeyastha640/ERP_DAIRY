@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { Farmer, MilkCollectionRecord, SalesOrder, SystemSettings } from '../types/dairy';
+import { IS_STATIC_DEMO_MODE, unsupportedStaticDemoAction } from '../config/demo';
 
 /**
  * DairyOS Enterprise Vector PDF Generation Engine
@@ -16,6 +17,7 @@ export const pdfGenerator = {
     settings: SystemSettings,
     period: string = 'Current Billing Cycle'
   ) {
+    if (IS_STATIC_DEMO_MODE) throw unsupportedStaticDemoAction('Farmer financial passbook PDF');
     const doc = new jsPDF({ format: 'a4', unit: 'mm' });
     const primaryColor: [number, number, number] = [30, 58, 138]; // Deep blue
     const darkText: [number, number, number] = [30, 41, 59];
@@ -55,9 +57,9 @@ export const pdfGenerator = {
     doc.text(`Contact: ${farmer.contactNumber || 'N/A'}`, 18, 54);
     doc.text(`Cattle Registered: ${farmer.cattleCount || 2} head`, 18, 58);
 
-    doc.text(`Bank Account: ${farmer.bankAccount || 'Direct IMPS Linked'}`, 110, 48);
-    doc.text('IFSC Code: BARB0ANANDX (Bank of Baroda)', 110, 54);
-    doc.text('Payout Method: Automated NEFT / Direct IMPS', 110, 58);
+    doc.text('No bank details available in this document.', 110, 48);
+    doc.text('No settlement is confirmed.', 110, 54);
+    doc.text('Payment is not initiated.', 110, 58);
 
     // Collections Table Header
     let y = 68;
@@ -160,6 +162,7 @@ export const pdfGenerator = {
    * 2. Generate 3-Ply GST Tax Invoice PDF
    */
   generateGSTInvoicePDF(order: SalesOrder, settings: SystemSettings) {
+    if (IS_STATIC_DEMO_MODE) throw unsupportedStaticDemoAction('Tax invoice PDF');
     const doc = new jsPDF({ format: 'a4', unit: 'mm' });
     const primaryColor: [number, number, number] = [15, 23, 42]; // Slate 900
     const darkText: [number, number, number] = [30, 41, 59];
@@ -278,8 +281,7 @@ export const pdfGenerator = {
     doc.setFont('helvetica', 'bold');
     doc.text('COMPANY REMITTANCE BANK DETAILS', 14, 185);
     doc.setFont('helvetica', 'normal');
-    doc.text('Bank: State Bank of India  |  Account No: 384910293849', 14, 191);
-    doc.text('IFSC: SBIN0004101  |  Branch: Industrial Estate Anand', 14, 196);
+    doc.text('Payment details: use approved organization instructions.', 14, 191);
 
     // Authorized Signature
     const footerY = 245;
@@ -297,6 +299,7 @@ export const pdfGenerator = {
    * 3. Generate FSSAI Form E Bulk Tanker Clearance Certificate PDF
    */
   generateTankerClearanceCertificatePDF(cert: any) {
+    if (IS_STATIC_DEMO_MODE) throw unsupportedStaticDemoAction('Regulatory clearance certificate PDF');
     const doc = new jsPDF({ format: 'a4', unit: 'mm' });
     const primaryColor: [number, number, number] = [5, 150, 105]; // Emerald
     const darkText: [number, number, number] = [30, 41, 59];

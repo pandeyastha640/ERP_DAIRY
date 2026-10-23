@@ -6,6 +6,7 @@ import { QuickCollectionModal } from '../components/operations/QuickCollectionMo
 import { LactoscanSerialBridgeModal } from '../components/operations/LactoscanSerialBridgeModal';
 import { ThermalReceiptModal } from '../components/operations/ThermalReceiptModal';
 import { useDairyERP } from '../context/DairyERPContext';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 import {
   Scale,
   Plus,
@@ -86,7 +87,7 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
             Milk Collection Desk
           </h1>
           <p className="text-xs text-stone-500 mt-1 font-medium">
-            Record farmer milk intake. The server confirms quality, rate, and payable before saving.
+            {IS_STATIC_DEMO_MODE ? 'Record sample milk intake. The browser demo applies the DairyOS pricing formula and keeps changes on this device.' : 'Record farmer milk intake. The server confirms quality, rate, and payable before saving.'}
           </p>
         </div>
 

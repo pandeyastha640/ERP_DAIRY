@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDairyERP } from '../context/DairyERPContext';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 import {
   Settings,
   Building,
@@ -155,8 +156,8 @@ export const SettingsPage: React.FC = () => {
       {activeTab === 'Org' && (
         <div className="bg-white border border-[#ede8df] rounded-2xl p-6 max-w-3xl space-y-4 text-xs shadow-xs font-sans">
           <div className="border-b border-[#ede8df] pb-3">
-            <h2 className="text-sm font-bold text-forest-950">Enterprise Legal Entity</h2>
-            <p className="text-[11px] text-stone-500">Master corporate registration and FSSAI manufacturing licenses</p>
+            <h2 className="text-sm font-bold text-forest-950">{IS_STATIC_DEMO_MODE ? 'Sample Cooperative Settings' : 'Enterprise Legal Entity'}</h2>
+            <p className="text-[11px] text-stone-500">{IS_STATIC_DEMO_MODE ? 'Sample settings only. No real registrations are included.' : 'Master corporate registration and food safety licenses'}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -185,7 +186,7 @@ export const SettingsPage: React.FC = () => {
               <label className="block text-stone-700 mb-1 font-semibold">GST Identification Number (GSTIN)</label>
               <input
                 type="text"
-                defaultValue="24AAACC1209B1ZK"
+                defaultValue={settings.gstin}
                 className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
               />
             </div>
@@ -193,7 +194,7 @@ export const SettingsPage: React.FC = () => {
               <label className="block text-stone-700 mb-1 font-semibold">Registered Dairy Head Office</label>
               <input
                 type="text"
-                defaultValue="Plant Yard 4, GIDC Industrial Estate, Anand, Gujarat - 388001"
+                defaultValue={settings.headOffice}
                 className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none"
               />
             </div>
@@ -337,30 +338,30 @@ export const SettingsPage: React.FC = () => {
       {activeTab === 'Integrations' && (
         <div className="bg-white border border-[#ede8df] rounded-2xl p-6 space-y-4 text-xs shadow-xs font-sans">
           <div className="border-b border-[#ede8df] pb-3">
-            <h2 className="text-sm font-bold text-forest-950">Connected Hardware, IoT & Financial Gateways</h2>
-            <p className="text-[11px] text-stone-500">Live communication bridges to milk analyzers, scales and banking nodes</p>
+            <h2 className="text-sm font-bold text-forest-950">{IS_STATIC_DEMO_MODE ? 'Hardware and Payment Demo Status' : 'Hardware, IoT & Payment Integrations'}</h2>
+            <p className="text-[11px] text-stone-500">{IS_STATIC_DEMO_MODE ? 'No hardware or financial gateway is connected in the browser demo.' : 'Configured integrations for milk analyzers, scales, and payment services'}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 bg-cream-50/60 rounded-xl border border-[#ede8df] space-y-2 shadow-2xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-forest-950">LactoScan Milk Analyzers</span>
-                <span className="text-emerald-800 font-mono text-[10px] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">CONNECTED</span>
+                <span className="text-amber-800 font-mono text-[10px] bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-bold">{IS_STATIC_DEMO_MODE ? 'SIMULATED' : 'CONNECTED'}</span>
               </div>
-              <p className="text-stone-600 text-xs">Auto RS-232 serial telemetry pulling Fat, SNF, Water & Density directly into collection desk.</p>
+              <p className="text-stone-600 text-xs">{IS_STATIC_DEMO_MODE ? 'A sample analyzer interface is available; physical serial hardware is disabled.' : 'Configured serial telemetry for analyzer readings in the collection desk.'}</p>
             </div>
             <div className="p-4 bg-cream-50/60 rounded-xl border border-[#ede8df] space-y-2 shadow-2xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-forest-950">Digital Weighbridge Scales</span>
-                <span className="text-emerald-800 font-mono text-[10px] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">CONNECTED</span>
+                <span className="text-amber-800 font-mono text-[10px] bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-bold">{IS_STATIC_DEMO_MODE ? 'NOT CONNECTED' : 'CONNECTED'}</span>
               </div>
-              <p className="text-stone-600 text-xs">Zero-manual-entry tare and gross weight capture on dairy inward unloading docks.</p>
+              <p className="text-stone-600 text-xs">{IS_STATIC_DEMO_MODE ? 'Scale integration is unavailable in the browser-only demo.' : 'Configured tare and gross weight capture for dairy inward unloading.'}</p>
             </div>
             <div className="p-4 bg-cream-50/60 rounded-xl border border-[#ede8df] space-y-2 shadow-2xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-forest-950">Direct Bank IMPS API</span>
-                <span className="text-emerald-800 font-mono text-[10px] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">ACTIVE</span>
+                <span className="text-amber-800 font-mono text-[10px] bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md font-bold">{IS_STATIC_DEMO_MODE ? 'UNAVAILABLE' : 'ACTIVE'}</span>
               </div>
-              <p className="text-stone-600 text-xs">Real-time instantaneous payment dispatch to enrolled producer accounts upon QC clearance.</p>
+              <p className="text-stone-600 text-xs">{IS_STATIC_DEMO_MODE ? 'Banking is unavailable in this static demo. Payment previews do not move funds.' : 'Payment integration is unavailable until configured and authorized.'}</p>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { Milk, ArrowRight, UserCheck, AlertCircle, Loader2, Sparkles, ShieldChec
 import { api } from '../services/api';
 import { useDairyERP } from '../context/DairyERPContext';
 import { translate } from '../i18n';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 
 interface LoginScreenProps {
   onLogin: (role: Role) => void;
@@ -16,12 +17,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const demoRoles: { role: Role; email: string; label: string; desc: string }[] = [
-    { role: 'CEO', email: 'ceo@dairyos.enterprise', label: 'Chief Executive Officer', desc: 'Full corporate performance & control tower' },
-    { role: 'Operations Manager', email: 'operations.manager@dairyos.enterprise', label: 'Operations Manager', desc: 'Central milk pool, collection & processing' },
-    { role: 'Procurement Manager', email: 'procurement.manager@dairyos.enterprise', label: 'Procurement Manager', desc: 'Farmers, routes & quality thresholds' },
-    { role: 'Finance Manager', email: 'finance.manager@dairyos.enterprise', label: 'Finance Manager', desc: 'Cost-per-litre decomposition & settlements' },
-    { role: 'Field Staff', email: 'field.staff@dairyos.enterprise', label: 'Field Staff Agent', desc: 'Ultra-fast mobile collection mode' },
+  const demoRoles: { role: Role; label: string; desc: string }[] = [
+    { role: 'CEO', label: 'Chief Executive Officer', desc: 'Full corporate performance & control tower' },
+    { role: 'Operations Manager', label: 'Operations Manager', desc: 'Central milk pool, collection & processing' },
+    { role: 'Procurement Manager', label: 'Procurement Manager', desc: 'Farmers, routes & quality thresholds' },
+    { role: 'Finance Manager', label: 'Finance Manager', desc: 'Cost-per-litre decomposition & payables' },
+    { role: 'Field Staff', label: 'Field Staff Agent', desc: 'Ultra-fast mobile collection mode' },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +48,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     }
   };
 
-  const handleInstantSwitch = async (dr: { role: Role; email: string }) => {
+  const handleInstantSwitch = async (dr: { role: Role }) => {
+    if (IS_STATIC_DEMO_MODE) {
+      onLogin(dr.role);
+      return;
+    }
     setLoading(true);
     setErrorMsg(null);
     try {
@@ -102,9 +107,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         <div className="mb-5 p-3 bg-cream-50/80 rounded-xl border border-[#ede8df] flex items-center justify-between text-xs font-mono text-stone-600">
           <span className="flex items-center gap-1.5 text-forest-900 font-semibold">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>SERVER-VERIFIED SIGN-IN</span>
+            <span>{IS_STATIC_DEMO_MODE ? (language === 'hi' ? 'डेमो एक्सेस — कोई सर्वर सत्र नहीं' : 'DEMO ACCESS — NO SERVER SESSION') : 'SERVER-VERIFIED SIGN-IN'}</span>
           </span>
-          <span className="text-stone-400">SESSION REQUIRED</span>
+          <span className="text-stone-400">{IS_STATIC_DEMO_MODE ? 'SAMPLE DATA' : 'SESSION REQUIRED'}</span>
         </div>
 
         {errorMsg && (
@@ -114,7 +119,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           </div>
         )}
 
+        {IS_STATIC_DEMO_MODE && (
+          <div className="mb-4 rounded-xl border border-[#c59b27]/40 bg-[#fff8df] p-3 text-xs leading-relaxed text-[#382b08]">
+            <strong className="block">{language === 'hi' ? 'डेमो मोड — नमूना डेटा' : 'Demo Mode — Sample Data'}</strong>
+            <span>{language === 'hi'
+              ? 'यह केवल ब्राउज़र में चलने वाला प्रदर्शन है। कोई सर्वर लॉगिन या वास्तविक डेटा उपयोग नहीं होता।'
+              : 'Choose a sample role to explore the browser-only demonstration. This does not create an authenticated server session.'}</span>
+          </div>
+        )}
+
         {/* Standard Form */}
+        {!IS_STATIC_DEMO_MODE && <>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">
@@ -162,13 +177,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             )}
           </button>
         </form>
+        </>}
 
         {/* Explicitly opted-in development demo sign-in. */}
-        {import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_AUTH === 'true' && (
+        {(IS_STATIC_DEMO_MODE || (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_AUTH === 'true')) && (
         <div className="mt-6 pt-5 border-t border-[#ede8df]">
           <div className="text-[11px] font-mono uppercase tracking-wider text-stone-500 mb-2.5 flex items-center gap-1.5 font-semibold">
             <UserCheck className="w-3.5 h-3.5 text-forest-700" />
-            <span>Instant Demo Role Logins</span>
+            <span>{language === 'hi' ? 'डेमो भूमिका चुनें' : 'Choose a Demo Role'}</span>
           </div>
 
           <div className="space-y-2">
@@ -194,7 +210,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
       </div>
 
       <div className="mt-5 text-center text-xs text-stone-500 font-mono">
-        DairyOS Enterprise v3.2 &bull; FSSAI Grade A Dairy Infrastructure
+        {IS_STATIC_DEMO_MODE ? 'DairyOS · browser-only sample demonstration' : 'DairyOS Enterprise v3.2 &bull; FSSAI Grade A Dairy Infrastructure'}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { InventoryItem } from '../types/dairy';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 import { Warehouse, Plus, Minus, Search, ArrowRightLeft, Sliders, CheckCircle2 } from 'lucide-react';
 
 interface InventoryPageProps {
@@ -127,7 +128,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({ inventory, onAdjus
         <div className="px-5 py-3.5 border-b border-[#ede8df] bg-cream-50/50 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-forest-950 font-sans">Enterprise Stock Ledger</h3>
-            <p className="text-[11px] text-stone-500">Real-time bin balances, inward receipts and unit valuations</p>
+            <p className="text-[11px] text-stone-500">{IS_STATIC_DEMO_MODE ? 'Synthetic sample balances; local demo changes are saved in this browser.' : 'Bin balances, inward receipts and unit valuations'}</p>
           </div>
           <span className="text-xs font-mono font-medium text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-0.5 rounded-full">
             Showing {filtered.length} of {inventory.length} items

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDairyERP } from '../context/DairyERPContext';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 import { MetricCard } from '../components/common/MetricCard';
 import { MilkFlowDiagram } from '../components/operations/MilkFlowDiagram';
 import { AreaTrendChart, BarComparisonChart } from '../components/charts/Charts';
@@ -332,7 +333,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <SectionHeader
             title="Operational Performance & Financial Unit Economics"
-            subtitle="Live numbers computed dynamically from the centralized ERP data model"
+            subtitle={IS_STATIC_DEMO_MODE ? 'Sample figures update from this browser’s demonstration records.' : 'Live numbers computed dynamically from the centralized ERP data model'}
           />
           {/* Quick tab switcher */}
           <div className="flex items-center gap-1 bg-[#f5f2eb] p-1 rounded-xl border border-[#ede8df] text-xs self-start sm:self-auto shadow-2xs">

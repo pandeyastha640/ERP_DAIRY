@@ -5,6 +5,7 @@ import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
 import { BankPayoutBatchModal } from '../components/finance/BankPayoutBatchModal';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 import { CreditCard, Plus, CheckCircle2, Clock, ArrowDownLeft, ArrowUpRight, Search, Zap } from 'lucide-react';
 
 interface PaymentsPageProps {
@@ -97,14 +98,14 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold tracking-tight text-forest-950 font-sans">
-                Payments & Settlement Ledger
+                {IS_STATIC_DEMO_MODE ? 'Payment Preview Ledger' : 'Payments & Settlement Ledger'}
               </h1>
               <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sage-50 text-forest-800 border border-sage-200">
                 Payout action is simulation only
               </span>
             </div>
             <p className="text-xs text-stone-500 mt-0.5 font-sans">
-              Producer bank disbursements, distributor receivables collection, and supplier trade payables reconciliation.
+              {IS_STATIC_DEMO_MODE ? 'Sample payables and local simulations only. No bank connection, transfer, or settlement is available.' : 'Producer payable records, distributor receivables, and supplier trade payables reconciliation.'}
             </p>
           </div>
         </div>
@@ -133,7 +134,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
         <MetricCard label="Farmer Payables (Today)" value={`₹${totalFarmerPayables.toLocaleString()}`} unit="" trend="neutral" changeText={`${procurementSummary.totalSuppliersToday} Active Suppliers`} />
         <MetricCard label="Collected Today" value={`₹${totalCollectedToday.toLocaleString()}`} unit="" trend="up" changeText="Distributor collections" />
         <MetricCard label="Commercial Receivables" value={`₹${totalReceivables.toLocaleString()}`} unit="" trend="down" isGoodWhenUp={false} changeText="Horeca & Modern retail" />
-        <MetricCard label="Pending Disbursements" value={`₹${totalPayablesPending.toLocaleString()}`} unit="" trend="neutral" changeText="Processing in bank queue" />
+        <MetricCard label={IS_STATIC_DEMO_MODE ? 'Sample payable preview' : 'Pending Disbursements'} value={`₹${totalPayablesPending.toLocaleString()}`} unit="" trend="neutral" changeText={IS_STATIC_DEMO_MODE ? 'No transfer or settlement' : 'Processing in bank queue'} />
       </div>
 
       {/* Comprehensive Filter and Search Bar */}
@@ -277,7 +278,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
             <input
               type="text"
               required
-              placeholder="e.g. Rameshwar Patel (FARM-001)"
+              placeholder="e.g. Sample Farmer 01 (DEMO-FARM-001)"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"

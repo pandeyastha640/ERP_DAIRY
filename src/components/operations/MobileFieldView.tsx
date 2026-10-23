@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Farmer, MilkCollectionRecord, NewMilkCollection } from '../../types/dairy';
 import { useDairyERP } from '../../context/DairyERPContext';
 import { translate } from '../../i18n';
+import { IS_STATIC_DEMO_MODE, STATIC_DEMO_STORAGE_PREFIX } from '../../config/demo';
+
+const OFFLINE_QUEUE_KEY = IS_STATIC_DEMO_MODE ? `${STATIC_DEMO_STORAGE_PREFIX}offline-queue` : 'dairy_offline_queue';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -43,7 +46,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
   const [isSimulatedOffline, setIsSimulatedOffline] = useState(false);
   const [offlineQueue, setOfflineQueue] = useState<any[]>(() => {
     try {
-      const saved = localStorage.getItem('dairy_offline_queue');
+      const saved = localStorage.getItem(OFFLINE_QUEUE_KEY);
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -54,7 +57,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
   // Sync state to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('dairy_offline_queue', JSON.stringify(offlineQueue));
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(offlineQueue));
     } catch (e) {
       console.warn('Could not persist offline queue:', e);
     }
@@ -115,7 +118,9 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
       try {
         const saved = await onSaveCollection(recordPayload);
         setToastType('success');
-        setToastMessage(`Server saved ${saved.quantityLitres} L (${saved.collectionCode}); quality ${saved.quality}.`);
+        setToastMessage(IS_STATIC_DEMO_MODE
+          ? `Demo collection saved in this browser: ${saved.quantityLitres} L (${saved.collectionCode}); quality ${saved.quality}.`
+          : `Server saved ${saved.quantityLitres} L (${saved.collectionCode}); quality ${saved.quality}.`);
         setShowSuccessToast(true);
       } catch (error) {
         setToastType('error');
@@ -154,9 +159,13 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
       }
       setOfflineQueue(failedRecords);
       setToastType(failedRecords.length ? 'warning' : 'success');
-      setToastMessage(failedRecords.length
-        ? `${syncedCount} saved by server; ${failedRecords.length} remain queued for retry.`
-        : `${syncedCount} queued collection(s) confirmed by server.`);
+      setToastMessage(IS_STATIC_DEMO_MODE
+        ? failedRecords.length
+          ? `${syncedCount} demo record(s) moved to this browser’s sample collection list; ${failedRecords.length} remain queued locally. No server was contacted.`
+          : `${syncedCount} demo record(s) moved from the local queue into this browser’s sample collection list. No server was contacted.`
+        : failedRecords.length
+          ? `${syncedCount} saved by server; ${failedRecords.length} remain queued for retry.`
+          : `${syncedCount} queued collection(s) confirmed by server.`);
       setShowSuccessToast(true);
     } finally {
       setIsSyncing(false);

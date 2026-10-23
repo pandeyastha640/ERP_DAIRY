@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Farmer, MilkCollectionRecord, NewMilkCollection } from '../../types/dairy';
 import { Modal } from '../common/Modal';
+import { IS_STATIC_DEMO_MODE } from '../../config/demo';
 import {
   Cpu,
   Scale,
@@ -174,6 +175,10 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
 
   // Connect Physical Web Serial API
   const handleConnectPhysicalPort = async () => {
+    if (IS_STATIC_DEMO_MODE) {
+      appendLog('[DEMO] Physical hardware access is disabled on the static site. Use sample readings only.');
+      return;
+    }
     if (!('serial' in navigator)) {
       alert('Web Serial API is not supported in this browser. Please use Google Chrome or Microsoft Edge.');
       return;
@@ -237,7 +242,9 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
 
     try {
       setSubmitError(null);
-      appendLog(`[TX -> SERVER] Saving ${calculatedLitres}L from ${selectedFarmer.name} (${selectedFarmer.id})...`);
+      appendLog(IS_STATIC_DEMO_MODE
+        ? `[DEMO] Saving ${calculatedLitres}L locally for ${selectedFarmer.name} (${selectedFarmer.id})...`
+        : `[TX -> SERVER] Saving ${calculatedLitres}L from ${selectedFarmer.name} (${selectedFarmer.id})...`);
 
       // Commit once through the authoritative collection workflow. Sending to
       // the IoT ingestion route here as well used to create duplicate records.
@@ -269,7 +276,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
         quality: saved.quality,
       });
 
-      appendLog(`[SERVER SAVED] ${saved.quantityLitres}L; ${saved.quality}; ₹${saved.payableAmount.toLocaleString()} payable. Collection #${saved.collectionCode}`);
+      appendLog(`${IS_STATIC_DEMO_MODE ? '[LOCAL DEMO SAVED]' : '[SERVER SAVED]'} ${saved.quantityLitres}L; ${saved.quality}; ₹${saved.payableAmount.toLocaleString()} payable. Collection #${saved.collectionCode}`);
     } catch (err: any) {
       setSubmitError(err instanceof Error ? err.message : 'Collection was not saved. Please retry.');
       appendLog(`[ERROR] Ingestion notice: ${err.message}`);
@@ -283,7 +290,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
       isOpen={isOpen}
       onClose={onClose}
       title="Analyzer Intake Simulator"
-      subtitle="Demonstration readings only. Save is server-backed; this screen does not imply connected hardware."
+      subtitle={IS_STATIC_DEMO_MODE ? 'Sample readings only. Saved in this browser; physical hardware is disabled.' : 'Demonstration readings only. Save is server-backed; this screen does not imply connected hardware.'}
       maxWidth="xl"
     >
       <div className="space-y-4">
@@ -310,6 +317,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
             {webSerialSupported && (
               <button
                 onClick={handleConnectPhysicalPort}
+                disabled={IS_STATIC_DEMO_MODE}
                 className="px-2.5 py-1 bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] border border-[#30363d] rounded text-[11px] font-medium flex items-center gap-1 cursor-pointer transition-colors"
                 title="Connect physical USB-Serial device via browser"
               >
@@ -318,7 +326,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
               </button>
             )}
             <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[11px] font-mono font-semibold">
-              {isConnected ? 'DEVICE CONNECTED' : 'SIMULATION • NO DEVICE'}
+              {isConnected ? 'DEVICE CONNECTED' : IS_STATIC_DEMO_MODE ? 'DEMO ONLY • HARDWARE DISABLED' : 'SIMULATION • NO DEVICE'}
             </span>
           </div>
         </div>
@@ -522,7 +530,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
               )}
             </div>
             <div className="text-[10px] text-[#8b949e] mt-0.5 font-mono">
-              {isFail ? 'Violates min solids' : 'FSSAI compliant'}
+              {isFail ? 'Violates min solids' : IS_STATIC_DEMO_MODE ? 'Sample thresholds passed' : 'Quality thresholds passed'}
             </div>
           </div>
 
@@ -542,7 +550,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
               ₹{payableAmount.toLocaleString()}
             </div>
             <div className="text-[10px] text-emerald-500 font-mono">
-              Estimated; server confirms on save
+              {IS_STATIC_DEMO_MODE ? 'Browser-local sample estimate' : 'Estimated; server confirms on save'}
             </div>
           </div>
         </div>
@@ -574,10 +582,12 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>
-                <strong>{lastIngestedRecord.collectionCode}</strong> successfully credited: {lastIngestedRecord.litres}L from {lastIngestedRecord.farmer} (₹{lastIngestedRecord.payable.toLocaleString()})
+                {IS_STATIC_DEMO_MODE
+                  ? <><strong>{lastIngestedRecord.collectionCode}</strong> sample record saved locally: {lastIngestedRecord.litres}L from {lastIngestedRecord.farmer} (₹{lastIngestedRecord.payable.toLocaleString()} sample payable)</>
+                  : <><strong>{lastIngestedRecord.collectionCode}</strong> successfully credited: {lastIngestedRecord.litres}L from {lastIngestedRecord.farmer} (₹{lastIngestedRecord.payable.toLocaleString()})</>}
               </span>
             </div>
-            <span className="font-mono text-[11px] text-emerald-400">Server saved · payment pending</span>
+            <span className="font-mono text-[11px] text-emerald-400">{IS_STATIC_DEMO_MODE ? 'Saved in this browser · no payment made' : 'Server saved · payment pending'}</span>
           </div>
         )}
 

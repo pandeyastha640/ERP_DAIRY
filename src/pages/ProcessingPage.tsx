@@ -46,7 +46,7 @@ export const ProcessingPage: React.FC<ProcessingPageProps> = ({ batches: propBat
   // New Batch Form State
   const [line, setLine] = useState('Continuous HTST Line 1 (3000 LPH)');
   const [inputLitres, setInputLitres] = useState('1000');
-  const [operator, setOperator] = useState('Rakesh Parmar (Plant Engineer)');
+  const [operator, setOperator] = useState('Sample Plant Operator');
   const [recipe, setRecipe] = useState<'standard' | 'fluid' | 'curd' | 'ghee'>('standard');
 
   const totalInput = batches.reduce((acc, b) => acc + b.inputMilkLitres, 0);

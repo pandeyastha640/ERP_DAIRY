@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { api } from '../../services/api';
+import { IS_STATIC_DEMO_MODE } from '../../config/demo';
 import {
   FileCheck2,
   Printer,
@@ -32,6 +33,11 @@ export const TankerClearanceModal: React.FC<TankerClearanceModalProps> = ({
 
   useEffect(() => {
     if (isOpen && testRecord) {
+      if (IS_STATIC_DEMO_MODE) {
+        setCertData({});
+        setLoading(false);
+        return;
+      }
       loadCertificate();
     }
   }, [isOpen, testRecord]);
@@ -122,6 +128,26 @@ export const TankerClearanceModal: React.FC<TankerClearanceModalProps> = ({
   };
 
   if (!testRecord && !certData) return null;
+
+  if (IS_STATIC_DEMO_MODE) {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title="Sample Quality Snapshot" subtitle="Synthetic demonstration only — not a regulatory certificate or clearance" maxWidth="lg">
+        <div className="space-y-4 rounded-xl border border-amber-300 bg-amber-50 p-5 text-sm text-stone-800">
+          <strong className="inline-block rounded bg-amber-200 px-3 py-1 text-amber-950">SAMPLE DEMO — NOT OFFICIAL</strong>
+          <p>These readings illustrate the quality screen only. They do not certify, authorize, or clear milk for processing.</p>
+          <dl className="grid grid-cols-2 gap-3 rounded-lg bg-white p-4 text-xs">
+            <dt>Sample record</dt><dd>{testRecord.batchNumber || testRecord.id || 'Sample'}</dd>
+            <dt>FAT</dt><dd>{testRecord.fat}%</dd>
+            <dt>SNF</dt><dd>{testRecord.snf}%</dd>
+            <dt>Temperature</dt><dd>{testRecord.temperatureC}°C</dd>
+            <dt>Quality result</dt><dd className="font-bold">{testRecord.result || testRecord.quality || 'Not available'}</dd>
+          </dl>
+          <p className="text-xs text-stone-600">No signature, license, laboratory accreditation, vehicle clearance, or backend record is created.</p>
+          <button type="button" onClick={onClose} className="min-h-10 rounded-lg bg-[#1b4332] px-4 font-semibold text-white">Close</button>
+        </div>
+      </Modal>
+    );
+  }
 
   const c = certData || {};
   const lab = c.labDetails || {};

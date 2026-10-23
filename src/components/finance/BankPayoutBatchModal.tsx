@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from '../common/Modal';
 import { api } from '../../services/api';
+import { IS_STATIC_DEMO_MODE } from '../../config/demo';
 import {
   Building,
   CheckCircle2,
@@ -59,6 +60,16 @@ export const BankPayoutBatchModal: React.FC<BankPayoutBatchModalProps> = ({
   // Write synthetic preview entries only. No external payment provider is called.
   const handleExecuteDisbursement = async () => {
     setIsProcessing(true);
+    if (IS_STATIC_DEMO_MODE) {
+      setPayoutResult({ simulatedCount: farmerCount, totalAmountSimulated: pendingAmount, previewOnly: true });
+      setLiveStreamLogs([
+        '[DEMO PREVIEW] Amount and count calculated in this browser only.',
+        '[DEMO PREVIEW] No payment ledger entry was saved.',
+        '[DEMO PREVIEW] No bank was contacted; no funds moved and no settlement was confirmed.',
+      ]);
+      setIsProcessing(false);
+      return;
+    }
     setLiveStreamLogs([
       '[SIMULATION] No bank connection is configured or contacted.',
       '[SIMULATION] Creating synthetic payout preview records in the ledger.',
@@ -231,10 +242,10 @@ export const BankPayoutBatchModal: React.FC<BankPayoutBatchModalProps> = ({
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
               <div>
                 <div className="font-bold">
-                  Simulation complete: {payoutResult.simulatedCount} preview record(s) saved.
+                  {payoutResult.previewOnly ? 'Local preview calculated' : `Simulation complete: ${payoutResult.simulatedCount} preview record(s) saved.`}
                 </div>
                 <div className="text-[11px] text-emerald-300/80">
-                  Preview total ₹{payoutResult.totalAmountSimulated.toLocaleString('en-IN')}. No money moved and no UTR was issued.
+                  Preview total ₹{payoutResult.totalAmountSimulated.toLocaleString('en-IN')}. {payoutResult.previewOnly ? 'Not saved to the ledger. ' : ''}No money moved and no UTR was issued.
                 </div>
               </div>
             </div>
