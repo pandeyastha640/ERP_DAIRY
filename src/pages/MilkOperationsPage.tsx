@@ -288,7 +288,7 @@ export const MilkOperationsPage: React.FC = () => {
       </div>
 
       {/* 3. Central Milk Mass Balance Reconciliation Equation Strip (Interactive Navigation) */}
-      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-5 font-mono text-xs shadow-xs">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl p-5 font-mono text-xs shadow-xs">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-[#ede8df]/70 pb-3 mb-4">
           <div className="flex items-center gap-2.5">
             <span className="p-2 rounded-xl bg-sage-50 border border-sage-200/80 text-forest-800">
@@ -462,7 +462,7 @@ export const MilkOperationsPage: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* CHART 1: Own Herd vs Farmer Procurement (3D Volumetric Bar Chart with Filters) */}
-            <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+            <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl p-6 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
                   <div>
@@ -606,7 +606,7 @@ export const MilkOperationsPage: React.FC = () => {
             </div>
 
             {/* CHART 2: Collection Inward vs Plant Processing (3D Glowing Ribbon with Filters) */}
-            <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+            <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl p-6 shadow-xs flex flex-col justify-between">
               <div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
                   <div>
@@ -744,7 +744,7 @@ export const MilkOperationsPage: React.FC = () => {
           </div>
 
           {/* Operational Shift Breakdown Table */}
-          <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl overflow-hidden shadow-xs">
             <div className="px-5 py-3.5 border-b border-[#ede8df] flex items-center justify-between bg-cream-50/50">
               <h3 className="text-sm font-bold text-forest-950">
                 Shift-wise Milk Flow Breakdown (Today)
@@ -848,7 +848,7 @@ export const MilkOperationsPage: React.FC = () => {
       )}
 
       {activeTab === 'Own Milk' && (
-        <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 space-y-4 shadow-xs">
+        <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl p-6 space-y-4 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-forest-950">Own Herd Milking Economics</h3>
@@ -913,7 +913,7 @@ export const MilkOperationsPage: React.FC = () => {
       )}
 
       {activeTab === 'Farmer Milk' && (
-        <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 space-y-4 shadow-xs">
+        <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl p-6 space-y-4 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-forest-950">Farmer Procurement Network</h3>
@@ -976,7 +976,7 @@ export const MilkOperationsPage: React.FC = () => {
       )}
 
       {(activeTab === 'Milk Pool' || activeTab === 'Processing') && (
-        <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 space-y-4 shadow-xs">
+        <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl p-6 space-y-4 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-forest-950">
