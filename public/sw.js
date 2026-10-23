@@ -3,12 +3,11 @@
  * Ensures zero-data-loss collection queuing in rural dead zones
  */
 
-const CACHE_NAME = 'dairyos-cache-v1';
-const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-];
+const APP_ROOT = new URL('./', self.registration.scope);
+const CACHE_NAME = `dairyos-cache-v3-${APP_ROOT.pathname}`;
+const PREVIOUS_SCOPED_CACHE = `dairyos-cache-v2-${APP_ROOT.pathname}`;
+const LEGACY_ROOT_CACHE = 'dairyos-cache-v1';
+const PRECACHE_ASSETS = ['index.html', 'manifest.json', 'icon.svg'].map((asset) => new URL(asset, APP_ROOT).href);
 
 // Install Event
 self.addEventListener('install', (event) => {
@@ -25,7 +24,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
+          if (cache === PREVIOUS_SCOPED_CACHE || (APP_ROOT.pathname === '/' && cache === LEGACY_ROOT_CACHE)) {
             return caches.delete(cache);
           }
         })
@@ -40,7 +39,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   // Let API calls pass through or be handled by frontend indexedDB/localStorage queue
-  if (event.request.url.includes('/api/v1/')) return;
+  const requestedUrl = new URL(event.request.url);
+  if (requestedUrl.origin !== APP_ROOT.origin
+    || !requestedUrl.pathname.startsWith(APP_ROOT.pathname)
+    || requestedUrl.pathname.includes('/api/')) return;
 
   event.respondWith(
     fetch(event.request)
@@ -57,7 +59,7 @@ self.addEventListener('fetch', (event) => {
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) return cachedResponse;
           if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
+            return caches.match(new URL('index.html', APP_ROOT).href);
           }
         });
       })

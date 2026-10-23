@@ -8,6 +8,7 @@ import { Modal } from '../components/common/Modal';
 import { ShoppingCart, Plus, Search, Filter, DollarSign, Layers, FileText, Calendar, ArrowRight, RotateCcw } from 'lucide-react';
 import { api } from '../services/api';
 import { GSTInvoiceModal } from '../components/sales/GSTInvoiceModal';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 
 interface SalesPageProps {
   orders: SalesOrder[];
@@ -20,6 +21,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState('All');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
@@ -103,8 +105,12 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    const q = parseInt(qty) || 100;
-    const r = parseFloat(rate) || 50;
+    const q = IS_STATIC_DEMO_MODE ? Number(qty) : parseInt(qty) || 100;
+    const r = IS_STATIC_DEMO_MODE ? Number(rate) : parseFloat(rate) || 50;
+    if (IS_STATIC_DEMO_MODE && (!Number.isFinite(q) || q <= 0 || !Number.isFinite(r) || r < 0 || !product.trim())) {
+      setCreateError('Enter a sample product, quantity above zero, and a non-negative unit rate.');
+      return;
+    }
     const total = q * r;
 
     const newOrder: SalesOrder = {
@@ -117,12 +123,13 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
       quantityUnits: q,
       unitRate: r,
       totalAmount: total,
-      paymentStatus: 'Paid',
-      fulfillmentStatus: 'Dispatched',
+      paymentStatus: 'Pending',
+      fulfillmentStatus: 'Pending Dispatch',
     };
 
     onAddOrder(newOrder);
     setLocalOrders((prev) => [newOrder, ...prev]);
+    setCreateError(null);
     setIsCreateModalOpen(false);
   };
 
@@ -140,21 +147,21 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                 Sales Orders & Revenue Operations
               </h1>
               <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sage-50 text-forest-800 border border-sage-200">
-                GST 3-Ply Compliant
+                {IS_STATIC_DEMO_MODE ? 'Sample orders only' : 'GST 3-Ply Compliant'}
               </span>
             </div>
             <p className="text-xs text-stone-500 mt-0.5 font-sans">
-              Omni-channel commercial invoices across distributor networks, modern retail, Horeca banquets, and farm gate sales.
+              {IS_STATIC_DEMO_MODE ? 'Explore synthetic sample orders. Browser-local orders are not invoices, dispatches, or financial records.' : 'Omni-channel commercial invoices across distributor networks, modern retail, Horeca banquets, and farm gate sales.'}
             </p>
           </div>
         </div>
 
         <button
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={() => { setCreateError(null); setIsCreateModalOpen(true); }}
           className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 self-start md:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Create Sales Order</span>
+          <span>{IS_STATIC_DEMO_MODE ? 'Create Sample Order' : 'Create Sales Order'}</span>
         </button>
       </div>
 
@@ -196,17 +203,17 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
       {/* KPI Ribbon */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
         <div onClick={() => setCurrentModule('finance')} className="cursor-pointer group" title="Click to view Gross Sales in Finance Ledger">
-          <MetricCard label="Today's Gross Sales" value={`₹${todayRevenue.toLocaleString()}`} unit="" trend="up" changePct={2.4} changeText="Invoiced today →" />
+          <MetricCard label={IS_STATIC_DEMO_MODE ? 'Sample Order Value' : "Today's Gross Sales"} value={`₹${todayRevenue.toLocaleString()}`} unit="" trend="up" changePct={2.4} changeText={IS_STATIC_DEMO_MODE ? 'Sample records →' : 'Invoiced today →'} />
         </div>
         <div onClick={() => setCurrentModule('reports')} className="cursor-pointer group" title="Click to view 30-day projection in Reports">
-          <MetricCard label="Estimated Monthly Run" value="₹42.8 Lakhs" unit="" trend="up" changeText="30-day projection →" />
+          <MetricCard label={IS_STATIC_DEMO_MODE ? 'Sample Monthly Projection' : 'Estimated Monthly Run'} value="₹42.8 Lakhs" unit="" trend="up" changeText={IS_STATIC_DEMO_MODE ? 'Illustrative 30-day figure →' : '30-day projection →'} />
         </div>
-        <MetricCard label="Commercial Orders" value={orders.length} unit="Invoices" trend="neutral" changeText="Active routes fulfillment" />
+        <MetricCard label="Commercial Orders" value={orders.length} unit={IS_STATIC_DEMO_MODE ? 'Sample orders' : 'Invoices'} trend="neutral" changeText={IS_STATIC_DEMO_MODE ? 'Sample records only' : 'Active routes fulfillment'} />
         <div onClick={() => setCurrentModule('finance')} className="cursor-pointer group" title="Click to inspect wholesale economics">
           <MetricCard label="Avg Order Value" value={`₹${avgOrderValue.toLocaleString()}`} unit="" trend="up" changeText="Wholesale average →" />
         </div>
         <div onClick={() => setCurrentModule('payments')} className="cursor-pointer group" title="Click to view payment receivables & collections">
-          <MetricCard
+      <MetricCard
             label="Payment Receivables"
             value={`₹${outstandingAmount.toLocaleString()}`}
             unit=""
@@ -431,10 +438,10 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
         <div className="px-5 py-3.5 border-b border-[#ede8df] bg-cream-50/50 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-forest-950 font-sans">Commercial Order Book</h3>
-            <p className="text-[11px] text-stone-500">Authorized sales orders, dispatch tracking and tax invoices</p>
+            <p className="text-[11px] text-stone-500">{IS_STATIC_DEMO_MODE ? 'Sample orders only. Dispatch and tax invoices are not created.' : 'Authorized sales orders, dispatch tracking and tax invoices'}</p>
           </div>
           <span className="text-xs font-mono font-medium text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-0.5 rounded-full">
-            {displayOrders.length} Invoiced Orders
+            {displayOrders.length} {IS_STATIC_DEMO_MODE ? 'Sample Orders' : 'Invoiced Orders'}
           </span>
         </div>
         <div className="overflow-x-auto">
@@ -451,7 +458,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                 <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Total Amount</th>
                 <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Payment</th>
                 <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px]">Fulfillment</th>
-                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px] text-right">Tax Invoice</th>
+                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-[11px] text-right">{IS_STATIC_DEMO_MODE ? 'Sample summary' : 'Tax Invoice'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#ede8df] text-stone-700 font-mono tabular-nums">
@@ -524,7 +531,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                   <td className="px-4 py-3.5 text-right font-sans">
                     <button
                       onClick={async () => {
-                        try {
+                        if (!IS_STATIC_DEMO_MODE) try {
                           const inv = await api.sales.getInvoice(ord.orderNumber);
                           if (inv?.data) {
                             setSelectedInvoice(inv.data);
@@ -556,15 +563,15 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                         const sgst = +(totalGst / 2).toFixed(2);
 
                         setSelectedInvoice({
-                          invoiceNumber: `INV-${ord.orderNumber.replace(/[^0-9]/g, '') || '2026-1001'}`,
+                          invoiceNumber: `${IS_STATIC_DEMO_MODE ? 'SAMPLE-DEMO' : 'INV'}-${ord.orderNumber.replace(/[^0-9]/g, '') || '1001'}`,
                           orderNumber: ord.orderNumber,
                           invoiceDate: ord.date,
                           seller: {
-                            legalName: 'DairyOS Operational Cooperative Enterprise Ltd.',
-                            fssaiLicense: '10018021003456',
-                            gstin: '24AAACC1209B1ZK',
-                            plantAddress: 'Plant Yard 4, GIDC Industrial Estate, Anand, Gujarat - 388001',
-                            contact: '+91 2692 245000',
+                            legalName: 'Sample Dairy Cooperative (Demo)',
+                            fssaiLicense: 'SAMPLE ONLY — NOT A LICENSE',
+                            gstin: 'SAMPLE ONLY — NOT A GSTIN',
+                            plantAddress: 'Sample location for demonstration only',
+                            contact: 'Not provided in sample data',
                           },
                           buyer: {
                             customerName: ord.customerName,
@@ -598,14 +605,14 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
                             paymentStatus: ord.paymentStatus,
                             fulfillmentStatus: ord.fulfillmentStatus,
                           },
-                          declaration: 'Certified that the particulars given above are true and correct, and the goods comply with FSSAI regulations.',
+                          declaration: 'SAMPLE DEMO ONLY — NOT A TAX INVOICE. No tax registration or legal declaration is represented.',
                         });
                         setIsInvoiceModalOpen(true);
                       }}
                       className="px-3 py-1.5 bg-sage-50 hover:bg-sage-100 text-forest-800 border border-sage-200 rounded-xl text-xs cursor-pointer font-bold inline-flex items-center gap-1.5 transition-all shadow-2xs"
                     >
                       <FileText className="w-3.5 h-3.5 text-forest-700" />
-                      <span>GST Invoice</span>
+                      <span>{IS_STATIC_DEMO_MODE ? 'Sample summary' : 'GST Invoice'}</span>
                     </button>
                   </td>
                 </tr>
@@ -619,11 +626,12 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        title="Generate Commercial Sales Invoice"
-        subtitle="Issue wholesale distributor dispatch or direct institutional invoice"
+        title={IS_STATIC_DEMO_MODE ? 'Create Sample Sales Order' : 'Generate Commercial Sales Invoice'}
+        subtitle={IS_STATIC_DEMO_MODE ? 'Saved only in this browser. This does not create an invoice, dispatch, or backend record.' : 'Issue wholesale distributor dispatch or direct institutional invoice'}
         maxWidth="md"
       >
         <form onSubmit={handleCreate} className="space-y-4">
+          {createError && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">{createError}</p>}
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Customer Name</label>
             <input
@@ -655,6 +663,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
               <input
                 type="text"
                 value={product}
+                required={IS_STATIC_DEMO_MODE}
                 onChange={(e) => setProduct(e.target.value)}
                 className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none font-sans"
               />
@@ -666,6 +675,8 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
               <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Quantity (Units)</label>
               <input
                 type="number"
+                required={IS_STATIC_DEMO_MODE}
+                min={IS_STATIC_DEMO_MODE ? '1' : undefined}
                 value={qty}
                 onChange={(e) => setQty(e.target.value)}
                 className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
@@ -675,6 +686,8 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
               <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Unit Rate (₹)</label>
               <input
                 type="number"
+                required={IS_STATIC_DEMO_MODE}
+                min={IS_STATIC_DEMO_MODE ? '0' : undefined}
                 step="0.5"
                 value={rate}
                 onChange={(e) => setRate(e.target.value)}
@@ -684,7 +697,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
           </div>
 
           <div className="p-3.5 bg-cream-50/70 rounded-xl border border-[#ede8df] flex items-center justify-between text-xs">
-            <span className="text-stone-600 font-sans font-medium">Calculated Invoice Amount:</span>
+              <span className="text-stone-600 font-sans font-medium">{IS_STATIC_DEMO_MODE ? 'Sample Order Total:' : 'Calculated Invoice Amount:'}</span>
             <span className="text-base font-bold font-mono text-forest-950">
               ₹{((parseInt(qty) || 0) * (parseFloat(rate) || 0)).toLocaleString()}
             </span>
@@ -702,7 +715,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({ orders, onAddOrder }) => {
               type="submit"
               className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-all"
             >
-              Issue Invoice
+              {IS_STATIC_DEMO_MODE ? 'Save Sample Order' : 'Issue Invoice'}
             </button>
           </div>
         </form>

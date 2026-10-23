@@ -6,6 +6,7 @@ import { Modal } from '../components/common/Modal';
 import { TankerClearanceModal } from '../components/quality/TankerClearanceModal';
 import { useDairyERP } from '../context/DairyERPContext';
 import { translate } from '../i18n';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 import {
   FlaskConical,
   Plus,
@@ -399,10 +400,10 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
                           setIsCertModalOpen(true);
                         }}
                         className="px-2.5 py-1 bg-sage-50 hover:bg-sage-100 border border-sage-200 text-forest-900 rounded-lg text-[11px] font-mono inline-flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs font-semibold"
-                        title="View Official FSSAI Tanker Lab Clearance Certificate"
+                        title={IS_STATIC_DEMO_MODE ? 'View synthetic sample quality snapshot (not an official certificate)' : 'View quality clearance record'}
                       >
                         <FileCheck2 className="w-3 h-3 text-forest-700" />
-                        <span>FSSAI Cert</span>
+                        <span>{IS_STATIC_DEMO_MODE ? 'Sample QC' : 'Quality Record'}</span>
                       </button>
                       <button
                         onClick={(e) => {

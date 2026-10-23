@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal } from '../common/Modal';
 import { Printer, CheckCircle, Truck, FileText, QrCode, Building2, ShieldCheck, Download } from 'lucide-react';
 import { api } from '../../services/api';
+import { IS_STATIC_DEMO_MODE } from '../../config/demo';
 
 interface GSTInvoiceModalProps {
   isOpen: boolean;
@@ -37,9 +38,10 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
 }) => {
   const [copyType, setCopyType] = useState<'Original' | 'Duplicate' | 'Triplicate'>('Original');
   const [isDispatching, setIsDispatching] = useState(false);
-  const [vehicleNumber, setVehicleNumber] = useState('GJ-07-TY-4421');
-  const [driverName, setDriverName] = useState('Suresh Parmar');
+  const [vehicleNumber, setVehicleNumber] = useState(IS_STATIC_DEMO_MODE ? 'Sample vehicle' : '');
+  const [driverName, setDriverName] = useState(IS_STATIC_DEMO_MODE ? 'Sample driver' : '');
   const [dispatchSuccess, setDispatchSuccess] = useState(false);
+  const [dispatchError, setDispatchError] = useState<string | null>(null);
 
   if (!invoiceData) return null;
 
@@ -54,13 +56,40 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
 
   const isEWayBillRequired = (totals.grandTotalINR || 0) >= 50000;
   const eWayBillNumber = `2410-${(invoiceNumber || '').replace(/[^0-9]/g, '').padStart(4, '0')}-9842`;
+  const handlePrint = () => window.print();
 
-  const handlePrint = () => {
-    window.print();
-  };
+  if (IS_STATIC_DEMO_MODE) {
+    const sampleItem = lineItems[0] || {};
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title="Sample Order Summary" subtitle="SAMPLE DEMO — NOT A TAX INVOICE. No tax registration, e-way bill, dispatch, or legal status is represented." maxWidth="lg">
+        <div className="space-y-4 rounded-xl border-2 border-dashed border-amber-400 bg-amber-50 p-5 text-stone-800">
+          <span className="inline-block rounded bg-amber-200 px-3 py-1 text-xs font-black text-amber-950">SAMPLE DEMO — NOT A TAX INVOICE</span>
+          <div className="grid grid-cols-2 gap-3 rounded-lg bg-white p-4 text-sm">
+            <span>Sample order</span><strong>{invoiceData.orderNumber || invoiceNumber}</strong>
+            <span>Date</span><strong>{invoiceDate}</strong>
+            <span>Sample customer</span><strong>{buyer?.customerName || 'Sample customer'}</strong>
+            <span>Product</span><strong>{sampleItem.description || 'Sample product'}</strong>
+            <span>Quantity</span><strong>{sampleItem.quantity ?? '—'}</strong>
+            <span>Sample unit price</span><strong>₹{Number(sampleItem.unitRate || 0).toLocaleString('en-IN')}</strong>
+            <span>Sample order total</span><strong>₹{Number(totals.grandTotalINR || 0).toLocaleString('en-IN')}</strong>
+          </div>
+          <p className="text-xs">Sample arithmetic only. No tax treatment, legal invoice, bank details, or shipment is represented.</p>
+          <div className="flex flex-wrap gap-2 print:hidden">
+            <button type="button" onClick={handlePrint} className="min-h-10 rounded-lg bg-[#1b4332] px-4 font-semibold text-white"><Printer className="mr-2 inline h-4 w-4" />Print sample summary</button>
+            <button type="button" onClick={onClose} className="min-h-10 rounded-lg border border-stone-300 bg-white px-4 font-semibold">Close</button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   const handleDispatch = async () => {
+    if (IS_STATIC_DEMO_MODE) {
+      setDispatchError('Dispatch is unavailable in this browser-only demo. No gate pass or shipment was created.');
+      return;
+    }
     setIsDispatching(true);
+    setDispatchError(null);
     const orderNumberToDispatch =
       invoiceData.orderNumber ||
       (invoiceNumber ? (invoiceNumber.startsWith('INV-') ? invoiceNumber.replace('INV-', '') : invoiceNumber) : 'SO-2026-1001');
@@ -68,25 +97,22 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
     try {
       await api.sales.dispatch(orderNumberToDispatch, { vehicleNumber, driverName });
     } catch (err: any) {
-      console.warn('API dispatch sync notice, updating locally:', err);
+      setDispatchError(err?.message || 'The server did not confirm dispatch.');
+      return;
     } finally {
       setIsDispatching(false);
-      setDispatchSuccess(true);
-      if (onOrderDispatched) {
-        onOrderDispatched(orderNumberToDispatch, 'Dispatched / In Transit');
-      }
-      setTimeout(() => {
-        setDispatchSuccess(false);
-      }, 4000);
     }
+    setDispatchSuccess(true);
+    if (onOrderDispatched) onOrderDispatched(orderNumberToDispatch, 'Dispatched / In Transit');
+    setTimeout(() => setDispatchSuccess(false), 4000);
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Official GST Tax Invoice & E-Way Bill"
-      subtitle="Compliant 3-ply invoice under Section 31 of CGST Act, 2017"
+      title={IS_STATIC_DEMO_MODE ? 'Sample Sales Summary — Not a Tax Invoice' : 'Official GST Tax Invoice & E-Way Bill'}
+      subtitle={IS_STATIC_DEMO_MODE ? 'Demo preview only. No tax registration, e-way bill, dispatch, or legal status is represented.' : 'Compliant 3-ply invoice under Section 31 of CGST Act, 2017'}
       maxWidth="3xl"
     >
       <div className="space-y-4">
@@ -127,17 +153,20 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
                   unitRate: lineItem.unitRate || 64,
                   totalAmount: invoiceData.totals?.grandTotalINR || 32000,
                 };
+                if (IS_STATIC_DEMO_MODE) return;
                 const settings: any = {
                   orgName: invoiceData.seller?.legalName || 'DairyOS Operational Cooperative Ltd.',
-                  fssaiLicense: invoiceData.seller?.fssaiNumber || '10018021003456',
-                  gstin: invoiceData.seller?.gstin || '24AAACC1209B1ZK',
-                  headOffice: invoiceData.seller?.plantAddress || 'GIDC Industrial Estate, Anand, Gujarat',
+                  fssaiLicense: invoiceData.seller?.fssaiNumber || '',
+                  gstin: invoiceData.seller?.gstin || '',
+                  headOffice: invoiceData.seller?.plantAddress || '',
                 };
                 import('../../services/pdfGenerator').then(({ pdfGenerator }) => {
                   pdfGenerator.generateGSTInvoicePDF(order, settings);
                 });
               }}
-              className="px-3 py-1.5 bg-[#1f6feb] hover:bg-[#388bfd] text-white text-xs font-semibold rounded flex items-center gap-1.5 transition-colors cursor-pointer"
+              disabled={IS_STATIC_DEMO_MODE}
+              title={IS_STATIC_DEMO_MODE ? 'PDF tax invoice generation is unavailable for sample orders.' : undefined}
+              className="px-3 py-1.5 bg-[#1f6feb] hover:bg-[#388bfd] text-white text-xs font-semibold rounded flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download Vector PDF</span>
@@ -165,14 +194,14 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
               </div>
               <p className="font-bold text-sm text-slate-900 mt-1">{seller?.legalName}</p>
               <p className="text-slate-600">{seller?.plantAddress}</p>
-              <p className="text-slate-600 font-mono text-[10px] mt-0.5">
+              {!IS_STATIC_DEMO_MODE && <p className="text-slate-600 font-mono text-[10px] mt-0.5">
                 GSTIN: <span className="font-bold text-slate-900">{seller?.gstin}</span> | FSSAI Lic: <span className="font-bold text-slate-900">{seller?.fssaiLicense}</span> | Phone: {seller?.contact}
-              </p>
+              </p>}
             </div>
 
             <div className="text-right">
               <span className="inline-block bg-blue-900 text-white font-black text-xs px-3 py-1 uppercase tracking-wider rounded">
-                TAX INVOICE
+                {IS_STATIC_DEMO_MODE ? 'SAMPLE DEMO — NOT A TAX INVOICE' : 'TAX INVOICE'}
               </span>
               <p className="text-[10px] font-bold text-slate-600 uppercase mt-1">
                 {copyType === 'Original' ? 'Original for Recipient' : copyType === 'Duplicate' ? 'Duplicate for Transporter' : 'Triplicate for Supplier'}
@@ -187,7 +216,7 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
           </div>
 
           {/* E-Way Bill Bar (If >= 50,000) */}
-          {isEWayBillRequired && (
+          {isEWayBillRequired && !IS_STATIC_DEMO_MODE && (
             <div className="bg-emerald-50 border border-emerald-300 rounded p-2 mb-3 flex items-center justify-between text-[10px]">
               <div className="flex items-center gap-2 text-emerald-900">
                 <Truck className="w-4 h-4 text-emerald-700" />
@@ -269,17 +298,17 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
               <p className="font-bold uppercase text-slate-500 mb-0.5">Total Amount in Words:</p>
               <p className="font-bold text-slate-900 italic text-[11px]">{numberToWordsINR(totals.grandTotalINR || 0)}</p>
               <div className="mt-2 text-slate-600">
-                <p><strong>Bank Name:</strong> Bank of Baroda (Anand Main Branch)</p>
-                <p><strong>Current A/C No:</strong> 04820200001844</p>
-                <p><strong>RTGS / NEFT IFSC:</strong> BARB0ANANDX</p>
+                {IS_STATIC_DEMO_MODE
+                  ? <p><strong>Payment:</strong> Demo preview only. No funds or bank details are involved.</p>
+                  : <p><strong>Payment terms:</strong> Refer to the organization’s approved payment instructions.</p>}
               </div>
             </div>
 
             <div className="text-right flex flex-col justify-between">
               <div className="flex justify-end items-center gap-2">
                 <div className="text-right">
-                  <p className="font-bold text-slate-900">GST Invoice Verification</p>
-                  <p className="text-[9px] text-slate-500">Scan to verify digital signature</p>
+                  <p className="font-bold text-slate-900">{IS_STATIC_DEMO_MODE ? 'Sample preview' : 'GST Invoice Verification'}</p>
+                  <p className="text-[9px] text-slate-500">{IS_STATIC_DEMO_MODE ? 'No digital signature or verification exists' : 'Scan to verify digital signature'}</p>
                 </div>
                 <div className="w-12 h-12 bg-slate-100 border border-slate-300 rounded flex items-center justify-center">
                   <QrCode className="w-10 h-10 text-slate-800" />
@@ -294,7 +323,7 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
 
           {/* Bottom Regulatory Declaration */}
           <p className="text-[9px] text-slate-500 text-center border-t border-slate-200 pt-1.5">
-            {invoiceData.declaration || 'Certified that the particulars given above are true and correct, and the goods comply with FSSAI regulations.'}
+            {IS_STATIC_DEMO_MODE ? 'SAMPLE DEMO — NOT A TAX INVOICE. No tax filing, tax liability, or legal declaration is represented.' : invoiceData.declaration || 'Certified that the particulars given above are true and correct, and the goods comply with applicable regulations.'}
           </p>
         </div>
 
@@ -308,7 +337,9 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
             <span className="text-xs font-mono text-[#8b949e]">Status: {totals.fulfillmentStatus || 'Pending Dispatch'}</span>
           </div>
 
-          {dispatchSuccess ? (
+          {IS_STATIC_DEMO_MODE ? (
+            <p role="status" className="rounded border border-amber-300/40 bg-amber-400/10 p-2 text-xs text-amber-100">Dispatch and gate pass are unavailable in the static demo. No shipment was created.</p>
+          ) : dispatchSuccess ? (
             <div className="flex items-center gap-2 text-xs text-[#3fb950] font-medium bg-[#3fb950]/10 p-2 rounded border border-[#3fb950]/30">
               <CheckCircle className="w-4 h-4" />
               <span>Order successfully dispatched on Vehicle {vehicleNumber}. Gate pass recorded in Audit Trail.</span>
@@ -347,6 +378,7 @@ export const GSTInvoiceModal: React.FC<GSTInvoiceModalProps> = ({
               </button>
             </div>
           )}
+          {dispatchError && <p role="alert" className="mt-2 text-xs text-rose-300">{dispatchError}</p>}
         </div>
       </div>
     </Modal>

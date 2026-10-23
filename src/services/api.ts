@@ -3,10 +3,13 @@
  * Connects frontend modules to Express + Prisma Backend
  */
 
+import { IS_STATIC_DEMO_MODE, unsupportedStaticDemoAction } from '../config/demo';
+
 const API_BASE_URL = '/api/v1';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    if (IS_STATIC_DEMO_MODE) throw unsupportedStaticDemoAction(`API operation ${endpoint}`);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> || {}),

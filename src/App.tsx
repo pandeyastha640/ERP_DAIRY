@@ -32,6 +32,11 @@ import { MobileFieldView } from './components/operations/MobileFieldView';
 import { MilkMoneyTracerModal } from './components/operations/MilkMoneyTracerModal';
 import { AuditLogDrawer } from './components/operations/AuditLogDrawer';
 import { ToastContainer } from './components/common/ToastContainer';
+import {
+  IS_STATIC_DEMO_MODE,
+  STATIC_DEMO_DISCLOSURE,
+  STATIC_DEMO_ROLE_KEY,
+} from './config/demo';
 
 // Pages
 import { DashboardPage } from './pages/DashboardPage';
@@ -149,10 +154,20 @@ function AppContent() {
     dismissAlert,
     toasts,
     dismissToast,
+    resetAllData,
   } = useDairyERP();
 
   useEffect(() => {
     let active = true;
+    if (IS_STATIC_DEMO_MODE) {
+      const storedRole = localStorage.getItem(STATIC_DEMO_ROLE_KEY);
+      if (storedRole && Object.prototype.hasOwnProperty.call(ROLE_ALLOWED_MODULES, storedRole)) {
+        setCurrentRole(storedRole as Role);
+        setIsAuthenticated(true);
+      }
+      setIsSessionReady(true);
+      return () => { active = false; };
+    }
     localStorage.removeItem('dairy_erp_auth');
     localStorage.removeItem('dairy_erp_role');
 
@@ -187,6 +202,14 @@ function AppContent() {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     setLogoutError(null);
+    if (IS_STATIC_DEMO_MODE) {
+      localStorage.removeItem(STATIC_DEMO_ROLE_KEY);
+      setIsAuthenticated(false);
+      setCurrentRole('Operations Manager');
+      setCurrentModule('dashboard');
+      setIsLoggingOut(false);
+      return;
+    }
     try {
       const response = await api.auth.logout();
       if (!response.success) throw new Error('The server did not confirm logout.');
@@ -204,12 +227,18 @@ function AppContent() {
 
   const handleLogin = (role: Role) => {
     setCurrentRole(role);
+    if (IS_STATIC_DEMO_MODE) localStorage.setItem(STATIC_DEMO_ROLE_KEY, role);
     setIsAuthenticated(true);
     window.dispatchEvent(new Event('dairyos:authenticated'));
   };
 
-  const allowRoleSwitch = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_AUTH === 'true';
+  const allowRoleSwitch = IS_STATIC_DEMO_MODE || (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_AUTH === 'true');
   const handleRoleSwitch = async (role: Role) => {
+    if (IS_STATIC_DEMO_MODE) {
+      localStorage.setItem(STATIC_DEMO_ROLE_KEY, role);
+      setCurrentRole(role);
+      return;
+    }
     if (!allowRoleSwitch) return;
     try {
       const session = await api.auth.demoSwitch(role);
@@ -243,7 +272,26 @@ function AppContent() {
         <div className="absolute -bottom-32 left-1/3 w-[580px] h-[580px] rounded-full bg-teal-300/15 blur-[140px]" />
       </div>
 
-      {/* Top Global Demo Environment Banner */}
+      {IS_STATIC_DEMO_MODE ? (
+        <section aria-label={language === 'hi' ? 'डेमो सूचना' : 'Demo notice'} className="relative z-30 border-b border-[#c59b27]/40 bg-[#fff8df] px-4 py-2 text-[#382b08] shadow-sm">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 text-xs">
+            <div>
+              <strong className="mr-2 rounded-full bg-[#c59b27]/20 px-2 py-1 font-bold">
+                {language === 'hi' ? 'डेमो मोड — नमूना डेटा' : 'Demo Mode — Sample Data'}
+              </strong>
+              <span>{language === 'hi'
+                ? 'यह प्रदर्शन नमूना डेटा उपयोग करता है। बदलाव केवल इसी ब्राउज़र में सहेजे जाते हैं और वास्तविक डेयरी रिकॉर्ड को प्रभावित नहीं करते।'
+                : STATIC_DEMO_DISCLOSURE}</span>
+            </div>
+            <button type="button" onClick={() => {
+              const confirmed = window.confirm(language === 'hi' ? 'डेमो डेटा रीसेट करें?' : 'Reset this browser’s demo data to the original sample records?');
+              if (confirmed) resetAllData();
+            }} className="min-h-9 rounded-lg border border-[#8c6b13]/40 bg-white px-3 py-1.5 font-semibold hover:bg-[#fffdf5]">
+              {language === 'hi' ? 'डेमो डेटा रीसेट करें' : 'Reset Demo Data'}
+            </button>
+          </div>
+        </section>
+      ) : (
       <div className="relative z-10 bg-white/70 backdrop-blur-md border-b border-white/60 px-4 py-1.5 flex items-center justify-between text-[11px] font-mono select-none text-stone-600 shadow-[0_1px_4px_rgba(27,67,50,0.02)]">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse shadow-[0_0_8px_#059669]" />
@@ -299,6 +347,28 @@ function AppContent() {
           </button>
         </div>
       </div>
+      )}
+
+      {IS_STATIC_DEMO_MODE && (
+        <div className="relative z-20 flex min-h-11 items-center justify-end gap-3 border-b border-[#ede8df] bg-white/85 px-4 text-xs text-stone-600">
+          <span className="hidden sm:inline">{currentRole} · {language === 'hi' ? 'स्थानीय डेमो भूमिका' : 'local demo role'}</span>
+          <button
+            type="button"
+            onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+            aria-label="Switch language / भाषा बदलें"
+            className="min-h-9 rounded-lg border border-[#ede8df] bg-white px-3 py-1.5 font-semibold text-forest-900 hover:bg-sage-50"
+          >
+            English | हिन्दी
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="min-h-9 rounded-lg border border-[#ede8df] bg-white px-3 py-1.5 font-semibold text-forest-900 hover:bg-sage-50"
+          >
+            {language === 'hi' ? 'साइन आउट' : 'Sign Out'}
+          </button>
+        </div>
+      )}
 
       {logoutError && (
         <div role="alert" className="fixed right-4 top-16 z-50 max-w-sm rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-sans text-rose-800 shadow-lg">
@@ -313,6 +383,7 @@ function AppContent() {
           onSelectModule={(id) => {
             setCurrentModule(id);
             setSelectedItemId(undefined);
+            if (window.matchMedia('(max-width: 767px)').matches) setSidebarCollapsed(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           collapsed={sidebarCollapsed}
@@ -321,9 +392,7 @@ function AppContent() {
 
         {/* Main Content Area */}
         <div
-          className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ${
-            sidebarCollapsed ? 'ml-16' : 'ml-64'
-          }`}
+          className={`ml-16 flex-1 flex min-w-0 flex-col transition-all duration-200 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}
         >
           {/* Top Bar */}
           <Topbar

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { api } from '../../services/api';
+import { IS_STATIC_DEMO_MODE } from '../../config/demo';
 import {
   Printer,
   Smartphone,
@@ -39,6 +40,23 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
 
   const loadSlipData = async () => {
     setLoadingSlip(true);
+    if (IS_STATIC_DEMO_MODE) {
+      setSlipData({
+        slipNumber: `SAMPLE-${collection?.collectionCode || 'LOCAL'}`,
+        society: { name: 'DairyOS Sample Cooperative', unitName: collection?.centre || 'Sample centre' },
+        intake: {
+          collectionCode: collection?.collectionCode || 'Sample record', date: collection?.date,
+          time: collection?.time, shift: collection?.shift, farmerCode: collection?.farmerId,
+          farmerName: collection?.farmerName, volumeLitres: collection?.quantityLitres,
+          fatPct: collection?.fat, snfPct: collection?.snf, tempCelsius: collection?.temperatureC,
+          qualityGrade: collection?.quality,
+        },
+        pricing: { effectiveRatePerL: collection?.ratePerLitre, netPayableINR: collection?.payableAmount },
+        footer: { testedBy: collection?.testedBy || 'Sample operator', printedAt: new Date().toISOString() },
+      });
+      setLoadingSlip(false);
+      return;
+    }
     try {
       const colId = collection?.collectionCode || collection?.id;
       if (!colId) throw new Error('Saved collection reference is missing.');
@@ -90,6 +108,10 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
   };
 
   const handleSendNotification = async (channel: 'SMS' | 'WHATSAPP' | 'ALL') => {
+    if (IS_STATIC_DEMO_MODE) {
+      setSmsStatus('Notifications are unavailable in the static demo. No SMS or WhatsApp message was sent.');
+      return;
+    }
     setSendingSms(true);
     setSmsStatus(null);
     try {
@@ -130,7 +152,7 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="POS Thermal Receipt & Farmer Mobile Dispatch"
-      subtitle="Receipt from the saved collection record. No printer or messaging provider is connected in demo mode."
+      subtitle={IS_STATIC_DEMO_MODE ? 'Sample receipt preview. The collection is saved only in this browser; no notification was sent.' : 'Receipt from the saved collection record. No printer or messaging provider is connected in demo mode.'}
       maxWidth="md"
     >
       <div className="space-y-4">

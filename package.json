@@ -10,7 +10,10 @@
     "studio": "prisma studio --port 5555 --browser none",
     "seed": "tsx prisma/seed.ts",
     "build": "vite build",
+    "build:demo": "VITE_DEMO_MODE=true vite build",
+    "check:demo-artifact": "tsx scripts/check_static_artifact.ts",
     "preview": "vite preview",
+    "preview:demo": "node scripts/preview_static_demo.mjs",
     "lint": "tsc --noEmit",
     "db:export": "tsx scripts/export_data.ts",
     "db:mongo:start": "tsx scripts/start_local_mongodb.ts",
@@ -20,6 +23,7 @@
     "test:security": "tsx scripts/test_auth_security.ts",
     "test:demo-workflow": "tsx scripts/test_demo_workflow.ts",
     "test:demo-browser": "tsx scripts/test_demo_browser.ts",
+    "test:static-demo": "tsx scripts/test_static_demo.ts",
     "launch:check": "tsx scripts/preflight_launch_check.ts"
   },
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDairyERP } from '../context/DairyERPContext';
 import { FileSpreadsheet, Download, Calendar, Filter, CheckCircle2, FileText, ArrowRight, Table, Layers, ShieldCheck } from 'lucide-react';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 
 export const REPORTS_LIST = [
   { id: 'rep-daily-milk', title: 'Daily Milk Balance & Pool Report', desc: 'Complete volumetric mass balance from herd milking and farmer inward to HTST pasteurization.', category: 'Operations' },
@@ -155,7 +156,8 @@ export const ReportsPage: React.FC = () => {
       ];
     }
 
-    const csvContent = `data:text/csv;charset=utf-8,Report,${selectedReport.title}\nDate,2026-10-06\nSystem,DairyOS Enterprise ERP (Live Reconciled Export)\n\n` + rows.join('\n');
+    const exportDescription = IS_STATIC_DEMO_MODE ? 'DairyOS browser-only sample export' : 'DairyOS Enterprise ERP (Live Reconciled Export)';
+    const csvContent = `data:text/csv;charset=utf-8,Report,${selectedReport.title}\nDate,2026-10-06\nSystem,${exportDescription}\n\n` + rows.join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
@@ -164,7 +166,9 @@ export const ReportsPage: React.FC = () => {
     link.click();
     document.body.removeChild(link);
 
-    setExportNotice(`Generated live ${format} export for "${selectedReport.title}" (${rows.length - 1} records).`);
+    setExportNotice(IS_STATIC_DEMO_MODE
+      ? `Generated a sample ${format} export for "${selectedReport.title}" (${rows.length - 1} sample rows).`
+      : `Generated live ${format} export for "${selectedReport.title}" (${rows.length - 1} records).`);
     setTimeout(() => setExportNotice(null), 3000);
   };
 
@@ -182,7 +186,7 @@ export const ReportsPage: React.FC = () => {
                 Enterprise Reports Centre
               </h1>
               <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sage-50 text-forest-800 border border-sage-200">
-                11 Live Datasets
+                {IS_STATIC_DEMO_MODE ? '11 Sample Datasets' : '11 Live Datasets'}
               </span>
             </div>
             <p className="text-xs text-stone-500 mt-0.5 font-sans">
@@ -261,14 +265,14 @@ export const ReportsPage: React.FC = () => {
                   className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Download Live CSV</span>
+                  <span>{IS_STATIC_DEMO_MODE ? 'Download Sample CSV' : 'Download Live CSV'}</span>
                 </button>
                 <button
                   onClick={() => handleExport('Excel')}
                   className="px-3.5 py-2 bg-white hover:bg-cream-50 border border-[#ede8df] hover:border-forest-200 text-stone-800 text-xs font-semibold rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
                   <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Excel Export</span>
+                  <span>{IS_STATIC_DEMO_MODE ? 'Download Sample Excel' : 'Excel Export'}</span>
                 </button>
               </div>
             </div>
@@ -276,9 +280,9 @@ export const ReportsPage: React.FC = () => {
             {/* Live Report Data Preview Table */}
             <div className="mt-5 space-y-3 font-mono text-xs">
               <div className="flex items-center justify-between text-xs font-bold text-forest-950 font-sans">
-                <span>Live Data Preview ({dateRange})</span>
+                <span>{IS_STATIC_DEMO_MODE ? 'Sample Data Preview' : 'Live Data Preview'} ({dateRange})</span>
                 <span className="text-emerald-800 text-xs font-mono font-medium bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                  Reconciled with ERP Database
+                  {IS_STATIC_DEMO_MODE ? 'Local sample records' : 'Reconciled with ERP Database'}
                 </span>
               </div>
 

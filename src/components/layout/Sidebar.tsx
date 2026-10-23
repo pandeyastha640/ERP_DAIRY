@@ -125,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="w-2 h-2 rounded-full bg-[#52b788] shadow-[0_0_8px_#52b788]" />
               </div>
               <div className="text-[10px] text-stone-500 font-mono mt-0.5 tracking-wider uppercase font-semibold">
-                Enterprise Cloud 3D
+                {import.meta.env.VITE_DEMO_MODE === 'true' ? 'Browser Sample Demo' : 'Enterprise Cloud 3D'}
               </div>
             </div>
           </div>
@@ -214,7 +214,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               LOCAL
             </span>
           </div>
-          <div className="truncate text-stone-400 text-[10px]">Mass Balance Reconciliation Nominal</div>
+          <div className="truncate text-stone-400 text-[10px]">{import.meta.env.VITE_DEMO_MODE === 'true' ? 'Sample data · not live telemetry' : 'Mass Balance Reconciliation Nominal'}</div>
         </div>
       ) : (
         <div className="p-2.5 border-t border-[#ede8df] flex justify-center bg-[#faf8f4]">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Farmer } from '../types/dairy';
 import { useDairyERP } from '../context/DairyERPContext';
+import { IS_STATIC_DEMO_MODE } from '../config/demo';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { AreaTrendChart } from '../components/charts/Charts';
@@ -124,8 +125,8 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
       {/* 1. Header */}
       <PageHeader
         title={translate(language, 'Farmer & Procurement Directory')}
-        subtitle="Producer registry, village milk pourer logs, automated fat/SNF pricing rates, and direct bank settlement."
-        statusBadge="Farmer records saved to server"
+        subtitle={IS_STATIC_DEMO_MODE ? 'Browse synthetic farmer records and add a sample profile saved in this browser.' : 'Producer registry, village milk pourer logs, automated fat/SNF pricing rates, and payment records.'}
+        statusBadge={IS_STATIC_DEMO_MODE ? 'Sample data · browser only' : 'Farmer records saved to server'}
         actions={
           <button
             onClick={() => setIsAddModalOpen(true)}
@@ -357,11 +358,11 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
                 <div className="text-xl font-bold text-forest-900 mt-1">
                   {activeProfile.avgFat}% / {activeProfile.avgSNF}%
                 </div>
-                <div className="text-[10px] text-forest-700 font-sans mt-0.5 font-medium">Grade A Certified</div>
+                <div className="text-[10px] text-forest-700 font-sans mt-0.5 font-medium">{IS_STATIC_DEMO_MODE ? 'Sample readings' : 'Grade A Certified'}</div>
               </div>
               <div className="p-3.5 bg-sage-50/80 rounded-xl border border-sage-200">
                 <div className="text-forest-950 text-[11px] font-sans font-bold">
-                  Today's Settlement
+                  {IS_STATIC_DEMO_MODE ? 'Sample payable preview' : 'Today’s Payable'}
                 </div>
                 <div className="text-xl font-bold text-forest-900 mt-1">
                   ₹{activeProfile.todayPayable.toLocaleString()}
@@ -403,8 +404,8 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
               />
             </div>
 
-            {/* Bank & Settlement Records */}
-            <div className="p-4 bg-cream-50/70 rounded-2xl border border-[#ede8df]">
+            {/* Bank & settlement records are not collected in the static sample. */}
+            {!IS_STATIC_DEMO_MODE && <div className="p-4 bg-cream-50/70 rounded-2xl border border-[#ede8df]">
               <div className="flex items-center justify-between font-bold text-forest-950 mb-3">
                 <div className="flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-forest-700" />
@@ -432,7 +433,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
                   </div>
                 ))}
               </div>
-            </div>
+            </div>}
 
             <div className="flex items-center justify-between pt-3 border-t border-[#ede8df]">
               <button
@@ -441,10 +442,12 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
                     pdfGenerator.generateFarmerPassbookPDF(activeProfile, collectionsList, settings);
                   });
                 }}
+                disabled={IS_STATIC_DEMO_MODE}
+                title={IS_STATIC_DEMO_MODE ? 'Financial passbook export is unavailable in this browser-only demo.' : undefined}
                 className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs shadow-forest-950/20 transition-all duration-150 active:scale-98"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Download Monthly Passbook PDF</span>
+                <span>{IS_STATIC_DEMO_MODE ? 'Passbook PDF unavailable in demo' : 'Download Monthly Passbook PDF'}</span>
               </button>
               <button
                 onClick={() => setActiveProfile(null)}
@@ -462,7 +465,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         title={translate(language, 'Register New Milk Producer')}
-        subtitle="Create a farmer profile for the cooperative. Bank details are optional."
+        subtitle={IS_STATIC_DEMO_MODE ? 'Create a synthetic sample profile. Personal and bank details are not collected.' : 'Create a farmer profile for the cooperative. Bank details are optional.'}
         maxWidth="md"
       >
         <form onSubmit={handleCreateFarmer} className="space-y-4">
@@ -515,7 +518,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {!IS_STATIC_DEMO_MODE && <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
                 {translate(language, 'Phone / Mobile')}
@@ -537,7 +540,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
                 className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
-          </div>
+          </div>}
 
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#ede8df]">
             <button

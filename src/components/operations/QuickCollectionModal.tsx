@@ -4,6 +4,7 @@ import { Modal } from '../common/Modal';
 import { AlertCircle, Loader2, Plus } from 'lucide-react';
 import { useDairyERP } from '../../context/DairyERPContext';
 import { translate } from '../../i18n';
+import { IS_STATIC_DEMO_MODE } from '../../config/demo';
 
 interface QuickCollectionModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
   const { language } = useDairyERP();
   const [farmerId, setFarmerId] = useState(farmers[0]?.id || '');
   const [shift, setShift] = useState<'Morning' | 'Evening'>('Morning');
-  const [centre, setCentre] = useState('Anand Collection Centre');
+  const [centre, setCentre] = useState(IS_STATIC_DEMO_MODE ? 'Sample Collection Centre A' : 'Anand Collection Centre');
   const [quantity, setQuantity] = useState('50.0');
   const [fat, setFat] = useState('4.4');
   const [snf, setSnf] = useState('8.6');
@@ -90,7 +91,7 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={translate(language, 'Record Milk Collection')}
-      subtitle="Review the estimate. The server confirms quality, rate, and payable when you save."
+      subtitle={IS_STATIC_DEMO_MODE ? 'Sample values follow the DairyOS pricing formula. Saving updates this browser only.' : 'Review the estimate. The server confirms quality, rate, and payable when you save.'}
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4 font-sans">
@@ -132,9 +133,15 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
               onChange={(e) => setCentre(e.target.value)}
               className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none shadow-2xs font-sans"
             >
-              <option value="Anand Collection Centre">Anand Collection Centre</option>
-              <option value="Borsad Bulk Chilling Unit">Borsad Bulk Chilling Unit</option>
-              <option value="Nadiad Collection Hub">Nadiad Collection Hub</option>
+              {IS_STATIC_DEMO_MODE ? <>
+                <option value="Sample Collection Centre A">Sample Collection Centre A</option>
+                <option value="Sample Chilling Unit B">Sample Chilling Unit B</option>
+                <option value="Sample Collection Hub C">Sample Collection Hub C</option>
+              </> : <>
+                <option value="Anand Collection Centre">Anand Collection Centre</option>
+                <option value="Borsad Bulk Chilling Unit">Borsad Bulk Chilling Unit</option>
+                <option value="Nadiad Collection Hub">Nadiad Collection Hub</option>
+              </>}
             </select>
           </div>
         </div>
