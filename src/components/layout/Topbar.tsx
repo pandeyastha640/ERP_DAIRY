@@ -18,6 +18,7 @@ import {
 interface TopbarProps {
   currentRole: Role;
   onChangeRole: (role: Role) => void;
+  allowRoleSwitch?: boolean;
   currentFacility: Facility;
   onChangeFacility: (facility: Facility) => void;
   currentDateFilter: DateFilter;
@@ -34,6 +35,7 @@ interface TopbarProps {
 export const Topbar: React.FC<TopbarProps> = ({
   currentRole,
   onChangeRole,
+  allowRoleSwitch = false,
   currentFacility,
   onChangeFacility,
   currentDateFilter,
@@ -328,7 +330,8 @@ export const Topbar: React.FC<TopbarProps> = ({
           )}
         </div>
 
-        {/* Demo Role Switcher */}
+        {/* Role selection is only available behind explicit development demo controls. */}
+        {allowRoleSwitch ? (
         <div className="relative">
           <button
             onClick={() => {
@@ -376,6 +379,17 @@ export const Topbar: React.FC<TopbarProps> = ({
             </div>
           )}
         </div>
+        ) : (
+          <div className="flex items-center gap-2.5 px-3 py-1.5 bg-white border border-[#ede8df] rounded-xl shadow-xs">
+            <div className="w-7 h-7 rounded-lg bg-[#eef6f0] border border-[#cde6d5] text-[#1b4332] flex items-center justify-center text-xs font-bold shrink-0">
+              {currentRole.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="hidden lg:block text-left leading-tight">
+              <div className="text-xs font-bold text-[#0f2319] truncate max-w-[130px]">{currentRole}</div>
+              <div className="text-[10px] text-stone-400 font-mono">Signed-in role</div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

@@ -12,9 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DATABASE_URL: "file:./dev.db"
+      DATABASE_URL: "file:./test.db"
       PORT: 5000
-      JWT_SECRET: "dairyos-ci-testing-key-2026"
+      JWT_SECRET: "ci-only-jwt-key-not-for-deployment-2026-r0"
+      PAYMENT_WEBHOOK_SECRET: "ci-only-payment-hook-key-not-for-deployment"
+      SEED_DEMO_PASSWORD: "ci-only-test-user-password-2026"
+      DEMO_AUTH_ENABLED: "true"
+      TEST_AUTH_EMAIL: "operations.manager@dairyos.enterprise"
+      TEST_AUTH_PASSWORD: "ci-only-test-user-password-2026"
       NODE_ENV: "test"
 
     steps:
@@ -24,11 +29,11 @@ jobs:
       - name: Setup Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.19.0
           cache: 'npm'
 
       - name: Install Project Dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
 
       - name: Initialize Database Schema & Seed Data
         run: |
@@ -38,6 +43,9 @@ jobs:
 
       - name: Validate TypeScript Static Typing
         run: npm run lint
+
+      - name: Run Authentication & Authorization Regression Checks
+        run: npm run test:security
 
       - name: Build Production Client Assets (Vite)
         run: npm run build

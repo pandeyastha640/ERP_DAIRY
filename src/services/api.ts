@@ -6,40 +6,16 @@
 const API_BASE_URL = '/api/v1';
 
 class ApiService {
-  private token: string | null = null;
-
-  constructor() {
-    this.token = localStorage.getItem('dairyos_auth_token');
-  }
-
-  setToken(token: string) {
-    this.token = token;
-    localStorage.setItem('dairyos_auth_token', token);
-  }
-
-  clearToken() {
-    this.token = null;
-    localStorage.removeItem('dairyos_auth_token');
-  }
-
-  getToken(): string | null {
-    return this.token || localStorage.getItem('dairyos_auth_token');
-  }
-
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> || {}),
     };
 
-    const token = this.getToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
+      credentials: 'same-origin',
     });
 
     if (!response.ok) {
@@ -64,26 +40,22 @@ class ApiService {
   // Auth Endpoints
   auth = {
     login: async (email: string, password: string) => {
-      const res = await this.request<{ success: boolean; token: string; user: any }>('/auth/login', {
+      return this.request<{ success: boolean; user: any }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
-      if (res.token) this.setToken(res.token);
-      return res;
     },
     demoSwitch: async (role: string) => {
-      const res = await this.request<{ success: boolean; token: string; user: any }>('/auth/demo-switch', {
+      return this.request<{ success: boolean; user: any }>('/auth/demo-switch', {
         method: 'POST',
         body: JSON.stringify({ role }),
       });
-      if (res.token) this.setToken(res.token);
-      return res;
     },
     getMe: async () => {
       return this.request<{ success: boolean; user: any }>('/auth/me');
     },
-    logout: () => {
-      this.clearToken();
+    logout: async () => {
+      return this.request<{ success: boolean }>('/auth/logout', { method: 'POST' });
     },
   };
 

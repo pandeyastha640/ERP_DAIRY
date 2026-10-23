@@ -1,7 +1,35 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { assertIsolatedTestDatabase } from './assertIsolatedTestDatabase';
 
 const prisma = new PrismaClient();
 const BASE_URL = 'http://localhost:5000/api/v1';
+let sessionCookie = '';
+
+async function apiFetch(url: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers);
+  if (sessionCookie) headers.set('Cookie', sessionCookie);
+  return fetch(url, { ...init, headers });
+}
+
+async function establishTestSession() {
+  const email = process.env.TEST_AUTH_EMAIL || 'operations.manager@dairyos.enterprise';
+  const password = process.env.TEST_AUTH_PASSWORD || process.env.SEED_DEMO_PASSWORD;
+  if (!password) {
+    throw new Error('Set TEST_AUTH_PASSWORD (or SEED_DEMO_PASSWORD) for the seeded test user.');
+  }
+
+  const response = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const cookieHeader = response.headers.get('set-cookie');
+  if (!response.ok || !cookieHeader) {
+    throw new Error(`Test session login failed with HTTP ${response.status}.`);
+  }
+  sessionCookie = cookieHeader.split(';')[0];
+}
 
 interface TestResult {
   phase: string;
@@ -59,7 +87,7 @@ async function verifyPhase2() {
 
   for (const ep of endpoints) {
     try {
-      const res = await fetch(`${BASE_URL}${ep.url}`);
+      const res = await apiFetch(`${BASE_URL}${ep.url}`);
       const data = await res.json();
       record('Phase 2', ep.key, res.ok && data.success !== false, `Status ${res.status} OK`);
     } catch (err: any) {
@@ -72,7 +100,7 @@ async function verifyPhase3() {
   console.log('\n--- VERIFYING PHASE 3: GST TAX INVOICE & DISPATCH GATE PASS ---');
   try {
     // 1. Fetch sales orders to pick one for invoice test
-    const ordersRes = await fetch(`${BASE_URL}/sales/orders`);
+    const ordersRes = await apiFetch(`${BASE_URL}/sales/orders`);
     const ordersData = await ordersRes.json();
     const order = ordersData.data?.[0];
 
@@ -82,7 +110,7 @@ async function verifyPhase3() {
     }
 
     // 2. Fetch GST Invoice
-    const invoiceRes = await fetch(`${BASE_URL}/sales/orders/${order.id}/invoice`);
+    const invoiceRes = await apiFetch(`${BASE_URL}/sales/orders/${order.id}/invoice`);
     const invoiceData = await invoiceRes.json();
     const inv = invoiceData.data;
 
@@ -100,7 +128,7 @@ async function verifyPhase3() {
       `HSN Code: ${hsnCode} (${lineItem?.description}), E-Way Bill: ${eWayBillNumber} (Threshold check: ${isEWayBillEligible ? 'Mandatory' : 'Optional'})`);
 
     // 3. Test Logistics Dispatch & Gate Pass
-    const dispatchRes = await fetch(`${BASE_URL}/sales/orders/${order.id}/dispatch`, {
+    const dispatchRes = await apiFetch(`${BASE_URL}/sales/orders/${order.id}/dispatch`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -137,7 +165,7 @@ async function verifyPhase4() {
       centre: 'BMC Anand Collection Yard',
     };
 
-    const res = await fetch(`${BASE_URL}/iot/lactoscan`, {
+    const res = await apiFetch(`${BASE_URL}/iot/lactoscan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(iotPayload),
@@ -155,7 +183,7 @@ async function verifyPhase4() {
       `Vat B volume successfully verified at ${finalVolume}L (Credited inward buffer)`);
 
     // 4. Test Silo Telemetry & Fast-Chill controller
-    const telemetryRes = await fetch(`${BASE_URL}/iot/silo-telemetry`, {
+    const telemetryRes = await apiFetch(`${BASE_URL}/iot/silo-telemetry`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -177,14 +205,14 @@ async function verifyPhase5() {
   console.log('\n--- VERIFYING PHASE 5: BANKING PAYOUTS & IMPS SETTLEMENT ---');
   try {
     // 1. Get Pending Summary
-    const summaryRes = await fetch(`${BASE_URL}/payments/pending-summary`);
+    const summaryRes = await apiFetch(`${BASE_URL}/payments/pending-summary`);
     const summaryData = await summaryRes.json();
     const hasSummary = summaryRes.ok && summaryData.success;
     record('Phase 5', 'Pending Payables Calculation', hasSummary, 
       `Total Payable Gross: ₹${summaryData.data?.totalPayableGross?.toLocaleString('en-IN')}, Disbursed: ₹${summaryData.data?.totalDisbursed?.toLocaleString('en-IN')}, Net Pending: ₹${summaryData.data?.pendingBalance?.toLocaleString('en-IN')}`);
 
     // 2. Test Batch Disbursement
-    const disburseRes = await fetch(`${BASE_URL}/payments/disburse-all-pending`, {
+    const disburseRes = await apiFetch(`${BASE_URL}/payments/disburse-all-pending`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -243,7 +271,7 @@ async function verifyPhase8() {
   console.log('\n--- VERIFYING PHASE 8: GOOGLE GEMINI AI OPERATIONS INTELLIGENCE ---');
   try {
     // 1. 72h Procurement Forecast
-    const forecastRes = await fetch(`${BASE_URL}/ai/forecast-procurement`, {
+    const forecastRes = await apiFetch(`${BASE_URL}/ai/forecast-procurement`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ forecastHorizonHours: 72, expectedTempCelsius: 34 }),
@@ -254,7 +282,7 @@ async function verifyPhase8() {
       `Engine (${forecastData.data?.aiModel}): Projected ${forecastData.data?.totalProjectedProcurementL}L (Heat factor: ${forecastData.data?.heatStressFactor})`);
 
     // 2. Least-Cost Ration Formulation Balancer
-    const feedRes = await fetch(`${BASE_URL}/ai/optimize-feed`, {
+    const feedRes = await apiFetch(`${BASE_URL}/ai/optimize-feed`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ targetYieldL: 22, breed: 'Murrah Buffalo / HF Cross' }),
@@ -265,7 +293,7 @@ async function verifyPhase8() {
       `Optimized daily feed cost to ₹${feedData.data?.optimizedCostPerAnimalPerDay}/cow/day (Daily savings: ₹${feedData.data?.dailySavingsPerCow})`);
 
     // 3. Quality & Mass Balance Anomaly Analysis
-    const anomalyRes = await fetch(`${BASE_URL}/ai/analyze-anomalies`, {
+    const anomalyRes = await apiFetch(`${BASE_URL}/ai/analyze-anomalies`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -282,7 +310,7 @@ async function verifyPhase9() {
   console.log('\n--- VERIFYING PHASE 9: FARMER SMS/WHATSAPP & POS THERMAL SLIP ENGINE ---');
   try {
     // 1. Dispatch SMS/WhatsApp Receipt
-    const smsRes = await fetch(`${BASE_URL}/notifications/receipt-sms`, {
+    const smsRes = await apiFetch(`${BASE_URL}/notifications/receipt-sms`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -302,7 +330,7 @@ async function verifyPhase9() {
       `Dispatched bilingual receipt (${smsData.channels?.join('/') || 'SMS/WhatsApp'}): ID #${smsData.messageId} (Status: ${smsData.deliveryStatus})`);
 
     // 2. 58mm/80mm POS Thermal Receipt Slip
-    const slipRes = await fetch(`${BASE_URL}/notifications/collections/COL-001/slip`);
+    const slipRes = await apiFetch(`${BASE_URL}/notifications/collections/COL-001/slip`);
     const slipData = await slipRes.json();
     const slipOk = slipRes.ok && slipData.data?.slipNumber && slipData.data?.intake?.fatPct;
     record('Phase 9', '58mm/80mm POS Thermal Slip Generator', Boolean(slipOk), 
@@ -316,7 +344,7 @@ async function verifyPhase10() {
   console.log('\n--- VERIFYING PHASE 10: FSSAI BULK TANKER CLEARANCE CERTIFICATE ENGINE ---');
   try {
     // 1. Fetch Lab Certificate
-    const certRes = await fetch(`${BASE_URL}/quality/tests/QC-102/certificate`);
+    const certRes = await apiFetch(`${BASE_URL}/quality/tests/QC-102/certificate`);
     const certData = await certRes.json();
     const cert = certData.data;
     const certOk = certRes.ok && cert && cert.certificateNumber && cert.chemicalAnalysis?.fatPercentage;
@@ -324,7 +352,7 @@ async function verifyPhase10() {
       `Certificate #${cert?.certificateNumber}: Consignment ${cert?.consignment?.tankerRegistration} (${cert?.consignment?.grossVolumeLitres}L) -> Status: ${cert?.verdict?.clearanceStatus}`);
 
     // 2. Authorize & Certify Consignment
-    const certifyRes = await fetch(`${BASE_URL}/quality/tests/QC-102/certify`, {
+    const certifyRes = await apiFetch(`${BASE_URL}/quality/tests/QC-102/certify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ clearanceStatus: 'CLEARED FOR HTST PROCESSING' }),
@@ -341,14 +369,14 @@ async function verifyPhase11() {
   console.log('\n--- VERIFYING PHASE 11: COOPERATIVE FEDERATION & DISTRICT UNION HIERARCHY ---');
   try {
     // 1. Fetch Affiliated Village Societies (VDCS)
-    const socRes = await fetch(`${BASE_URL}/federation/societies`);
+    const socRes = await apiFetch(`${BASE_URL}/federation/societies`);
     const socData = await socRes.json();
     const hasSoc = socRes.ok && socData.count >= 5;
     record('Phase 11', 'Affiliated Village Societies Directory (VDCS)', Boolean(hasSoc), 
       `Loaded ${socData.count} affiliated village primary societies (e.g. ${socData.data?.[0]?.name})`);
 
     // 2. District Milk Union Consolidated Summary
-    const unionRes = await fetch(`${BASE_URL}/federation/union-summary`);
+    const unionRes = await apiFetch(`${BASE_URL}/federation/union-summary`);
     const unionData = await unionRes.json();
     const union = unionData.data;
     const unionOk = unionRes.ok && union && union.aggregateDailyCollectionLitres > 0;
@@ -360,9 +388,13 @@ async function verifyPhase11() {
 }
 
 async function main() {
+  assertIsolatedTestDatabase();
+
   console.log('================================================================');
   console.log('  DAIRYOS ENTERPRISE ERP - FULL SUB-SYSTEM AUDIT & CROSS-CHECK  ');
   console.log('================================================================');
+
+  await establishTestSession();
 
   await verifyPhase1();
   await verifyPhase2();
@@ -389,7 +421,7 @@ async function main() {
   console.log(`Failed: ${failed}`);
 
   if (failed === 0) {
-    console.log('\n🌟 ALL ENTERPRISE PHASES 1 THROUGH 11 VERIFIED AND PASSING 100%!');
+    console.log('\nAll scripted checks passed. This response-shape smoke suite does not certify production readiness.');
   } else {
     console.log(`\n⚠️  ${failed} subsystems encountered issues. Review details above.`);
   }

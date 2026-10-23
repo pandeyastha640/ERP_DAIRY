@@ -275,7 +275,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Live Backend Synchronization on mount
   useEffect(() => {
-    api.checkHealth()
+    const syncBackend = () => api.checkHealth()
       .then(async () => {
         try {
           const [farmersRes, cattleRes, collectionsRes, tanksRes, batchesRes, salesRes, paymentsRes, qualityRes] = await Promise.all([
@@ -467,6 +467,9 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // Backend not available, fallback seamlessly
       });
 
+    syncBackend();
+    window.addEventListener('dairyos:authenticated', syncBackend);
+
     // 2. Live SSE Real-Time Telemetry & Hardware Event Stream
     let eventSource: EventSource | null = null;
     try {
@@ -520,6 +523,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch {}
 
     return () => {
+      window.removeEventListener('dairyos:authenticated', syncBackend);
       if (eventSource) {
         eventSource.close();
       }

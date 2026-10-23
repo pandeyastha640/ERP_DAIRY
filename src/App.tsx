@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Role,
   Facility,
@@ -22,6 +22,7 @@ import {
 import { INITIAL_FEED_FORMULAS } from './data/mockDairyData';
 
 import { DairyERPProvider, useDairyERP } from './context/DairyERPContext';
+import { api } from './services/api';
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal';
@@ -69,10 +70,10 @@ import {
 } from 'lucide-react';
 
 const ROLE_ALLOWED_MODULES: Record<Role, string[]> = {
-  'CEO': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai', 'settings'],
-  'COO': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai', 'settings'],
-  'Operations Manager': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai', 'settings'],
-  'Admin': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai', 'settings'],
+  'CEO': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai-intelligence', 'settings'],
+  'COO': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai-intelligence', 'settings'],
+  'Operations Manager': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai-intelligence', 'settings'],
+  'Admin': ['dashboard', 'control-tower', 'milk-ops', 'cattle', 'farmers', 'feed', 'milk-collection', 'quality', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'distribution', 'sales', 'payments', 'finance', 'reports', 'ai-intelligence', 'settings'],
   'Plant Manager': ['dashboard', 'milk-ops', 'chilling', 'processing', 'products', 'packaging', 'inventory', 'quality', 'control-tower', 'reports', 'settings'],
   'Procurement Manager': ['dashboard', 'milk-ops', 'farmers', 'milk-collection', 'quality', 'cattle', 'feed', 'payments', 'reports'],
   'Finance Manager': ['dashboard', 'payments', 'finance', 'sales', 'reports', 'farmers', 'settings'],
@@ -80,9 +81,8 @@ const ROLE_ALLOWED_MODULES: Record<Role, string[]> = {
 };
 
 function AppContent() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('dairy_erp_auth') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSessionReady, setIsSessionReady] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Modals & Drawers
@@ -146,6 +146,33 @@ function AppContent() {
     dismissToast,
   } = useDairyERP();
 
+  useEffect(() => {
+    let active = true;
+    localStorage.removeItem('dairy_erp_auth');
+    localStorage.removeItem('dairy_erp_role');
+
+    api.auth.getMe()
+      .then((session) => {
+        if (!active) return;
+        const role = session.user?.role;
+        if (!session.success || typeof role !== 'string' || !Object.prototype.hasOwnProperty.call(ROLE_ALLOWED_MODULES, role)) {
+          throw new Error('No valid server session is active.');
+        }
+        setCurrentRole(role as Role);
+        setIsAuthenticated(true);
+      })
+      .catch(() => {
+        if (!active) return;
+        setIsAuthenticated(false);
+        void api.auth.logout().catch(() => undefined);
+      })
+      .finally(() => {
+        if (active) setIsSessionReady(true);
+      });
+
+    return () => { active = false; };
+  }, [setCurrentRole]);
+
   // Search navigation helper
   const handleSelectSearchResult = (moduleName: string, itemId?: string) => {
     setCurrentModule(moduleName);
@@ -153,19 +180,42 @@ function AppContent() {
   };
 
   const handleLogout = () => {
+    void api.auth.logout().catch(() => undefined);
     setIsAuthenticated(false);
     localStorage.removeItem('dairy_erp_auth');
+    localStorage.removeItem('dairy_erp_role');
+    setCurrentRole('Operations Manager');
+    setCurrentModule('dashboard');
   };
+
+  const handleLogin = (role: Role) => {
+    setCurrentRole(role);
+    setIsAuthenticated(true);
+    window.dispatchEvent(new Event('dairyos:authenticated'));
+  };
+
+  const allowRoleSwitch = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_AUTH === 'true';
+  const handleRoleSwitch = async (role: Role) => {
+    if (!allowRoleSwitch) return;
+    try {
+      const session = await api.auth.demoSwitch(role);
+      if (session.success && session.user?.role && Object.prototype.hasOwnProperty.call(ROLE_ALLOWED_MODULES, session.user.role)) {
+        setCurrentRole(session.user.role as Role);
+        window.dispatchEvent(new Event('dairyos:authenticated'));
+      }
+    } catch (error) {
+      console.warn('Development demo role switch failed:', error);
+    }
+  };
+
+  if (!isSessionReady) {
+    return <div className="min-h-screen bg-[#faf8f5] flex items-center justify-center text-sm text-stone-600">Checking secure session…</div>;
+  }
 
   if (!isAuthenticated) {
     return (
       <LoginScreen
-        onLogin={(role) => {
-          setCurrentRole(role);
-          setIsAuthenticated(true);
-          localStorage.setItem('dairy_erp_auth', 'true');
-          localStorage.setItem('dairy_erp_role', role);
-        }}
+        onLogin={handleLogin}
       />
     );
   }
@@ -246,7 +296,8 @@ function AppContent() {
           {/* Top Bar */}
           <Topbar
             currentRole={currentRole}
-            onChangeRole={setCurrentRole}
+            onChangeRole={handleRoleSwitch}
+            allowRoleSwitch={allowRoleSwitch}
             currentFacility={currentFacility}
             onChangeFacility={setCurrentFacility}
             currentDateFilter={currentDateFilter}
@@ -272,12 +323,6 @@ function AppContent() {
                   Your current session role <strong className="text-forest-900 font-mono font-bold">{currentRole}</strong> is restricted from accessing the <strong className="text-forest-950 font-mono font-bold">{currentModule}</strong> module under organizational food safety and audit guidelines.
                 </p>
                 <div className="flex items-center justify-center gap-3 pt-2">
-                  <button
-                    onClick={() => setCurrentRole('Operations Manager')}
-                    className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-xs"
-                  >
-                    Switch to Operations Manager
-                  </button>
                   <button
                     onClick={() => setCurrentModule(ROLE_ALLOWED_MODULES[currentRole]?.[0] || 'milk-collection')}
                     className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-stone-800 rounded-xl text-xs font-semibold cursor-pointer transition-colors"

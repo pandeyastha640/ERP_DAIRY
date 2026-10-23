@@ -1,148 +1,73 @@
-# 🥛 DairyOS — Enterprise Dairy Management & Cooperative ERP Platform
+# DairyOS Enterprise Dairy ERP
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18.0+-61dafb.svg)](https://reactjs.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748.svg)](https://www.prisma.io/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38bdf8.svg)](https://tailwindcss.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+DairyOS is a React and TypeScript dairy ERP prototype with an Express API and Prisma persistence. It contains 20 management screens covering collection, quality, chilling, processing, herd and farmer records, inventory, sales, payments, reporting, AI and administration. The current implementation mixes server-backed workflows with local sample data. It is not yet production-ready; see the [R0 repository audit](docs/modernization/REPOSITORY_AUDIT.md) for evidence and known blockers.
 
-**DairyOS** is an all-in-one, production-grade enterprise Dairy ERP designed for dairy plants, chilling centers, and milk producer cooperatives. It combines modern UI/UX design with closed-loop volumetric mass-balance accounting, hardware IoT cold-chain telemetry, ultrasonic Lactoscan milk testing, GST 3-ply compliant commercial billing, and automated IMPS banking disbursements.
+## Repository and planning
 
----
+- [Architecture graph](docs/modernization/ARCHITECTURE_GRAPH.md)
+- [Feature matrix for all 20 screens and future clients](docs/modernization/FEATURE_MATRIX.md)
+- [Security and data integrity findings](docs/modernization/SECURITY_AND_DATA_INTEGRITY.md)
+- [UI/UX blueprint](docs/modernization/UI_UX_BLUEPRINT.md)
+- [Incremental release roadmap](docs/modernization/IMPLEMENTATION_ROADMAP.md)
+- [Developer handover](DEVELOPER_HANDOVER_AND_FUTURE_ROADMAP.md)
 
-## 🌐 Quick Access on GitHub
+## Local development
 
-* **Repository URL**: [https://github.com/pandeyastha640/ERP_DAIRY](https://github.com/pandeyastha640/ERP_DAIRY)
-* **Default Branch**: `main`
-* **Pre-Loaded Data**: Comes pre-packaged with full SQLite database ([prisma/dev.db](prisma/dev.db)) and human-readable export dump ([prisma/data_dump.json](prisma/data_dump.json)) containing 33 registered farmers, 53 cattle records, 50 milk collections, 4 silos, and 19 sales orders.
-* **Developer Handover & Future Roadmap**: See **[DEVELOPER_HANDOVER_AND_FUTURE_ROADMAP.md](DEVELOPER_HANDOVER_AND_FUTURE_ROADMAP.md)** for onboarding, architecture rules, and prioritized next tasks.
-* **Direct Clone Command**:
-  ```bash
-  git clone https://github.com/pandeyastha640/ERP_DAIRY.git
-  ```
+### Requirements
 
----
+- Node.js `20.19+` or `22.12+` (Vite 8 engine requirement)
+- npm and Git
 
-## 🚀 Quick Start (Running Locally)
+### Setup
 
-### Prerequisites
-* **Node.js** &ge; 18.x
-* **npm** &ge; 9.x
-* **Git**
+1. Install from the lockfile. The current Vite/esbuild peer range requires the legacy peer resolver:
 
-### Installation Steps
-
-1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/pandeyastha640/ERP_DAIRY.git
-   cd ERP_DAIRY
+   npm ci --legacy-peer-deps
    ```
 
-2. **Install Dependencies**:
+2. Create a local environment and generate a unique development JWT secret:
+
    ```bash
-   npm install
+   cp .env.example .env
+   openssl rand -hex 32
    ```
 
-3. **Initialize Database Schema & Seeds**:
+   Set `JWT_SECRET` in `.env`. The default database URL uses an ignored local SQLite file (`prisma/local.db`); the tracked `prisma/dev.db` is sample data and should not be used for tests or production. Leave demo auth disabled unless you explicitly need a local role-switch demo. To create sample accounts, set a separate `SEED_DEMO_PASSWORD` before running the seed.
+
+3. Initialize the local schema and optional sample data:
+
    ```bash
    npx prisma db push
+   npm run seed
    ```
 
-4. **Start the Platform**:
-   * **Terminal 1 — Backend API Server** (Port 5000):
-     ```bash
-     npm run server
-     ```
-   * **Terminal 2 — Frontend UI Application** (Port 3000):
-     ```bash
-     npm run dev
-     ```
+   `npm run seed` skips demo user creation unless `SEED_DEMO_PASSWORD` is explicitly set. Seed data is for local development only.
 
-5. **Open in Browser**:
-   * **Frontend UI Application**: 👉 **[http://localhost:3000](http://localhost:3000)**
-   * **Backend API Health Check**: 👉 **[http://localhost:5000/ready](http://localhost:5000/ready)**
-   * **Prisma Database Visual GUI**:
-     ```bash
-     npx prisma studio
-     ```
-     Access at: 👉 **[http://localhost:5555](http://localhost:5555)**
+4. Start the API and web client in separate terminals:
 
-6. **🍃 MongoDB Dual-Store & Live Data Inspection**:
-   * **Start Local MongoDB Engine**:
-     ```bash
-     npm run db:mongo:start
-     ```
-   * **Sync All Data to MongoDB**:
-     ```bash
-     npm run db:mongo:import
-     ```
-   * **Inspect Live Collections & Records in MongoDB**:
-     ```bash
-     npm run db:mongo:view
-     ```
+   ```bash
+   npm run server
+   npm run dev
+   ```
 
----
+   Open `http://localhost:3000`. The Vite development server proxies `/api` requests to the API on port 5000. API liveness is at `http://localhost:5000/healthz` and database readiness is at `/ready`.
 
+## Checks
 
-## 🐳 Docker Deployment (Single Command)
+- `npm run lint` — TypeScript check
+- `npm run build` — Vite production build
+- `npm run test:security` — authentication/authorization regression checks; requires an isolated SQLite test DB and seeded test account
+- `npm run test:phases` — mutating API smoke suite; requires a running API on port 5000, test credentials, and an isolated SQLite file named `test.db` or `r0-*.db`
+- `npm run launch:check` — read-only database/API/build preflight; results do not certify launch readiness
+- `npm audit --omit=dev` — production dependency audit
 
-Run the entire platform (Frontend + Backend + SQLite Database) in isolated containers:
+Do not point integration checks at `prisma/dev.db` or a production database. The phase suite writes collection, dispatch, telemetry, payout, quality and audit records. Its pass result means only that the scripted response checks passed.
 
-```bash
-docker compose up --build -d
-```
-* Web Application: `http://localhost:3000`
-* API Gateway: `http://localhost:5000`
+Legacy Playwright QA scripts under `scripts/` also perform operational mutations and may attempt notification or payout interactions. They were not run in R0; use only with a disposable local database and test-mode integrations.
 
----
+## Deployment status
 
-## ☁️ 1-Click Cloud Deployment for Organizations
+The Docker Compose file currently supplies PostgreSQL while `prisma/schema.prisma` is configured for SQLite. There is no Prisma migration history. Do not use the current Compose configuration for production until the database provider, migration plan, backup/restore process and deployment wiring have been reconciled and reviewed. R0 does not migrate the production database.
 
-You can deploy DairyOS directly from GitHub to free or production cloud providers:
-
-### Option A: Render.com (Recommended for Full-Stack)
-1. Fork or open the repo: `pandeyastha640/ERP_DAIRY`.
-2. On [Render.com](https://render.com), click **New Web Service** &rarr; Select your GitHub repo.
-3. Set **Build Command**: `npm install && npm run build`
-4. Set **Start Command**: `npm run server`
-5. Render generates a public HTTPS URL (e.g. `https://dairyos.onrender.com`) that anyone in your organization can use immediately on their mobile, tablet, or desktop.
-
-### Option B: Vercel / Netlify (Frontend) + Railway (Backend)
-* Deploy the React frontend via Vercel: Connect GitHub &rarr; Select root directory &rarr; Deploy.
-* Deploy the Node backend via Railway / Render: Connect GitHub &rarr; Start `npm run server`.
-
----
-
-## 📊 Modules & Enterprise Capabilities
-
-| Module | Route / Tab | Key Features |
-| :--- | :--- | :--- |
-| **Control Tower & Dashboard** | `Tab 00: Overview` | Executive KPI ribbon, 3D volumetric charts, milk-flow pipeline, unit economics |
-| **Milk Operations** | `Tab 01: Operations` | Daily shift consolidation, calendar date filters, mass-balance audit, stream comparison |
-| **Cattle Herd Management** | `Tab 02: Cattle` | Ear-tag lifecycle registry, daily parlour yield logging, lactation curves, pedigree lineage |
-| **Milk Collection & Intake** | `Tab 03: Collection` | Digital Lactoscan intake, Fat/SNF two-axis pricing, 58/80mm POS thermal slip printing |
-| **Quality & Lab Testing** | `Tab 04: Quality` | FSSAI ISO 22000 adulteration strips, MBRT, alcohol COB, Bulk Tanker Lab Certificates |
-| **Chilling & Bulk Milk Pool** | `Tab 05: Chilling` | 4 insulated silos, IoT temperature sensors, glycol chiller boost, zero-loss mass balance |
-| **Processing & Pasteurization**| `Tab 06: Processing` | HTST continuous 72°C/15s runs, cream separation, yield standardization, recipe BOMs |
-| **Products & Inventory** | `Tab 07 & 08` | SKU catalog, warehouse cold-storage tracking, batch expiry alerts |
-| **Commercial Sales & Orders** | `Tab 09: Sales` | Multi-channel order book, GST 3-ply invoices, calendar filter, dispatch pass |
-| **Route Logistics & Fleet** | `Tab 10: Distribution`| Reefer van dispatch, crate balancing, driver route tracking, delivery gate passes |
-| **Cooperative Federation** | `Tab 11: Federation` | Village primary milk societies (VDCS) & District Milk Union federation hierarchy |
-| **Finance, Accounts & IMPS** | `Tab 15 & 16` | Farmer passbooks, batch IMPS banking disbursements, COGS, SKU contribution margins |
-| **AI Operations Intelligence** | `Tab 18: AI Brain` | 72-hour neural procurement forecast, least-cost feed balancer, anomaly auditor |
-
----
-
-## 🔒 Security & Enterprise Compliance
-
-* **FSSAI Food Safety Standards**: Strict adulteration test controls, MBRT bacterial limits, and cold-chain logging (&le; 4.5°C).
-* **GST India Statutory Compliance**: 3-ply commercial tax invoices with HSN codes (`0401`, `0405`, `0406`), CGST/SGST splits, and E-Way bill thresholding.
-* **Audit Trail Ledger**: Cryptographically hashed immutable event logging across all financial and volume entries.
-* **OWASP Hardened**: Helmet HTTP security headers, CORS origin protection, input sanitization, and SQL injection prevention via Prisma ORM.
-
----
-
-## 📄 License
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+The PWA manifest and service worker are present, but durable offline synchronization is not implemented. The Android/Capacitor app and Farmer Portal are not implemented. Payments, notifications, tax calculations, hardware integrations and AI fallback behavior require the limitations described in the audit before operational use.

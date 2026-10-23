@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import {
   INITIAL_CATTLE,
@@ -15,6 +16,10 @@ import {
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('The demo seed is disabled in production. Provision production users through an approved administrative process.');
+  }
+
   console.log('🌱 Starting database seed...');
 
   // 1. Seed Farmers
@@ -355,9 +360,6 @@ async function main() {
   }
 
   // 11. Seed Enterprise Users
-  const bcrypt = await import('bcryptjs');
-  const defaultPasswordHash = await bcrypt.default.hash('password123', 10);
-
   const demoUsers = [
     { email: 'operations.manager@dairyos.enterprise', name: 'Dhaval Shah', role: 'Operations Manager' },
     { email: 'ceo@dairyos.enterprise', name: 'Vikramaditya Singhania', role: 'CEO' },
@@ -367,22 +369,29 @@ async function main() {
     { email: 'admin@dairyos.enterprise', name: 'System Administrator', role: 'Operations Manager' },
   ];
 
-  console.log(`Seeding ${demoUsers.length} enterprise users...`);
-  for (const u of demoUsers) {
-    await prisma.user.upsert({
-      where: { email: u.email },
-      update: {
-        name: u.name,
-        role: u.role,
-        passwordHash: defaultPasswordHash,
-      },
-      create: {
-        email: u.email,
-        name: u.name,
-        role: u.role,
-        passwordHash: defaultPasswordHash,
-      },
-    });
+  const demoPassword = process.env.SEED_DEMO_PASSWORD;
+  if (!demoPassword) {
+    console.warn('Skipping demo user seeding. Set SEED_DEMO_PASSWORD explicitly for a local/test database.');
+  } else {
+    const bcrypt = await import('bcryptjs');
+    const demoPasswordHash = await bcrypt.default.hash(demoPassword, 10);
+    console.log(`Seeding ${demoUsers.length} local demo accounts...`);
+    for (const u of demoUsers) {
+      await prisma.user.upsert({
+        where: { email: u.email },
+        update: {
+          name: u.name,
+          role: u.role,
+          passwordHash: demoPasswordHash,
+        },
+        create: {
+          email: u.email,
+          name: u.name,
+          role: u.role,
+          passwordHash: demoPasswordHash,
+        },
+      });
+    }
   }
 
   console.log('✅ Database seeded successfully!');

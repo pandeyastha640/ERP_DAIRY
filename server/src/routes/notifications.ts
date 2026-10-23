@@ -29,10 +29,10 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
     const smsText = `[DairyOS] Namaste ${farmerName}, received ${volumeLitres}L (${shift}) at ${centre}. Fat: ${fat}%, SNF: ${snf}%, Rate: Rs ${ratePerLitre}/L. Amount: Rs ${payableAmount.toLocaleString('en-IN')}. Bank IMPS credit queued. Ref: ${messageId}`;
     const whatsappText = `🥛 *DairyOS Milk Delivery Receipt*\n━━━━━━━━━━━━━━━━━━━━\n👤 *Farmer*: ${farmerName} (${farmerCode})\n📍 *Centre*: ${centre}\n⏰ *Shift*: ${shift} | ${dateStr} ${timestamp}\n📊 *Quantity*: ${volumeLitres} Litres\n🧪 *Quality*: ${fat}% Fat | ${snf}% SNF\n💰 *Rate*: ₹${ratePerLitre.toFixed(2)} / Litre\n💵 *Payable*: *₹${payableAmount.toLocaleString('en-IN')}*\n🏦 *Settlement*: Direct IMPS Payout Queued\n━━━━━━━━━━━━━━━━━━━━\n_Ref: ${messageId} · Anand Dairy Union_`;
 
-    let provider = 'Simulated Local Telecom Bridge';
+    let provider = process.env.NODE_ENV === 'test' ? 'Test Simulation' : 'Simulated Local Telecom Bridge';
 
     // Live Twilio SMS Integration if configured
-    if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+    if (process.env.NODE_ENV !== 'test' && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
       try {
         const auth = Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64');
         await fetch(`https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID}/Messages.json`, {
@@ -54,7 +54,7 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
     }
 
     // Live Meta WhatsApp Cloud API if configured
-    if (process.env.WHATSAPP_API_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID) {
+    if (process.env.NODE_ENV !== 'test' && process.env.WHATSAPP_API_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID) {
       try {
         await fetch(`https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
           method: 'POST',
@@ -104,7 +104,7 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
         smsText,
         whatsappText,
       },
-      deliveryStatus: 'DELIVERED',
+      deliveryStatus: provider.includes('Simulated') || provider === 'Test Simulation' ? 'SIMULATED' : 'DELIVERED',
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
