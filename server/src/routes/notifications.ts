@@ -7,32 +7,49 @@ export const notificationsRouter = Router();
 // Dispatches bilingual Farmer Milk Delivery Confirmation via SMS & WhatsApp
 notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => {
   try {
-    const {
-      farmerCode = 'FARM-001',
-      farmerName = 'Rameshwar Patel',
-      mobileNumber = '+91 9825010000',
-      volumeLitres = 45.0,
-      fat = 4.4,
-      snf = 8.6,
-      ratePerLitre = 39.10,
-      payableAmount = 1759.50,
-      shift = 'Morning',
-      centre = 'Anand Collection Centre',
-      channel = 'ALL', // 'SMS' | 'WHATSAPP' | 'ALL'
-    } = req.body;
+    const { collectionCode, channel = 'ALL' } = req.body;
+    if (typeof collectionCode !== 'string' || !collectionCode.trim()) {
+      return res.status(400).json({ success: false, message: 'A saved collection code is required.' });
+    }
+    if (!['SMS', 'WHATSAPP', 'ALL'].includes(channel)) {
+      return res.status(400).json({ success: false, message: 'Choose SMS, WhatsApp, or both.' });
+    }
+
+    const collection = await prisma.milkCollectionRecord.findUnique({ where: { collectionCode } });
+    if (!collection) {
+      return res.status(404).json({ success: false, message: 'Saved milk collection was not found.' });
+    }
+    const farmer = await prisma.farmer.findUnique({ where: { farmerCode: collection.farmerId } });
+    if (!farmer?.contactNumber) {
+      return res.status(422).json({ success: false, message: 'The saved farmer record has no contact number.' });
+    }
+
+    // Build the message only from authoritative saved records. Callers cannot
+    // substitute a farmer, quantity, rate, payable amount, or recipient number.
+    const farmerCode = farmer.farmerCode;
+    const farmerName = farmer.name;
+    const mobileNumber = farmer.contactNumber;
+    const volumeLitres = collection.quantityLitres;
+    const fat = collection.fat;
+    const snf = collection.snf;
+    const ratePerLitre = collection.ratePerLitre;
+    const payableAmount = collection.payableAmount;
+    const shift = collection.shift;
+    const centre = collection.centre;
 
     const messageId = `MSG-${Date.now().toString().slice(-6)}`;
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const dateStr = new Date().toISOString().split('T')[0];
 
     // Standard Bilingual Message Templates (English & Gujarati/Hindi)
-    const smsText = `[DairyOS] Namaste ${farmerName}, received ${volumeLitres}L (${shift}) at ${centre}. Fat: ${fat}%, SNF: ${snf}%, Rate: Rs ${ratePerLitre}/L. Amount: Rs ${payableAmount.toLocaleString('en-IN')}. Bank IMPS credit queued. Ref: ${messageId}`;
-    const whatsappText = `🥛 *DairyOS Milk Delivery Receipt*\n━━━━━━━━━━━━━━━━━━━━\n👤 *Farmer*: ${farmerName} (${farmerCode})\n📍 *Centre*: ${centre}\n⏰ *Shift*: ${shift} | ${dateStr} ${timestamp}\n📊 *Quantity*: ${volumeLitres} Litres\n🧪 *Quality*: ${fat}% Fat | ${snf}% SNF\n💰 *Rate*: ₹${ratePerLitre.toFixed(2)} / Litre\n💵 *Payable*: *₹${payableAmount.toLocaleString('en-IN')}*\n🏦 *Settlement*: Direct IMPS Payout Queued\n━━━━━━━━━━━━━━━━━━━━\n_Ref: ${messageId} · Anand Dairy Union_`;
+    const smsText = `[DairyOS] Namaste ${farmerName}, received ${volumeLitres}L (${shift}) at ${centre}. Fat: ${fat}%, SNF: ${snf}%, Rate: Rs ${ratePerLitre}/L. Payable: Rs ${payableAmount.toLocaleString('en-IN')}. No bank transfer is confirmed. Ref: ${messageId}`;
+    const whatsappText = `🥛 *DairyOS Milk Delivery Receipt*\n━━━━━━━━━━━━━━━━━━━━\n👤 *Farmer*: ${farmerName} (${farmerCode})\n📍 *Centre*: ${centre}\n⏰ *Shift*: ${shift} | ${dateStr} ${timestamp}\n📊 *Quantity*: ${volumeLitres} Litres\n🧪 *Quality*: ${fat}% Fat | ${snf}% SNF\n💰 *Rate*: ₹${ratePerLitre.toFixed(2)} / Litre\n💵 *Payable*: *₹${payableAmount.toLocaleString('en-IN')}*\n🏦 *Payment status*: Payable recorded; no bank transfer confirmed\n━━━━━━━━━━━━━━━━━━━━\n_Ref: ${messageId} · DairyOS demo_`;
 
+    const simulationOnly = process.env.NODE_ENV !== 'production' || process.env.DISABLE_LIVE_NOTIFICATIONS === 'true';
     let provider = process.env.NODE_ENV === 'test' ? 'Test Simulation' : 'Simulated Local Telecom Bridge';
 
     // Live Twilio SMS Integration if configured
-    if (process.env.NODE_ENV !== 'test' && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+    if (!simulationOnly && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
       try {
         const auth = Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64');
         await fetch(`https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID}/Messages.json`, {
@@ -54,7 +71,7 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
     }
 
     // Live Meta WhatsApp Cloud API if configured
-    if (process.env.NODE_ENV !== 'test' && process.env.WHATSAPP_API_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID) {
+    if (!simulationOnly && process.env.WHATSAPP_API_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID) {
       try {
         await fetch(`https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
           method: 'POST',
@@ -82,15 +99,18 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
         userName: 'Telecom Dispatcher',
         userRole: 'Notification Gateway',
         module: 'Milk Collection',
-        action: 'RECEIPT_DISPATCHED',
+        action: simulationOnly ? 'RECEIPT_PREVIEWED' : 'RECEIPT_DISPATCHED',
         recordId: messageId,
-        description: `Dispatched SMS/WhatsApp receipt via ${provider} to ${farmerName} (${mobileNumber}): ${volumeLitres}L @ ₹${ratePerLitre}/L = ₹${payableAmount}`,
+        description: simulationOnly
+          ? `Prepared simulated receipt preview for ${farmerName} (${mobileNumber}); no message sent.`
+          : `Submitted receipt to ${provider} for ${farmerName} (${mobileNumber}): ${volumeLitres}L @ ₹${ratePerLitre}/L = ₹${payableAmount}`,
         severity: 'info',
       },
     });
 
     return res.status(200).json({
       success: true,
+      simulationOnly,
       messageId,
       dispatchedAt: new Date().toISOString(),
       provider,
@@ -104,7 +124,7 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
         smsText,
         whatsappText,
       },
-      deliveryStatus: provider.includes('Simulated') || provider === 'Test Simulation' ? 'SIMULATED' : 'DELIVERED',
+      deliveryStatus: simulationOnly ? 'SIMULATED' : 'PROVIDER_ACCEPTED_DELIVERY_UNVERIFIED',
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
@@ -116,42 +136,20 @@ notificationsRouter.post('/receipt-sms', async (req: Request, res: Response) => 
 notificationsRouter.get('/collections/:id/slip', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    let collection = await prisma.milkCollectionRecord.findFirst({
+    const collection = await prisma.milkCollectionRecord.findFirst({
       where: { OR: [{ id }, { collectionCode: id }] },
     });
 
     if (!collection) {
-      collection = await prisma.milkCollectionRecord.findFirst({
-        orderBy: { createdAt: 'desc' },
-      });
+      return res.status(404).json({ success: false, message: 'Saved milk collection was not found.' });
     }
+    const c = collection;
 
-    const c = collection || {
-      collectionCode: `IOT-${Date.now().toString().slice(-6)}`,
-      farmerId: 'FARM-001',
-      farmerName: 'Rameshwar Patel',
-      date: new Date().toISOString().split('T')[0],
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      shift: 'Morning',
-      centre: 'Anand Collection Centre',
-      quantityLitres: 45.0,
-      fat: 4.4,
-      snf: 8.6,
-      temperatureC: 6.5,
-      quality: 'PASS',
-      ratePerLitre: 39.10,
-      payableAmount: 1759.50,
-      testedBy: 'Milkotronic Lactoscan IoT Station',
-    };
-
-    const netWeightKg = +(c.quantityLitres * 1.030).toFixed(2);
     const slipPayload = {
       slipNumber: `SLIP-${c.collectionCode}`,
       society: {
-        name: 'ANAND DISTRICT MILK COOPERATIVE UNION',
-        unitName: c.centre || 'Anand Village Collection Centre #04',
-        fssaiRegNo: '10018021003456',
-        posTerminalId: 'POS-MCC-01',
+        name: 'DairyOS Cooperative Demo',
+        unitName: c.centre,
       },
       intake: {
         collectionCode: c.collectionCode,
@@ -161,13 +159,9 @@ notificationsRouter.get('/collections/:id/slip', async (req: Request, res: Respo
         farmerCode: c.farmerId,
         farmerName: c.farmerName,
         milkType: Number(c.fat) >= 5.5 ? 'Buffalo Milk' : 'Cow Milk (Grade A)',
-        grossWeightKg: netWeightKg + 1.2,
-        tareWeightKg: 1.2,
-        netWeightKg,
         volumeLitres: c.quantityLitres,
         fatPct: c.fat,
         snfPct: c.snf,
-        clrReading: 28.5,
         tempCelsius: c.temperatureC,
         qualityGrade: c.quality,
       },
@@ -178,13 +172,13 @@ notificationsRouter.get('/collections/:id/slip', async (req: Request, res: Respo
         grossPayableINR: c.payableAmount,
         deductionsINR: 0.0,
         netPayableINR: c.payableAmount,
-        paymentStatus: 'Queued for Direct Bank IMPS Clearance',
+        paymentStatus: c.payableAmount > 0 ? 'Pending payable; no bank transfer confirmed' : 'No payable amount recorded',
       },
       footer: {
-        testedBy: c.testedBy || 'Milkotronic Lactoscan MCC (COM3)',
+        testedBy: c.testedBy || 'Not recorded',
         qrData: `DAIRYOS:${c.collectionCode}:${c.farmerId}:${c.quantityLitres}:${c.payableAmount}`,
         printedAt: new Date().toISOString(),
-        disclaimer: 'Computer-generated milk collection receipt. Certified by FSSAI compliant ultrasonic analyzer.',
+        disclaimer: 'Computer-generated receipt from a persisted DairyOS milk collection record.',
       },
     };
 

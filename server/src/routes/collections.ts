@@ -50,6 +50,8 @@ collectionsRouter.post('/', async (req: Request, res: Response) => {
   try {
     const {
       farmerId,
+      requestId,
+      date,
       shift,
       centre,
       quantityLitres,
@@ -59,13 +61,35 @@ collectionsRouter.post('/', async (req: Request, res: Response) => {
       testedBy,
     } = req.body;
 
-    const q = parseFloat(quantityLitres) || 0;
-    const f = parseFloat(fat) || 0;
-    const s = parseFloat(snf) || 0;
-    const t = parseFloat(temperatureC) || 18.0;
+    const q = Number(quantityLitres);
+    const f = Number(fat);
+    const s = Number(snf);
+    const t = Number(temperatureC);
+    const collectionDate = typeof date === 'string' && date ? date : new Date().toISOString().slice(0, 10);
 
-    if (!farmerId || q <= 0) {
-      return res.status(400).json({ success: false, message: 'Invalid farmer or quantity' });
+    if (typeof farmerId !== 'string' || !farmerId.trim()) {
+      return res.status(400).json({ success: false, message: 'Select a valid farmer.' });
+    }
+    if (!Number.isFinite(q) || q <= 0 || q > 10000) {
+      return res.status(400).json({ success: false, message: 'Quantity must be greater than 0 and no more than 10,000 litres.' });
+    }
+    if (!Number.isFinite(f) || f < 0 || f > 15 || !Number.isFinite(s) || s < 0 || s > 15) {
+      return res.status(400).json({ success: false, message: 'FAT and SNF readings must be between 0 and 15.' });
+    }
+    if (!Number.isFinite(t) || t < -5 || t > 60) {
+      return res.status(400).json({ success: false, message: 'Temperature must be between -5°C and 60°C.' });
+    }
+    if (shift !== undefined && shift !== 'Morning' && shift !== 'Evening') {
+      return res.status(400).json({ success: false, message: 'Shift must be Morning or Evening.' });
+    }
+    const parsedCollectionDate = new Date(`${collectionDate}T00:00:00.000Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(collectionDate)
+      || Number.isNaN(parsedCollectionDate.getTime())
+      || parsedCollectionDate.toISOString().slice(0, 10) !== collectionDate) {
+      return res.status(400).json({ success: false, message: 'Collection date must use YYYY-MM-DD.' });
+    }
+    if (requestId !== undefined && (typeof requestId !== 'string' || !/^[a-zA-Z0-9_-]{8,80}$/.test(requestId))) {
+      return res.status(400).json({ success: false, message: 'Collection request identifier is invalid.' });
     }
 
     const farmer = await prisma.farmer.findUnique({
@@ -85,8 +109,24 @@ collectionsRouter.post('/', async (req: Request, res: Response) => {
     const payableAmount = Math.round(q * rate);
 
     const now = new Date();
-    const count = await prisma.milkCollectionRecord.count();
-    const collectionCode = `CC-01-${now.getHours()}H-${Math.floor(100 + Math.random() * 900)}`;
+    const collectionCode = requestId
+      ? `CC-01-${requestId}`
+      : `CC-01-${now.getHours()}H-${Math.floor(100 + Math.random() * 900)}`;
+    const existingRequest = await prisma.milkCollectionRecord.findUnique({ where: { collectionCode } });
+    if (existingRequest) {
+      const sameSubmission = existingRequest.farmerId === farmer.farmerCode
+        && existingRequest.date === collectionDate
+        && existingRequest.shift === (shift || 'Morning')
+        && existingRequest.centre === (centre || 'Anand Collection Centre')
+        && existingRequest.quantityLitres === q
+        && existingRequest.fat === f
+        && existingRequest.snf === s
+        && existingRequest.temperatureC === t;
+      if (!sameSubmission) {
+        return res.status(409).json({ success: false, message: 'This collection request identifier was already used for different readings.' });
+      }
+      return res.status(200).json({ success: true, replayed: true, data: existingRequest });
+    }
 
     // Atomic transaction execution
     const result = await prisma.$transaction(async (tx) => {
@@ -96,7 +136,7 @@ collectionsRouter.post('/', async (req: Request, res: Response) => {
           collectionCode,
           farmerId: farmer.farmerCode,
           farmerName: farmer.name,
-          date: now.toISOString().split('T')[0],
+          date: collectionDate,
           time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           shift: shift || 'Morning',
           centre: centre || 'Anand Collection Centre',
@@ -115,7 +155,7 @@ collectionsRouter.post('/', async (req: Request, res: Response) => {
       if (payableAmount > 0) {
         await tx.paymentTransaction.create({
           data: {
-            transactionRef: `TXN-AUTO-${Date.now().toString().slice(-6)}`,
+            transactionRef: `TXN-AUTO-${collection.collectionCode}`,
             recipientName: `${farmer.name} (${farmer.farmerCode})`,
             partyType: 'Farmer',
             milkLitres: q,
@@ -164,6 +204,9 @@ collectionsRouter.post('/', async (req: Request, res: Response) => {
 
     res.status(201).json({ success: true, data: result });
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    if (error?.code === 'P2002') {
+      return res.status(409).json({ success: false, message: 'This collection may already be recorded. Refresh the history before retrying.' });
+    }
+    res.status(500).json({ success: false, message: 'Could not save milk collection. Please retry.' });
   }
 });

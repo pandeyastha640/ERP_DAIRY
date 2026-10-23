@@ -6,11 +6,10 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
 import { BankPayoutBatchModal } from '../components/finance/BankPayoutBatchModal';
 import { CreditCard, Plus, CheckCircle2, Clock, ArrowDownLeft, ArrowUpRight, Search, Zap } from 'lucide-react';
-import { api } from '../services/api';
 
 interface PaymentsPageProps {
   payments?: PaymentTransaction[];
-  onAddPayment?: (txn: PaymentTransaction) => void;
+  onAddPayment?: (txn: PaymentTransaction) => Promise<PaymentTransaction>;
 }
 
 export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPayments, onAddPayment: propOnAddPayment }) => {
@@ -25,7 +24,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
   const onAddPayment = propOnAddPayment || recordPayment;
 
   const [filterType, setFilterType] = useState('All');
-  const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Processing' | 'Pending'>('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Completed' | 'Processing' | 'Pending' | 'Simulated'>('All');
   const [search, setSearch] = useState('');
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
   const [isBatchPayoutModalOpen, setIsBatchPayoutModalOpen] = useState(false);
@@ -36,6 +35,8 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
   const [amount, setAmount] = useState('2500');
   const [method, setMethod] = useState<'UPI' | 'Direct Bank IMPS' | 'NEFT' | 'Cash'>('Direct Bank IMPS');
   const [notes, setNotes] = useState('Shift milk settlement');
+  const [isSavingPayment, setIsSavingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const totalFarmerPayables = procurementSummary.totalPayablesToday;
   const totalPayablesPending = payments
@@ -59,22 +60,30 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
     return mParty && mStatus && mSearch;
   });
 
-  const handleRecord = (e: React.FormEvent) => {
+  const handleRecord = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPaymentError(null);
+    setIsSavingPayment(true);
     const newTxn: PaymentTransaction = {
-      id: `PAY-${Date.now()}`,
-      transactionRef: `TXN-MANUAL-${Math.floor(10000 + Math.random() * 90000)}`,
-      recipientName: recipient || 'Farmer Direct Account',
+      id: `PAY-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      transactionRef: `TXN-MANUAL-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      recipientName: recipient.trim(),
       partyType,
-      amount: parseFloat(amount) || 0,
+      amount: Number(amount),
       paymentDate: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       paymentMethod: method,
-      status: 'Completed',
+      status: 'Pending',
       notes,
     };
 
-    onAddPayment(newTxn);
-    setIsRecordModalOpen(false);
+    try {
+      await onAddPayment(newTxn);
+      setIsRecordModalOpen(false);
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : 'Payment entry was not saved. Please retry.');
+    } finally {
+      setIsSavingPayment(false);
+    }
   };
 
   return (
@@ -91,7 +100,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
                 Payments & Settlement Ledger
               </h1>
               <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sage-50 text-forest-800 border border-sage-200">
-                Direct Bank IMPS / UPI
+                Payout action is simulation only
               </span>
             </div>
             <p className="text-xs text-stone-500 mt-0.5 font-sans">
@@ -106,7 +115,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
             className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Zap className="w-4 h-4 text-emerald-200" />
-            <span>Disburse All Pending (IMPS)</span>
+            <span>Run payout simulation</span>
           </button>
 
           <button
@@ -173,6 +182,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
               <option value="Completed">Completed Only</option>
               <option value="Processing">Processing (Bank Queue)</option>
               <option value="Pending">Pending Authorization</option>
+              <option value="Simulated">Simulated Preview</option>
             </select>
           </div>
 
@@ -201,8 +211,8 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
       <div className="bg-white border border-[#ede8df] rounded-2xl shadow-xs overflow-hidden">
         <div className="px-5 py-3.5 border-b border-[#ede8df] bg-cream-50/50 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold text-forest-950 font-sans">Financial Settlement Journal</h3>
-            <p className="text-[11px] text-stone-500">Real-time banking gateway disbursement log and direct credits</p>
+            <h3 className="text-sm font-bold text-forest-950 font-sans">Payment Ledger</h3>
+            <p className="text-[11px] text-stone-500">Simulated previews are not bank settlements. Completed requires verified provider confirmation.</p>
           </div>
           <span className="text-xs font-mono font-medium text-forest-800 bg-sage-50 border border-sage-200 px-2.5 py-0.5 rounded-full">
             {payments.length} Recorded Transactions
@@ -256,11 +266,12 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
       <Modal
         isOpen={isRecordModalOpen}
         onClose={() => setIsRecordModalOpen(false)}
-        title="Record Financial Settlement"
-        subtitle="Post direct bank IMPS, UPI or cash voucher transaction"
+        title="Record Payment Entry"
+        subtitle="Save a pending ledger entry. This form does not send money."
         maxWidth="md"
       >
         <form onSubmit={handleRecord} className="space-y-4">
+          {paymentError && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">{paymentError}</div>}
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Party / Recipient Name</label>
             <input
@@ -288,7 +299,7 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Settlement Method</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Payment Method (record only)</label>
               <select
                 value={method}
                 onChange={(e) => setMethod(e.target.value as any)}
@@ -306,6 +317,9 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
             <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">Amount (₹)</label>
             <input
               type="number"
+              min="0.01"
+              step="0.01"
+              required
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs font-mono text-forest-950 outline-none"
@@ -332,9 +346,10 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-all"
+              disabled={isSavingPayment}
+              className="px-4 py-2 bg-forest-900 hover:bg-forest-800 disabled:opacity-60 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-all"
             >
-              Post Settlement
+              {isSavingPayment ? 'Saving…' : 'Save Pending Entry'}
             </button>
           </div>
         </form>
@@ -346,9 +361,6 @@ export const PaymentsPage: React.FC<PaymentsPageProps> = ({ payments: propPaymen
         onClose={() => setIsBatchPayoutModalOpen(false)}
         pendingAmount={totalPayablesPending}
         farmerCount={payments.filter((p) => p.status === 'Pending').length}
-        onSuccess={(disbursedCount, totalAmount) => {
-          // Asynchronously update context if available
-        }}
       />
     </div>
   );

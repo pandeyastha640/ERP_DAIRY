@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MilkCollectionRecord, Farmer } from '../types/dairy';
+import { MilkCollectionRecord, Farmer, NewMilkCollection } from '../types/dairy';
 import { MetricCard } from '../components/common/MetricCard';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { QuickCollectionModal } from '../components/operations/QuickCollectionModal';
@@ -28,7 +28,7 @@ import {
 interface MilkCollectionPageProps {
   collections: MilkCollectionRecord[];
   farmers: Farmer[];
-  onAddCollection: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => void;
+  onAddCollection: (record: NewMilkCollection) => Promise<MilkCollectionRecord>;
   onOpenMobileView: () => void;
 }
 
@@ -86,7 +86,7 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
             Milk Collection Desk
           </h1>
           <p className="text-xs text-stone-500 mt-1 font-medium">
-            Real-time farmer inward intake, milk analyzer integration, lactometer testing and instantaneous payable calculation.
+            Record farmer milk intake. The server confirms quality, rate, and payable before saving.
           </p>
         </div>
 
@@ -134,15 +134,15 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-forest-600 animate-pulse" />
-            <span className="font-bold text-forest-950">BMC Anand Intake Station:</span>
+            <span className="font-bold text-forest-950">BMC Anand Intake Station (demo):</span>
           </div>
           <div className="flex items-center gap-1.5 font-mono text-stone-600 bg-cream-50 px-2.5 py-1 rounded-lg border border-[#ede8df]">
             <span className="w-1.5 h-1.5 rounded-full bg-forest-600" />
-            <span>Milkotronic Analyzer COM3 (Online)</span>
+            <span>Analyzer sample data (hardware not connected)</span>
           </div>
           <div className="flex items-center gap-1.5 font-mono text-stone-600 bg-cream-50 px-2.5 py-1 rounded-lg border border-[#ede8df]">
             <span className="w-1.5 h-1.5 rounded-full bg-forest-600" />
-            <span>Mettler Load Cell COM4 (Calibrated)</span>
+            <span>Scale sample data (hardware not connected)</span>
           </div>
         </div>
 

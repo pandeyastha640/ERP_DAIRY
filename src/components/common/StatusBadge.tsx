@@ -57,6 +57,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
     s === 'IN PROGRESS' ||
     s === 'OBSERVATION' ||
     s === 'PENDING' ||
+    s === 'SIMULATED' ||
     s === 'VARIANCE DETECTED'
   ) {
     dotColor = 'bg-[#c59b27] shadow-[0_0_6px_#c59b27]';

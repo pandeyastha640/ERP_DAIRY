@@ -16,11 +16,14 @@ import {
   CreditCard,
   Phone,
   Download,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
+import { translate } from '../i18n';
 
 interface FarmerManagementPageProps {
   farmers: Farmer[];
-  onAddFarmer: (farmer: Farmer) => void;
+  onAddFarmer: (farmer: Omit<Farmer, 'id'>) => Promise<Farmer>;
   selectedFarmerId?: string;
 }
 
@@ -29,7 +32,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
   onAddFarmer,
   selectedFarmerId,
 }) => {
-  const { settings, collectionsList } = useDairyERP();
+  const { settings, collectionsList, language } = useDairyERP();
   const [search, setSearch] = useState('');
   const [villageFilter, setVillageFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Under Review' | 'Inactive'>('All');
@@ -40,13 +43,15 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
     return null;
   });
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSavingFarmer, setIsSavingFarmer] = useState(false);
+  const [farmerError, setFarmerError] = useState<string | null>(null);
 
   // New Farmer Form
   const [newName, setNewName] = useState('');
   const [newVillage, setNewVillage] = useState('Anand Rural');
-  const [newPhone, setNewPhone] = useState('+91 9825123456');
-  const [newCattle, setNewCattle] = useState('5');
-  const [newBank, setNewBank] = useState('SBI-XXXX9901');
+  const [newPhone, setNewPhone] = useState('');
+  const [newCattle, setNewCattle] = useState('0');
+  const [newBank, setNewBank] = useState('');
 
   const totalFarmers = farmers.length;
   const activeCount = farmers.filter((f) => f.status === 'Active').length;
@@ -68,60 +73,66 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
     const matchesSearch =
       f.id.toLowerCase().includes(search.toLowerCase()) ||
       f.name.toLowerCase().includes(search.toLowerCase()) ||
+      f.contactNumber.toLowerCase().includes(search.toLowerCase()) ||
       f.village.toLowerCase().includes(search.toLowerCase());
     const matchesVillage = villageFilter === 'All' || f.village === villageFilter;
     const matchesStatus = statusFilter === 'All' || f.status === statusFilter;
     return matchesSearch && matchesVillage && matchesStatus;
   });
 
-  const handleCreateFarmer = (e: React.FormEvent) => {
+  const handleCreateFarmer = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newId = `FARM-${String(totalFarmers + 1).padStart(3, '0')}`;
-    const newFarmer: Farmer = {
-      id: newId,
-      name: newName || 'Sanjaybhai Patel',
+    setIsSavingFarmer(true);
+    setFarmerError(null);
+    const newFarmer: Omit<Farmer, 'id'> = {
+      name: newName.trim(),
       village: newVillage,
-      contactNumber: newPhone,
-      cattleCount: parseInt(newCattle) || 4,
-      todayMilkL: 55.0,
-      morningMilkL: 30.0,
-      eveningMilkL: 25.0,
-      avgFat: 4.4,
-      avgSNF: 8.6,
-      ratePerL: 36.8,
-      todayPayable: Math.round(55.0 * 36.8),
+      contactNumber: newPhone.trim(),
+      cattleCount: Number(newCattle),
+      todayMilkL: 0,
+      morningMilkL: 0,
+      eveningMilkL: 0,
+      avgFat: 0,
+      avgSNF: 0,
+      ratePerL: 0,
+      todayPayable: 0,
       status: 'Active',
       bankAccount: newBank,
       joinedDate: new Date().toISOString().split('T')[0],
-      demoPerformanceScore: 88,
-      supplyHistory: [
-        { date: '2026-10-01', litres: 52, fat: 4.3, snf: 8.5 },
-        { date: '2026-10-02', litres: 54, fat: 4.4, snf: 8.6 },
-        { date: '2026-10-03', litres: 55, fat: 4.4, snf: 8.6 },
-      ],
-      paymentHistory: [
-        { date: '2026-09-30', amount: 30500, method: 'Direct Bank IMPS', status: 'Paid' },
-      ],
+      demoPerformanceScore: 0,
+      supplyHistory: [],
+      paymentHistory: [],
     };
 
-    onAddFarmer(newFarmer);
-    setIsAddModalOpen(false);
+    try {
+      const savedFarmer = await onAddFarmer(newFarmer);
+      setActiveProfile(savedFarmer);
+      setIsAddModalOpen(false);
+      setNewName('');
+      setNewPhone('');
+      setNewCattle('0');
+      setNewBank('');
+    } catch (error) {
+      setFarmerError(error instanceof Error ? error.message : 'Farmer registration failed. Please try again.');
+    } finally {
+      setIsSavingFarmer(false);
+    }
   };
 
   return (
     <PageContainer>
       {/* 1. Header */}
       <PageHeader
-        title="Farmer & Procurement Directory"
+        title={translate(language, 'Farmer & Procurement Directory')}
         subtitle="Producer registry, village milk pourer logs, automated fat/SNF pricing rates, and direct bank settlement."
-        statusBadge="Direct Bank Settlement Ready"
+        statusBadge="Farmer records saved to server"
         actions={
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-forest-950/20 active:scale-98"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Farmer</span>
+            <span>{translate(language, 'Add Farmer')}</span>
           </button>
         }
       />
@@ -400,7 +411,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
                   <span>Settlement Bank Account: {activeProfile.bankAccount}</span>
                 </div>
                 <span className="text-[10px] font-mono text-forest-900 bg-sage-50 px-2.5 py-0.5 rounded-full border border-sage-200 font-bold">
-                  Direct Transfer Active
+                  {activeProfile.bankAccount ? 'Bank details on file' : 'Bank details not provided'}
                 </span>
               </div>
               <div className="space-y-2 font-mono text-[11px]">
@@ -450,14 +461,20 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
       <Modal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Register New Milk Producer"
-        subtitle="Enrol farmer into DairyOS procurement network and setup automated banking"
+        title={translate(language, 'Register New Milk Producer')}
+        subtitle="Create a farmer profile for the cooperative. Bank details are optional."
         maxWidth="md"
       >
         <form onSubmit={handleCreateFarmer} className="space-y-4">
+          {farmerError && (
+            <div role="alert" className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{farmerError}</span>
+            </div>
+          )}
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-              Farmer Full Name
+              {translate(language, 'Farmer Full Name')}
             </label>
             <input
               type="text"
@@ -472,24 +489,25 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                Village Cluster
+                {translate(language, 'Village Cluster')}
               </label>
-              <select
+              <input
+                type="text"
+                required
                 value={newVillage}
                 onChange={(e) => setNewVillage(e.target.value)}
                 className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs cursor-pointer"
-              >
-                {villages.map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
+                placeholder="Village or collection centre"
+              />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Cattle Count</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">{translate(language, 'Cattle Count')}</label>
               <input
                 type="number"
+                min="0"
+                max="500"
+                step="1"
+                required
                 value={newCattle}
                 onChange={(e) => setNewCattle(e.target.value)}
                 className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
@@ -500,17 +518,18 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-stone-700 mb-1.5">
-                Phone / Mobile
+                {translate(language, 'Phone / Mobile')}
               </label>
               <input
-                type="text"
+                type="tel"
+                required
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
                 className="w-full bg-[#faf8f5] border border-[#ede8df] rounded-xl px-3.5 py-2 text-xs text-stone-900 outline-none focus:border-forest-600 focus:bg-white shadow-2xs"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1.5">Bank Account</label>
+              <label className="block text-xs font-semibold text-stone-700 mb-1.5">{translate(language, 'Bank Account')}</label>
               <input
                 type="text"
                 value={newBank}
@@ -530,9 +549,10 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
+              disabled={isSavingFarmer}
+              className="px-4 py-2 bg-forest-800 hover:bg-forest-900 disabled:opacity-60 text-white rounded-xl text-xs font-semibold shadow-xs shadow-forest-950/20 cursor-pointer active:scale-98"
             >
-              Save Farmer
+              {isSavingFarmer ? <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />{translate(language, 'Saving…')}</span> : translate(language, 'Save Farmer')}
             </button>
           </div>
         </form>

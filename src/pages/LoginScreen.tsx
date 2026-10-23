@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Role } from '../types/dairy';
 import { Milk, ArrowRight, UserCheck, AlertCircle, Loader2, Sparkles, ShieldCheck } from 'lucide-react';
 import { api } from '../services/api';
+import { useDairyERP } from '../context/DairyERPContext';
+import { translate } from '../i18n';
 
 interface LoginScreenProps {
   onLogin: (role: Role) => void;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
+  const { language, setLanguage } = useDairyERP();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -78,8 +81,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             <span className="w-2 h-2 rounded-full bg-gold-500" />
           </div>
           <p className="text-xs text-stone-500 mt-1 max-w-xs mx-auto leading-relaxed font-sans">
-            One unified operating system for herd, farmer procurement, chilling, processing and commercial distribution.
+            {language === 'hi'
+              ? 'पशुधन, किसान खरीद, शीतलन, प्रसंस्करण और वितरण के लिए एक संचालन प्रणाली।'
+              : 'One unified operating system for herd, farmer procurement, chilling, processing and commercial distribution.'}
           </p>
+        </div>
+
+        <div className="mb-4 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+            className="rounded-lg border border-[#ede8df] bg-cream-50 px-3 py-2 text-xs font-semibold text-forest-900 hover:bg-sage-50"
+            aria-label="Switch language / भाषा बदलें"
+          >
+            English | हिन्दी
+          </button>
         </div>
 
         {/* Session Status */}
@@ -102,7 +118,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">
-              Enterprise Email
+              {translate(language, 'Enterprise Email')}
             </label>
             <input
               required
@@ -116,7 +132,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1 font-sans">
-              Security Credential
+              {translate(language, 'Security Credential')}
             </label>
             <input
               required
@@ -136,11 +152,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-cream-200" />
-                <span>Authenticating JWT Session...</span>
+                <span>{translate(language, 'Authenticating JWT Session...')}</span>
               </>
             ) : (
               <>
-                <span>Sign In to DairyOS</span>
+                <span>{translate(language, 'Sign In to DairyOS')}</span>
                 <ArrowRight className="w-4 h-4 text-cream-200" />
               </>
             )}

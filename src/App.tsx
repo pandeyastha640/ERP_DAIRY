@@ -23,6 +23,7 @@ import { INITIAL_FEED_FORMULAS } from './data/mockDairyData';
 
 import { DairyERPProvider, useDairyERP } from './context/DairyERPContext';
 import { api } from './services/api';
+import { translate } from './i18n';
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal';
@@ -83,7 +84,9 @@ const ROLE_ALLOWED_MODULES: Record<Role, string[]> = {
 function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSessionReady, setIsSessionReady] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => window.matchMedia('(max-width: 767px)').matches);
 
   // Modals & Drawers
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -96,6 +99,8 @@ function AppContent() {
   const {
     currentRole,
     setCurrentRole,
+    language,
+    setLanguage,
     currentFacility,
     setCurrentFacility,
     currentDateFilter,
@@ -179,13 +184,22 @@ function AppContent() {
     setSelectedItemId(itemId);
   };
 
-  const handleLogout = () => {
-    void api.auth.logout().catch(() => undefined);
-    setIsAuthenticated(false);
-    localStorage.removeItem('dairy_erp_auth');
-    localStorage.removeItem('dairy_erp_role');
-    setCurrentRole('Operations Manager');
-    setCurrentModule('dashboard');
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    setLogoutError(null);
+    try {
+      const response = await api.auth.logout();
+      if (!response.success) throw new Error('The server did not confirm logout.');
+      setIsAuthenticated(false);
+      localStorage.removeItem('dairy_erp_auth');
+      localStorage.removeItem('dairy_erp_role');
+      setCurrentRole('Operations Manager');
+      setCurrentModule('dashboard');
+    } catch {
+      setLogoutError(translate(language, 'Could not end the server session. Reconnect and try again.'));
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const handleLogin = (role: Role) => {
@@ -233,46 +247,64 @@ function AppContent() {
       <div className="relative z-10 bg-white/70 backdrop-blur-md border-b border-white/60 px-4 py-1.5 flex items-center justify-between text-[11px] font-mono select-none text-stone-600 shadow-[0_1px_4px_rgba(27,67,50,0.02)]">
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse shadow-[0_0_8px_#059669]" />
-          <span className="text-forest-900 font-bold">CONNECTED DAIRY OPERATING SYSTEM</span>
+          <span className="text-forest-900 font-bold hidden sm:inline">DAIRYOS OPERATIONS WORKSPACE</span>
+          <span className="text-forest-900 font-bold sm:hidden">DairyOS</span>
           <span className="text-stone-500 hidden sm:inline">
-            &bull; Continuous Volumetric Mass Balance &amp; Real-time Margin Reconciliation Active
+            &bull; Collection, quality, chilling, sales, and payable records
           </span>
         </div>
         <div className="flex items-center gap-3">
 
           <button
+            type="button"
+            onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+            aria-label="Switch language / भाषा बदलें"
+            className="rounded-lg border border-[#ede8df] bg-white/70 px-2 py-1 text-[10px] font-sans font-semibold text-forest-900 hover:bg-sage-50"
+          >
+            English | हिन्दी
+          </button>
+          <span className="text-stone-300 hidden md:inline">|</span>
+
+          <button
             onClick={() => setIsTracerOpen(true)}
-            className="text-forest-800 hover:text-forest-950 hover:underline flex items-center gap-1 cursor-pointer font-sans font-medium"
+            className="hidden md:flex text-forest-800 hover:text-forest-950 hover:underline items-center gap-1 cursor-pointer font-sans font-medium"
           >
             <GitFork className="w-3.5 h-3.5" />
             <span>Trace Flow</span>
           </button>
-          <span className="text-stone-300">|</span>
+          <span className="text-stone-300 hidden md:inline">|</span>
           <button
             onClick={() => setIsAuditDrawerOpen(true)}
-            className="text-stone-600 hover:text-stone-900 flex items-center gap-1 cursor-pointer font-sans"
+            className="hidden md:flex text-stone-600 hover:text-stone-900 items-center gap-1 cursor-pointer font-sans"
           >
             <FileClock className="w-3.5 h-3.5 text-stone-500" />
             <span>Audit Trail</span>
           </button>
-          <span className="text-stone-300">|</span>
+          <span className="text-stone-300 hidden md:inline">|</span>
           <button
             onClick={() => setIsMobileFieldOpen(true)}
-            className="text-forest-800 hover:text-forest-950 hover:underline flex items-center gap-1 cursor-pointer font-sans font-medium"
+            className="hidden md:flex text-forest-800 hover:text-forest-950 hover:underline items-center gap-1 cursor-pointer font-sans font-medium"
           >
             <Smartphone className="w-3.5 h-3.5" />
             <span>Field Touch Mode</span>
           </button>
-          <span className="text-stone-300">|</span>
+          <span className="text-stone-300 hidden md:inline">|</span>
           <button
             onClick={handleLogout}
+            disabled={isLoggingOut}
             className="text-stone-500 hover:text-stone-800 flex items-center gap-1 cursor-pointer font-sans"
           >
             <LogOut className="w-3 h-3" />
-            <span>Sign Out</span>
+            <span>{isLoggingOut ? (language === 'hi' ? 'बाहर जा रहे हैं…' : 'Signing out…') : (language === 'hi' ? 'साइन आउट' : 'Sign Out')}</span>
           </button>
         </div>
       </div>
+
+      {logoutError && (
+        <div role="alert" className="fixed right-4 top-16 z-50 max-w-sm rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-sans text-rose-800 shadow-lg">
+          {logoutError}
+        </div>
+      )}
 
       <div className="flex flex-1 relative">
         {/* Left Sidebar */}

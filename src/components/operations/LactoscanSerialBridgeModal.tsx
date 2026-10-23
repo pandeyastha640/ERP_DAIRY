@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Farmer, MilkCollectionRecord } from '../../types/dairy';
+import { Farmer, MilkCollectionRecord, NewMilkCollection } from '../../types/dairy';
 import { Modal } from '../common/Modal';
-import { api } from '../../services/api';
 import {
   Cpu,
   Scale,
@@ -25,7 +24,7 @@ interface LactoscanSerialBridgeModalProps {
   isOpen: boolean;
   onClose: () => void;
   farmers: Farmer[];
-  onCollectionIngested: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => void;
+  onCollectionIngested: (record: NewMilkCollection) => Promise<MilkCollectionRecord>;
 }
 
 interface SimulatedPreset {
@@ -90,7 +89,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
   // Connection State
   const [connectionMode, setConnectionMode] = useState<'simulated' | 'web_serial'>('simulated');
   const [serialBaudRate, setSerialBaudRate] = useState<number>(9600);
-  const [isConnected, setIsConnected] = useState<boolean>(true);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isReading, setIsReading] = useState<boolean>(false);
   const [webSerialSupported, setWebSerialSupported] = useState<boolean>(false);
 
@@ -104,14 +103,13 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
 
   // Serial Console Stream Log
   const [packetLogs, setPacketLogs] = useState<string[]>([
-    '[INIT] Hardware Driver: Milkotronic RS232 / USB Bridge Initialized',
-    '[BAUD] COM3 Serial interface opened @ 9600-8-N-1',
-    '[SCALE] Mettler Toledo Loadcell Platform 500kg connected on COM4',
-    '[STATUS] Ready to capture live ultrasonic milk analyzer packets',
+    '[MODE] Simulator active; no physical analyzer or scale connected',
+    '[SIM] Sample analyzer readings are for demonstration only',
   ]);
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [lastIngestedRecord, setLastIngestedRecord] = useState<any>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
   // Check Web Serial API support
@@ -134,7 +132,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
 
   // Two-Axis Pricing Formula
   const isFail = fat < 3.2 || snf < 7.8 || temperatureC > 24.0;
-  const isWarn = !isFail && (temperatureC > 10.0 || fat < 3.8);
+  const isWarn = !isFail && (temperatureC > 20.0 || fat < 3.8);
   const quality = isFail ? 'FAIL' : isWarn ? 'WARNING' : 'PASS';
 
   const baseRate = 34.5;
@@ -235,40 +233,17 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
     }
 
     setIsSubmitting(true);
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const dateStr = new Date().toISOString().split('T')[0];
-    let activeCollectionCode = `IOT-${Math.floor(100000 + Math.random() * 900000)}`;
 
     try {
-      appendLog(`[TX -> INWARD] Ingesting ${calculatedLitres}L from ${selectedFarmer.name} (${selectedFarmer.id})...`);
+      setSubmitError(null);
+      appendLog(`[TX -> SERVER] Saving ${calculatedLitres}L from ${selectedFarmer.name} (${selectedFarmer.id})...`);
 
-      // 1. Send to Backend IoT Ingestion API (graceful sync)
-      const iotPayload = {
-        farmerCode: selectedFarmer.id,
-        farmerName: selectedFarmer.name,
-        weightKg: netWeightKg,
-        volumeLitres: calculatedLitres,
-        fat,
-        snf,
-        clr,
-        temperatureC,
-        shift,
-        centre,
-      };
-
-      try {
-        const response = await api.iot.postLactoscan(iotPayload);
-        if (response?.data?.collectionCode) {
-          activeCollectionCode = response.data.collectionCode;
-        }
-        appendLog(`[API 200] Hardware datagram persisted to SQLite ledger (#${activeCollectionCode})`);
-      } catch (apiErr: any) {
-        appendLog(`[LOCAL SYNC] Ingestion buffered locally: ${apiErr.message || 'Offline mode'}`);
-      }
-
-      // 2. Invoke context callback to refresh local state instantly
-      onCollectionIngested({
-        time: timeStr,
+      // Commit once through the authoritative collection workflow. Sending to
+      // the IoT ingestion route here as well used to create duplicate records.
+      const saved = await onCollectionIngested({
+        requestId: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `iot-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         date: dateStr,
         shift,
         farmerId: selectedFarmer.id,
@@ -284,20 +259,19 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
         testedBy: 'Milkotronic Lactoscan IoT Station (COM3)',
       });
 
-      // 3. Update receipt card
       setLastIngestedRecord({
+        collectionCode: saved.collectionCode,
         farmer: selectedFarmer.name,
         code: selectedFarmer.id,
-        litres: calculatedLitres,
-        rate: computedRate,
-        payable: payableAmount,
-        quality,
-        collectionCode: activeCollectionCode,
+        litres: saved.quantityLitres,
+        rate: saved.ratePerLitre,
+        payable: saved.payableAmount,
+        quality: saved.quality,
       });
 
-      appendLog(`[SUCCESS] ${calculatedLitres}L credited to Chilling Vat B! Collection #${activeCollectionCode}`);
-      appendLog(`[FINANCE] ₹${payableAmount.toLocaleString()} queued for farmer IMPS payout clearance.`);
+      appendLog(`[SERVER SAVED] ${saved.quantityLitres}L; ${saved.quality}; ₹${saved.payableAmount.toLocaleString()} payable. Collection #${saved.collectionCode}`);
     } catch (err: any) {
+      setSubmitError(err instanceof Error ? err.message : 'Collection was not saved. Please retry.');
       appendLog(`[ERROR] Ingestion notice: ${err.message}`);
     } finally {
       setIsSubmitting(false);
@@ -308,8 +282,8 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Hardware IoT & Ultrasonic Milk Analyzer Bridge"
-      subtitle="Milkotronic Lactoscan MCC & Load-Cell Digital Scale Automated Intake Engine"
+      title="Analyzer Intake Simulator"
+      subtitle="Demonstration readings only. Save is server-backed; this screen does not imply connected hardware."
       maxWidth="xl"
     >
       <div className="space-y-4">
@@ -317,18 +291,18 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
         <div className="bg-[#0d1117] border border-[#30363d] rounded-lg p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-semibold text-[#f0f6fc]">Milkotronic Lactoscan MCC</span>
+              <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+              <span className="font-semibold text-[#f0f6fc]">{isConnected ? 'Physical analyzer connected' : 'Analyzer simulator'}</span>
             </div>
             <span className="text-[#8b949e]">|</span>
             <div className="flex items-center gap-1.5 font-mono text-emerald-400">
               <Activity className="w-3.5 h-3.5" />
-              <span>RS232: 9600-8N1</span>
+              <span>{isConnected ? `RS232: ${serialBaudRate}-8N1` : 'RS232: simulated'}</span>
             </div>
             <span className="text-[#8b949e]">|</span>
             <div className="flex items-center gap-1.5 font-mono text-sky-400">
               <Scale className="w-3.5 h-3.5" />
-              <span>Load Cell: Active</span>
+              <span>Load Cell: {isConnected ? 'connected' : 'simulated'}</span>
             </div>
           </div>
 
@@ -344,7 +318,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
               </button>
             )}
             <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[11px] font-mono font-semibold">
-              HARDWARE SYNCED
+              {isConnected ? 'DEVICE CONNECTED' : 'SIMULATION • NO DEVICE'}
             </span>
           </div>
         </div>
@@ -401,7 +375,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
               <Zap className="w-3.5 h-3.5 text-amber-400" />
               <span>Simulated Hardware Telemetry Injector</span>
             </span>
-            <span className="text-[11px] text-[#8b949e]">Click preset to fire live RS232 datagram</span>
+              <span className="text-[11px] text-[#8b949e]">Sample values only; no hardware packet is sent</span>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -568,7 +542,7 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
               ₹{payableAmount.toLocaleString()}
             </div>
             <div className="text-[10px] text-emerald-500 font-mono">
-              IMPS auto-queued
+              Estimated; server confirms on save
             </div>
           </div>
         </div>
@@ -603,7 +577,13 @@ export const LactoscanSerialBridgeModal: React.FC<LactoscanSerialBridgeModalProp
                 <strong>{lastIngestedRecord.collectionCode}</strong> successfully credited: {lastIngestedRecord.litres}L from {lastIngestedRecord.farmer} (₹{lastIngestedRecord.payable.toLocaleString()})
               </span>
             </div>
-            <span className="font-mono text-[11px] text-emerald-400">Credited to Vat B</span>
+            <span className="font-mono text-[11px] text-emerald-400">Server saved · payment pending</span>
+          </div>
+        )}
+
+        {submitError && (
+          <div role="alert" className="rounded-lg border border-rose-500/40 bg-rose-950/30 p-3 text-xs text-rose-200">
+            {submitError}
           </div>
         )}
 

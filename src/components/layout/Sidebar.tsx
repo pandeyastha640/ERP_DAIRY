@@ -1,4 +1,6 @@
 import React from 'react';
+import { useDairyERP } from '../../context/DairyERPContext';
+import { translate } from '../../i18n';
 import {
   LayoutDashboard,
   Radio,
@@ -103,6 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   collapsed,
   onToggleCollapse,
 }) => {
+  const { language } = useDairyERP();
   return (
     <aside
       className={`fixed top-0 bottom-0 left-0 z-30 flex flex-col bg-white/75 backdrop-blur-2xl border-r border-white/70 transition-all duration-300 select-none shadow-[4px_0_24px_rgba(27,67,50,0.04)] ${
@@ -151,7 +154,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div key={grp.group} className="space-y-0.5">
             {!collapsed && (
               <div className="px-3 py-1 text-[10px] font-bold tracking-wider text-stone-400 uppercase font-mono">
-                {grp.group}
+                {translate(language, grp.group)}
               </div>
             )}
             {grp.items.map((item) => {
@@ -162,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => onSelectModule(item.id)}
-                  title={collapsed ? `${item.number} ${item.label}` : undefined}
+                  title={collapsed ? `${item.number} ${translate(language, item.label)}` : undefined}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition-all duration-200 text-left relative group cursor-pointer active:scale-[0.98] ${
                     isActive
                       ? 'bg-gradient-to-r from-[#eef6f0] to-white/95 text-[#1b4332] font-bold shadow-[0_4px_14px_-2px_rgba(27,67,50,0.08),inset_0_1px_1px_rgba(255,255,255,1)] border border-[#cde6d5] -translate-y-0.5'
@@ -181,7 +184,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <span className={`text-[10px] font-mono shrink-0 ${isActive ? 'text-[#2d6a4f] font-semibold' : 'text-stone-400'}`}>
                           {item.number}
                         </span>
-                        <span className="truncate">{item.label}</span>
+                        <span className="truncate">{translate(language, item.label)}</span>
                       </div>
                       {item.badge && (
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-semibold shrink-0 bg-[#fbf7ec] text-[#855e16] border border-[#f0e2bd] shadow-2xs">
@@ -204,11 +207,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center justify-between font-mono text-[10px] mb-1">
             <span className="font-bold text-[#0f2319] flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-[#2d6a4f]" />
-              FSSAI Grade A
+              DairyOS Demo
             </span>
             <span className="text-[#1b4332] flex items-center gap-1 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-[#2d6a4f] animate-pulse" />
-              ONLINE
+              LOCAL
             </span>
           </div>
           <div className="truncate text-stone-400 text-[10px]">Mass Balance Reconciliation Nominal</div>

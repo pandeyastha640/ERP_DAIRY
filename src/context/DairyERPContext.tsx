@@ -7,6 +7,7 @@ import {
   Farmer,
   FeedItem,
   MilkCollectionRecord,
+  NewMilkCollection,
   QualityTestRecord,
   ChillingTank,
   MilkPoolReconciliation,
@@ -48,8 +49,11 @@ import {
   evaluateAIInsights,
 } from '../services/dairyEngine';
 import { api } from '../services/api';
+import { Language } from '../i18n';
 
 interface DairyERPContextType {
+  language: Language;
+  setLanguage: (language: Language) => void;
   // Session State
   currentRole: Role;
   setCurrentRole: (role: Role) => void;
@@ -87,10 +91,10 @@ interface DairyERPContextType {
   insights: AIInsight[];
 
   // Mutating Action Handlers with Cross-System Side Effects
-  recordMilkCollection: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => void;
+  recordMilkCollection: (record: NewMilkCollection) => Promise<MilkCollectionRecord>;
   launchProcessingBatch: (batch: ProcessingBatch) => void;
   recordSalesOrder: (order: SalesOrder) => void;
-  recordPayment: (txn: PaymentTransaction) => void;
+  recordPayment: (txn: PaymentTransaction) => Promise<PaymentTransaction>;
   addCattle: (cow: Cattle) => void;
   recordCattleMilking: (entry: {
     cattleId: string;
@@ -99,7 +103,7 @@ interface DairyERPContextType {
     fat?: number;
     snf?: number;
   }) => void;
-  addFarmer: (farmer: Farmer) => void;
+  addFarmer: (farmer: Omit<Farmer, 'id'>) => Promise<Farmer>;
   recordFeedPurchase: (item: { feedId: string; quantityKg: number; costPerKg: number }) => void;
   recordFeedConsumption: (item: { feedId: string; quantityKg: number }) => void;
   restockPackaging: (id: string, qty: number) => void;
@@ -216,6 +220,7 @@ const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
 ];
 
 export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [language, setLanguage] = useState<Language>(() => localStorage.getItem('dairy_language') === 'hi' ? 'hi' : 'en');
   // Session & UI States
   const [currentRole, setCurrentRole] = useState<Role>('Operations Manager');
   const [currentFacility, setCurrentFacility] = useState<Facility>('Main Dairy Plant');
@@ -257,6 +262,7 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // Synchronize state changes to localStorage
+  useEffect(() => { localStorage.setItem('dairy_language', language); }, [language]);
   useEffect(() => { saveStorage('settings', settings); }, [settings]);
   useEffect(() => { saveStorage('cattle', cattleList); }, [cattleList]);
   useEffect(() => { saveStorage('farmers', farmersList); }, [farmersList]);
@@ -289,33 +295,44 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             api.quality.getAll(),
           ]);
 
-          if (farmersRes?.data?.length) {
-            setFarmersList((prev) => {
-              const prevMap = new Map(prev.map((f) => [f.id, f]));
-              return farmersRes.data.map((dbF: any) => {
-                const existing = prevMap.get(dbF.farmerCode) || prevMap.get(dbF.id);
-                return {
-                  id: dbF.farmerCode || dbF.id,
-                  name: dbF.name,
-                  village: dbF.village,
-                  contactNumber: dbF.contactNumber,
-                  cattleCount: Number(dbF.cattleCount) || 1,
-                  todayMilkL: existing?.todayMilkL || 0,
-                  morningMilkL: existing?.morningMilkL || 0,
-                  eveningMilkL: existing?.eveningMilkL || 0,
-                  avgFat: existing?.avgFat || 4.2,
-                  avgSNF: existing?.avgSNF || 8.5,
-                  ratePerL: existing?.ratePerL || 35.0,
-                  todayPayable: existing?.todayPayable || 0,
-                  status: (dbF.status || existing?.status || 'Active') as 'Active' | 'Inactive' | 'Under Review',
-                  bankAccount: dbF.bankAccount || existing?.bankAccount || '',
-                  joinedDate: existing?.joinedDate || '2025-01-01',
-                  demoPerformanceScore: existing?.demoPerformanceScore || 85,
-                  supplyHistory: existing?.supplyHistory || [],
-                  paymentHistory: existing?.paymentHistory || [],
-                };
-              });
-            });
+          if (farmersRes?.success) {
+            const persistedCollections = Array.isArray(collectionsRes?.data) ? collectionsRes.data : [];
+            const today = new Date().toISOString().slice(0, 10);
+            setFarmersList((farmersRes.data || []).map((dbF: any) => {
+              const farmerCollections = persistedCollections.filter((collection: any) => collection.farmerId === dbF.farmerCode);
+              const todaysCollections = farmerCollections.filter((collection: any) => collection.date === today);
+              const quantityToday = (items: any[]) => items.reduce((sum, item) => sum + Number(item.quantityLitres || 0), 0);
+              const average = (items: any[], key: 'fat' | 'snf') => items.length
+                ? items.reduce((sum, item) => sum + Number(item[key] || 0), 0) / items.length
+                : 0;
+              const recentSupply = [...farmerCollections].slice(0, 6).map((item: any) => ({
+                date: item.date,
+                litres: Number(item.quantityLitres),
+                fat: Number(item.fat),
+                snf: Number(item.snf),
+              }));
+              const latestCollection = farmerCollections[0];
+              return {
+                id: dbF.farmerCode || dbF.id,
+                name: dbF.name,
+                village: dbF.village,
+                contactNumber: dbF.contactNumber || '',
+                cattleCount: Number(dbF.cattleCount) || 0,
+                todayMilkL: quantityToday(todaysCollections),
+                morningMilkL: quantityToday(todaysCollections.filter((item: any) => item.shift === 'Morning')),
+                eveningMilkL: quantityToday(todaysCollections.filter((item: any) => item.shift === 'Evening')),
+                avgFat: average(farmerCollections, 'fat'),
+                avgSNF: average(farmerCollections, 'snf'),
+                ratePerL: Number(latestCollection?.ratePerLitre) || 0,
+                todayPayable: todaysCollections.reduce((sum: number, item: any) => sum + Number(item.payableAmount || 0), 0),
+                status: (dbF.status || 'Active') as 'Active' | 'Inactive' | 'Under Review',
+                bankAccount: dbF.bankAccount || '',
+                joinedDate: typeof dbF.createdAt === 'string' ? dbF.createdAt.slice(0, 10) : '',
+                demoPerformanceScore: 0,
+                supplyHistory: recentSupply,
+                paymentHistory: [],
+              };
+            }));
           }
 
           if (cattleRes?.data?.length) {
@@ -345,8 +362,8 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             });
           }
 
-          if (collectionsRes?.data?.length) {
-            setCollectionsList(collectionsRes.data.map((c: any) => ({
+          if (collectionsRes?.success) {
+            setCollectionsList((collectionsRes.data || []).map((c: any) => ({
               id: c.id,
               collectionCode: c.collectionCode,
               farmerId: c.farmerId,
@@ -599,105 +616,81 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * 1. Record Milk Collection:
    * Farmer -> Collection -> Quality -> Milk Pool -> Farmer Payable in Finance
    */
-  const recordMilkCollection = (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => {
-    const newId = `COL-${String(collectionsList.length + 1).padStart(3, '0')}`;
-    const newRecord: MilkCollectionRecord = {
-      ...record,
-      id: newId,
-      collectionCode: `CC-01-${new Date().getHours()}H-${Math.floor(100 + Math.random() * 900)}`,
-    };
-
-    // 1. Add to collections
-    setCollectionsList((prev) => [newRecord, ...prev]);
-    showToast(`Received ${record.quantityLitres}L from ${record.farmerName} (₹${record.payableAmount.toFixed(2)})`, 'success', 'Milk Intake Recorded');
-
-    // 2. Update specific Farmer's balance & stats
-    setFarmersList((prev) =>
-      prev.map((f) => {
-        if (f.id === record.farmerId) {
-          const shiftField = record.shift === 'Morning' ? 'morningMilkL' : 'eveningMilkL';
-          return {
-            ...f,
-            todayMilkL: +(f.todayMilkL + record.quantityLitres).toFixed(1),
-            [shiftField]: +(f[shiftField] + record.quantityLitres).toFixed(1),
-            todayPayable: f.todayPayable + record.payableAmount,
-            supplyHistory: [
-              {
-                date: record.date,
-                litres: record.quantityLitres,
-                fat: record.fat,
-                snf: record.snf,
-              },
-              ...f.supplyHistory,
-            ],
-          };
-        }
-        return f;
-      })
-    );
-
-    // 3. Create a pending disbursement transaction in Payments
-    if (record.payableAmount > 0) {
-      const pendingPayment: PaymentTransaction = {
-        id: `PAY-AUTO-${Date.now().toString().slice(-4)}`,
-        transactionRef: `TXN-PEND-${Math.floor(10000 + Math.random() * 90000)}`,
-        recipientName: `${record.farmerName} (${record.farmerId})`,
-        partyType: 'Farmer',
-        milkLitres: record.quantityLitres,
-        amount: record.payableAmount,
-        paymentDate: `${record.date} ${record.time}`,
-        paymentMethod: 'Direct Bank IMPS',
-        status: 'Pending',
-        notes: `${record.shift} shift inward milk clearance @ ₹${record.ratePerLitre}/L`,
-      };
-      setPaymentsList((prev) => [pendingPayment, ...prev]);
-    }
-
-    // 4. Update chilling tank volume (Vat B inward)
-    if (record.quality !== 'FAIL') {
-      setTanksList((prev) =>
-        prev.map((tank) =>
-          tank.id === 'TANK-B'
-            ? {
-                ...tank,
-                currentVolumeLitres: Math.min(
-                  tank.capacityLitres,
-                  tank.currentVolumeLitres + Math.round(record.quantityLitres)
-                ),
-              }
-            : tank
-        )
-      );
-    }
-
-    // 5. Write audit entry
-    logAudit({
-      module: 'Milk Collection',
-      action: 'COLLECTION_RECORDED',
-      recordId: newId,
-      description: `Inward milk: ${record.quantityLitres} L from ${record.farmerName} (${record.farmerId}) [${record.quality}]`,
-      financialImpact: `+₹${record.payableAmount.toLocaleString()} payable generated`,
-      milkImpactLitres: record.quantityLitres,
-      severity: record.quality === 'FAIL' ? 'warning' : 'info',
-    });
-
-    // 6. Asynchronously sync to backend database
-    api.collections.create({
+  const recordMilkCollection = async (record: NewMilkCollection): Promise<MilkCollectionRecord> => {
+    // The server owns quality classification, pricing, payable rounding and the
+    // atomic collection/payment/tank/audit mutation. Do not update UI state until
+    // it confirms the transaction.
+    const response = await api.collections.create({
+      requestId: record.requestId || (typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`),
       farmerId: record.farmerId,
-      farmerName: record.farmerName,
       date: record.date,
-      time: record.time,
       shift: record.shift,
       centre: record.centre,
       quantityLitres: record.quantityLitres,
       fat: record.fat,
       snf: record.snf,
       temperatureC: record.temperatureC,
-      quality: record.quality,
-      ratePerLitre: record.ratePerLitre,
-      payableAmount: record.payableAmount,
       testedBy: record.testedBy,
-    }).catch((err) => console.warn('Backend collection sync notice:', err.message));
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error('The server did not confirm the milk collection. Please retry.');
+    }
+
+    const saved = response.data as MilkCollectionRecord;
+    setCollectionsList((prev) => [saved, ...prev.filter((item) => item.id !== saved.id)]);
+
+    setFarmersList((prev) => prev.map((farmer) => {
+      if (farmer.id !== saved.farmerId) return farmer;
+      const shiftField = saved.shift === 'Morning' ? 'morningMilkL' : 'eveningMilkL';
+      return {
+        ...farmer,
+        todayMilkL: +(farmer.todayMilkL + saved.quantityLitres).toFixed(1),
+        [shiftField]: +(farmer[shiftField] + saved.quantityLitres).toFixed(1),
+        todayPayable: farmer.todayPayable + saved.payableAmount,
+        avgFat: saved.fat,
+        avgSNF: saved.snf,
+        ratePerL: saved.ratePerLitre,
+        supplyHistory: [
+          { date: saved.date, litres: saved.quantityLitres, fat: saved.fat, snf: saved.snf },
+          ...farmer.supplyHistory,
+        ],
+      };
+    }));
+
+    if (saved.payableAmount > 0) {
+      const pendingPayment: PaymentTransaction = {
+        id: `PAY-${saved.id}`,
+        transactionRef: `PENDING-${saved.collectionCode}`,
+        recipientName: `${saved.farmerName} (${saved.farmerId})`,
+        partyType: 'Farmer',
+        milkLitres: saved.quantityLitres,
+        amount: saved.payableAmount,
+        paymentDate: `${saved.date} ${saved.time}`,
+        paymentMethod: 'Direct Bank IMPS',
+        status: 'Pending',
+        notes: `${saved.shift} shift milk payable; no bank transfer has been made.`,
+      };
+      setPaymentsList((prev) => [pendingPayment, ...prev.filter((p) => p.id !== pendingPayment.id)]);
+    }
+
+    showToast(
+      `Saved ${saved.quantityLitres} L for ${saved.farmerName}. Quality: ${saved.quality}; payable: ₹${saved.payableAmount.toLocaleString()}.`,
+      'success',
+      'Collection saved by server'
+    );
+    logAudit({
+      module: 'Milk Collection',
+      action: 'COLLECTION_RECORDED',
+      recordId: saved.collectionCode,
+      description: `Inward milk: ${saved.quantityLitres} L from ${saved.farmerName} (${saved.farmerId}) [${saved.quality}]`,
+      financialImpact: `+₹${saved.payableAmount.toLocaleString()} payable generated`,
+      milkImpactLitres: saved.quantityLitres,
+      severity: saved.quality === 'FAIL' ? 'warning' : 'info',
+    });
+    return saved;
   };
 
   /**
@@ -873,50 +866,8 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
    * 4. Record Payment:
    * Settles pending payables or records supplier clearance
    */
-  const recordPayment = (txn: PaymentTransaction) => {
-    setPaymentsList((prev) => [txn, ...prev]);
-    showToast(`Payment of ₹${txn.amount.toLocaleString()} settled for ${txn.recipientName}`, 'success', 'Payment Settled');
-
-    // If paying a farmer, update the matching pending transaction status and reduce farmer payable
-    if (txn.partyType === 'Farmer') {
-      setPaymentsList((prev) =>
-        prev.map((p) =>
-          p.recipientName.includes(txn.recipientName) && p.status === 'Pending'
-            ? { ...p, status: 'Completed' }
-            : p
-        )
-      );
-      setFarmersList((prev) =>
-        prev.map((f) =>
-          txn.recipientName.includes(f.name) || txn.recipientName.includes(f.id)
-            ? { ...f, todayPayable: Math.max(0, f.todayPayable - txn.amount) }
-            : f
-        )
-      );
-    }
-
-    // If receiving from distributor, mark matching order Paid
-    if (txn.partyType === 'Distributor') {
-      setSalesOrdersList((prev) =>
-        prev.map((o) =>
-          txn.notes.includes(o.orderNumber) || txn.recipientName.includes(o.customerName)
-            ? { ...o, paymentStatus: 'Paid' }
-            : o
-        )
-      );
-    }
-
-    logAudit({
-      module: 'Payments',
-      action: 'PAYMENT_SETTLED',
-      recordId: txn.transactionRef,
-      description: `Settled payment of ₹${txn.amount.toLocaleString()} to ${txn.recipientName} via ${txn.paymentMethod}`,
-      financialImpact: `₹${txn.amount.toLocaleString()} settled`,
-      severity: 'info',
-    });
-
-    // Sync to backend database
-    api.payments.create({
+  const recordPayment = async (txn: PaymentTransaction): Promise<PaymentTransaction> => {
+    const response = await api.payments.create({
       transactionRef: txn.transactionRef,
       recipientName: txn.recipientName,
       partyType: txn.partyType,
@@ -926,7 +877,26 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       paymentMethod: txn.paymentMethod,
       status: txn.status,
       notes: txn.notes,
-    }).catch((err) => console.warn('Payment transaction sync notice:', err.message));
+    });
+    if (!response.success || !response.data) {
+      throw new Error('The server did not confirm the payment entry. Please retry.');
+    }
+    const saved = response.data as PaymentTransaction;
+    setPaymentsList((prev) => [saved, ...prev.filter((item) => item.id !== saved.id)]);
+    showToast(
+      `Payment entry for ₹${saved.amount.toLocaleString()} is ${saved.status.toLowerCase()}; no settlement was confirmed.`,
+      'info',
+      'Payment entry saved'
+    );
+    logAudit({
+      module: 'Payments',
+      action: 'PAYMENT_ENTRY_RECORDED',
+      recordId: saved.transactionRef,
+      description: `Recorded ${saved.status.toLowerCase()} payment entry for ${saved.recipientName} via ${saved.paymentMethod}`,
+      financialImpact: 'No settlement confirmed',
+      severity: 'info',
+    });
+    return saved;
   };
 
   /**
@@ -1019,26 +989,48 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   /**
    * 6. Add Farmer Producer:
    */
-  const addFarmer = (farmer: Farmer) => {
-    setFarmersList((prev) => [farmer, ...prev]);
-    showToast(`Registered producer ${farmer.name} (${farmer.village})`, 'success', 'Farmer Enrolled');
-    logAudit({
-      module: 'Farmers',
-      action: 'FARMER_ENROLLED',
-      recordId: farmer.id,
-      description: `Registered producer ${farmer.name} (${farmer.village}) with ${farmer.cattleCount} animals`,
-      severity: 'info',
-    });
-
-    api.farmers.create({
-      farmerCode: farmer.id,
+  const addFarmer = async (farmer: Omit<Farmer, 'id'>): Promise<Farmer> => {
+    const response = await api.farmers.create({
       name: farmer.name,
       village: farmer.village,
       contactNumber: farmer.contactNumber,
       cattleCount: farmer.cattleCount,
       bankAccount: farmer.bankAccount,
       status: farmer.status,
-    }).catch((err) => console.warn('Backend farmer sync notice:', err.message));
+    });
+    if (!response.success || !response.data) {
+      throw new Error('The server did not confirm farmer registration. Please retry.');
+    }
+    const saved = response.data;
+    const persistedFarmer: Farmer = {
+      ...farmer,
+      id: saved.farmerCode,
+      name: saved.name,
+      village: saved.village,
+      contactNumber: saved.contactNumber,
+      cattleCount: saved.cattleCount,
+      bankAccount: saved.bankAccount || '',
+      status: saved.status,
+      todayMilkL: 0,
+      morningMilkL: 0,
+      eveningMilkL: 0,
+      avgFat: 0,
+      avgSNF: 0,
+      ratePerL: 0,
+      todayPayable: 0,
+      supplyHistory: [],
+      paymentHistory: [],
+    };
+    setFarmersList((prev) => [persistedFarmer, ...prev.filter((item) => item.id !== persistedFarmer.id)]);
+    showToast(`Registered producer ${persistedFarmer.name} (${persistedFarmer.village}).`, 'success', 'Farmer saved by server');
+    logAudit({
+      module: 'Farmers',
+      action: 'FARMER_ENROLLED',
+      recordId: persistedFarmer.id,
+      description: `Registered producer ${persistedFarmer.name} (${persistedFarmer.village}) with ${persistedFarmer.cattleCount} animals`,
+      severity: 'info',
+    });
+    return persistedFarmer;
   };
 
   /**
@@ -1260,6 +1252,8 @@ export const DairyERPProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const value = {
+    language,
+    setLanguage,
     currentRole,
     setCurrentRole,
     currentFacility,
