@@ -258,7 +258,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
 
       {/* Critical Cold-Chain Thermal Alert Banner */}
       {breachedTanks.length > 0 && (
-        <div className="p-4 rounded-2xl border bg-rose-50 border-rose-200 text-rose-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-4 rounded-xl border bg-rose-50 border-rose-200 text-rose-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 shrink-0 text-rose-600" />
             <div>
@@ -289,7 +289,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
       {/* Live Server Audit Banner if fetched */}
       {serverReconciliation && (
         <div
-          className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs ${
+          className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs ${
             serverReconciliation.data?.isWithinTolerance
               ? 'bg-sage-50/80 border-sage-200 text-forest-950'
               : 'bg-amber-50 border-amber-200 text-amber-950'
@@ -337,7 +337,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
             return (
               <div
                 key={tank.id}
-                className="relative overflow-hidden bg-white/80 backdrop-blur-xl border border-white/85 rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-[0_8px_24px_-4px_rgba(27,67,50,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-6px_rgba(27,67,50,0.14)] transition-all duration-300 group"
+                className="relative overflow-hidden bg-white border border-[#d9e3dd] rounded-xl p-5 flex flex-col justify-between space-y-4 shadow-[0_8px_24px_-4px_rgba(27,67,50,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] hover:-translate-y-1.5 hover:shadow-[0_18px_40px_-6px_rgba(27,67,50,0.14)] transition-all duration-300 group"
               >
                 {/* Subtle specular card highlight */}
                 <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/70 to-transparent pointer-events-none rounded-t-2xl" />
@@ -376,7 +376,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
                 </div>
 
                 {/* Sensors */}
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-white/70 backdrop-blur-xs p-3 rounded-xl border border-white/80 shadow-2xs relative z-10">
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-white/70 backdrop-blur-xs p-3 rounded-xl border border-[#d9e3dd] shadow-2xs relative z-10">
                   <div>
                     <div className="text-[10px] text-stone-500 font-sans font-medium flex items-center gap-1">
                       <Thermometer className="w-3 h-3 text-forest-700" /> Temp
@@ -437,7 +437,7 @@ export const ChillingMilkPoolPage: React.FC<ChillingMilkPoolPageProps> = ({
       </div>
 
       {/* CLOSED-LOOP MILK POOL RECONCILIATION */}
-      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-6 shadow-xs">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-[#ede8df]/70 pb-3">
           <div>
             <h2 className="text-base font-bold text-forest-950 font-sans">
