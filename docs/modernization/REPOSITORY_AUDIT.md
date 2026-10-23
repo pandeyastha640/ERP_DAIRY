@@ -49,6 +49,7 @@ After the R0 changes, checks were repeated:
 | `npm run launch:check` | 15/15 passed against the same isolated DB; this is a read-only check, not a launch approval. |
 | `npm audit --omit=dev` | Passed; zero production dependency advisories reported. |
 | `git diff --check` | Passed. |
+| GitHub Actions PR run #27 | Passed on Node 20.19.0, including locked dependency install, schema/seed, lint, auth regression, build and phase smoke suite. |
 
 `npm ci` was blocked by the existing Vite/esbuild peer mismatch; `npm ci --legacy-peer-deps` passed. The suites exercise API examples, not every page or business workflow. No CodeQL/Semgrep CLI or workflow is present, so source static analysis was not run; `npm audit` is dependency scanning only. Docker images were inspected but not built or started in this environment.
 
