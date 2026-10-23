@@ -264,13 +264,8 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-stone-900 flex flex-col antialiased relative selection:bg-emerald-100 selection:text-forest-900">
-      {/* 3D Ambient Mesh Lighting Blobs (visible through glassmorphic panels) */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
-        <div className="absolute -top-32 -left-32 w-[520px] h-[520px] rounded-full bg-emerald-400/15 blur-[120px]" />
-        <div className="absolute top-1/4 -right-32 w-[460px] h-[460px] rounded-full bg-amber-300/15 blur-[130px]" />
-        <div className="absolute -bottom-32 left-1/3 w-[580px] h-[580px] rounded-full bg-teal-300/15 blur-[140px]" />
-      </div>
+    <div className="min-h-screen bg-[#f5f7f6] text-stone-900 flex flex-col antialiased relative selection:bg-emerald-100 selection:text-forest-900">
+      {/* Enterprise presentation: a neutral canvas keeps information legible. */}
 
       {IS_STATIC_DEMO_MODE ? (
         <section aria-label={language === 'hi' ? 'डेमो सूचना' : 'Demo notice'} className="relative z-30 border-b border-[#c59b27]/40 bg-[#fff8df] px-4 py-2 text-[#382b08] shadow-sm">
