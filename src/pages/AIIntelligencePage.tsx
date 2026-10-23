@@ -73,7 +73,7 @@ export const AIIntelligencePage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-700 shadow-xs">
             <BrainCircuit className="w-5 h-5 text-forest-700" />
@@ -133,7 +133,7 @@ export const AIIntelligencePage: React.FC = () => {
           {insights.map((ins) => (
             <div
               key={ins.id}
-              className="bg-white border border-[#ede8df] rounded-2xl p-5 space-y-3.5 flex flex-col justify-between shadow-xs hover:border-forest-200 transition-all"
+              className="bg-white border border-[#ede8df] rounded-xl p-5 space-y-3.5 flex flex-col justify-between shadow-xs hover:border-forest-200 transition-all"
             >
               <div>
                 <div className="flex items-center justify-between text-xs mb-2">
@@ -170,7 +170,7 @@ export const AIIntelligencePage: React.FC = () => {
         <h2 className="text-sm font-bold text-forest-950 font-sans">Predictive Operational Projections</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* 1. Procurement Forecast */}
-          <div className="bg-white border border-[#ede8df] rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xs">
+          <div className="bg-white border border-[#ede8df] rounded-xl p-5 flex flex-col justify-between space-y-4 shadow-xs">
             <div>
               <div className="flex items-center justify-between text-xs mb-2">
                 <span className="font-mono text-forest-900 bg-cream-100/70 border border-[#ede8df] px-2 py-0.5 rounded font-bold text-[10px]">
@@ -193,7 +193,7 @@ export const AIIntelligencePage: React.FC = () => {
           </div>
 
           {/* 2. Feed Ration Balancer */}
-          <div className="bg-white border border-[#ede8df] rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xs">
+          <div className="bg-white border border-[#ede8df] rounded-xl p-5 flex flex-col justify-between space-y-4 shadow-xs">
             <div>
               <div className="flex items-center justify-between text-xs mb-2">
                 <span className="font-mono text-forest-900 bg-cream-100/70 border border-[#ede8df] px-2 py-0.5 rounded font-bold text-[10px]">
@@ -216,7 +216,7 @@ export const AIIntelligencePage: React.FC = () => {
           </div>
 
           {/* 3. Anomaly Scan */}
-          <div className="bg-white border border-[#ede8df] rounded-2xl p-5 flex flex-col justify-between space-y-4 shadow-xs">
+          <div className="bg-white border border-[#ede8df] rounded-xl p-5 flex flex-col justify-between space-y-4 shadow-xs">
             <div>
               <div className="flex items-center justify-between text-xs mb-2">
                 <span className="font-mono text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded font-bold text-[10px]">
