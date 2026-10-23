@@ -64,7 +64,7 @@ export const ControlTowerPage: React.FC<ControlTowerPageProps> = ({
 
       {/* 2. Four Core Executive Pillars */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-5 bg-white border border-[#ede8df] rounded-2xl shadow-xs">
+        <div className="p-5 bg-white border border-[#ede8df] rounded-xl shadow-xs">
           <div className="text-[11px] font-bold text-stone-500 font-sans uppercase tracking-wider mb-1">
             WHAT IS HAPPENING?
           </div>
@@ -77,7 +77,7 @@ export const ControlTowerPage: React.FC<ControlTowerPageProps> = ({
           </p>
         </div>
 
-        <div className="p-5 bg-rose-50/70 border border-rose-200/80 rounded-2xl shadow-xs">
+        <div className="p-5 bg-rose-50/70 border border-rose-200/80 rounded-xl shadow-xs">
           <div className="text-[11px] font-bold text-rose-800 font-sans uppercase tracking-wider mb-1">
             WHAT IS GOING WRONG?
           </div>
@@ -89,7 +89,7 @@ export const ControlTowerPage: React.FC<ControlTowerPageProps> = ({
           </p>
         </div>
 
-        <div className="p-5 bg-amber-50/70 border border-amber-200/80 rounded-2xl shadow-xs">
+        <div className="p-5 bg-amber-50/70 border border-amber-200/80 rounded-xl shadow-xs">
           <div className="text-[11px] font-bold text-amber-800 font-sans uppercase tracking-wider mb-1">
             WHAT REQUIRES ATTENTION?
           </div>
@@ -101,7 +101,7 @@ export const ControlTowerPage: React.FC<ControlTowerPageProps> = ({
           </p>
         </div>
 
-        <div className="p-5 bg-sage-50/70 border border-sage-200/80 rounded-2xl shadow-xs">
+        <div className="p-5 bg-sage-50/70 border border-sage-200/80 rounded-xl shadow-xs">
           <div className="text-[11px] font-bold text-forest-800 font-sans uppercase tracking-wider mb-1">
             EXECUTIVE ACTION REQUIRED
           </div>
@@ -115,7 +115,7 @@ export const ControlTowerPage: React.FC<ControlTowerPageProps> = ({
       </div>
 
       {/* 3. Priority-Ranked Risks & Recommendations Matrix */}
-      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs">
+      <div className="bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#ede8df]">
           <div className="flex items-center gap-2.5">
             <ShieldAlert className="w-5 h-5 text-rose-700" />
