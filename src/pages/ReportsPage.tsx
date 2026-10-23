@@ -175,7 +175,7 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-700 shadow-xs">
             <FileSpreadsheet className="w-5 h-5 text-forest-700" />
@@ -210,7 +210,7 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {exportNotice && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2.5 shadow-xs animate-in fade-in duration-200">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2.5 shadow-xs animate-in fade-in duration-200">
           <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           <span>{exportNotice}</span>
         </div>
@@ -219,7 +219,7 @@ export const ReportsPage: React.FC = () => {
       {/* Two Column Layout: Reports Catalog on Left, Preview & Export on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: 11 Reports List */}
-        <div className="bg-white border border-[#ede8df] rounded-2xl p-4 shadow-xs space-y-2">
+        <div className="bg-white border border-[#ede8df] rounded-xl p-4 shadow-xs space-y-2">
           <div className="px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-stone-500 border-b border-[#ede8df] font-semibold">
             Available ERP Reports ({REPORTS_LIST.length} Reports)
           </div>
@@ -248,7 +248,7 @@ export const ReportsPage: React.FC = () => {
         </div>
 
         {/* Right Column: Active Report Preview Card */}
-        <div className="lg:col-span-2 bg-white border border-[#ede8df] rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-6">
+        <div className="lg:col-span-2 bg-white border border-[#ede8df] rounded-xl p-6 shadow-xs flex flex-col justify-between space-y-6">
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#ede8df] pb-4">
               <div>
