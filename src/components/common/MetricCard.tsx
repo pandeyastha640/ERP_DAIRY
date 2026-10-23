@@ -35,13 +35,16 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
   return (
     <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onClick(); } } : undefined}
       onClick={onClick}
-      className={`relative overflow-hidden bg-white/80 backdrop-blur-md border border-white/80 rounded-2xl p-4.5 shadow-[0_4px_20px_-2px_rgba(27,67,50,0.05),inset_0_1px_1px_rgba(255,255,255,0.9)] transition-all duration-300 flex flex-col justify-between group ${
-        onClick ? 'cursor-pointer hover:border-[#52b788]/60 hover:shadow-[0_16px_36px_-6px_rgba(27,67,50,0.12),inset_0_1px_2px_rgba(255,255,255,1)] hover:-translate-y-1 active:scale-[0.99]' : ''
+      className={`relative overflow-hidden bg-white border border-[#d9e3dd] rounded-xl p-5 shadow-[0_1px_3px_rgba(22,61,43,0.045)] transition-colors duration-150 flex flex-col justify-between group ${
+        onClick ? 'cursor-pointer hover:border-[#27835c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#27835c]' : ''
       } ${className}`}
     >
       {/* Subtle specular glass highlight gradient on card top */}
-      <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/60 to-transparent pointer-events-none rounded-t-2xl" />
+      
 
       <div className="flex items-center justify-between text-xs text-stone-500 mb-2.5 font-medium relative z-10">
         <span className="truncate tracking-wide font-medium text-stone-700">{label}</span>
