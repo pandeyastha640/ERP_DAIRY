@@ -192,7 +192,7 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
         />
       </div>
 
-      <section aria-labelledby="intake-quality-heading" className="overflow-hidden rounded-2xl border border-[#ede8df] bg-[#fdfcfb] shadow-xs">
+      <section aria-labelledby="intake-quality-heading" className="overflow-hidden rounded-xl border border-[#ede8df] bg-[#fdfcfb] shadow-xs">
         <div className="border-b border-[#ede8df] bg-cream-50/70 px-4 py-3">
           <h2 id="intake-quality-heading" className="text-sm font-bold text-forest-950">{translate(language, 'Saved milk intake quality')}</h2>
           <p className="mt-1 text-[11px] text-stone-600">Server decision for each persisted collection. FAIL: FAT &lt; 3.2, SNF &lt; 7.8, or temperature &gt; 24°C. WARNING: temperature &gt; 20°C or FAT &lt; 3.8.</p>
@@ -230,7 +230,7 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
       </section>
 
       {/* Comprehensive Quality Filter and Search Bar */}
-      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-4 space-y-3.5 shadow-xs">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl p-4 space-y-3.5 shadow-xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3.5 top-3" />
@@ -319,7 +319,7 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
       </div>
 
       {/* Quality Records Table */}
-      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
+      <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#faf8f5] text-stone-600 font-mono border-b border-[#ede8df] uppercase text-[11px] tracking-wider font-semibold">
@@ -433,7 +433,7 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
           maxWidth="lg"
         >
           <div className="space-y-4 text-xs font-mono">
-            <div className="p-4 bg-cream-50/70 rounded-2xl border border-[#ede8df] flex items-center justify-between">
+            <div className="p-4 bg-cream-50/70 rounded-xl border border-[#ede8df] flex items-center justify-between">
               <div>
                 <div className="text-[11px] text-stone-500 font-sans font-medium">QC Laboratory Determination</div>
                 <div className="text-lg font-bold mt-1">
