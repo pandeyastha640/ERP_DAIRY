@@ -18,6 +18,8 @@
     "db:mongo:view": "tsx scripts/inspect_mongodb.ts",
     "test:phases": "tsx scripts/verify_all_phases.ts",
     "test:security": "tsx scripts/test_auth_security.ts",
+    "test:demo-workflow": "tsx scripts/test_demo_workflow.ts",
+    "test:demo-browser": "tsx scripts/test_demo_browser.ts",
     "launch:check": "tsx scripts/preflight_launch_check.ts"
   },
 

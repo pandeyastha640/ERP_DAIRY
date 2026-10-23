@@ -1592,8 +1592,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 1784.8,
     paymentDate: '2026-10-06 08:30 AM',
     paymentMethod: 'UPI',
-    status: 'Completed',
-    notes: 'Morning shift milk settlement',
+    status: 'Simulated',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Morning shift milk settlement',
   },
   {
     id: 'PAY-302',
@@ -1604,8 +1604,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 2424.2,
     paymentDate: '2026-10-06 08:32 AM',
     paymentMethod: 'Direct Bank IMPS',
-    status: 'Completed',
-    notes: 'Morning shift milk settlement',
+    status: 'Simulated',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Morning shift milk settlement',
   },
   {
     id: 'PAY-303',
@@ -1615,8 +1615,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 45000.0,
     paymentDate: '2026-10-05 04:00 PM',
     paymentMethod: 'NEFT',
-    status: 'Completed',
-    notes: 'Advance against 20 MT Concentrate Pellets',
+    status: 'Simulated',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Advance against 20 MT Concentrate Pellets',
   },
   {
     id: 'PAY-304',
@@ -1626,8 +1626,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 41600.0,
     paymentDate: '2026-10-06 09:15 AM',
     paymentMethod: 'Direct Bank IMPS',
-    status: 'Completed',
-    notes: 'Invoice SO-2026-1001 clearance',
+    status: 'Simulated',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Invoice SO-2026-1001 clearance',
   },
   {
     id: 'PAY-305',
@@ -1638,8 +1638,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 3859.0,
     paymentDate: '2026-10-06 10:00 AM',
     paymentMethod: 'Direct Bank IMPS',
-    status: 'Processing',
-    notes: 'Quality clearance approved, bank queue',
+    status: 'Pending',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Quality clearance approved, bank queue',
   },
   {
     id: 'PAY-306',
@@ -1649,8 +1649,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 32000.0,
     paymentDate: '2026-10-06 10:30 AM',
     paymentMethod: 'Direct Bank IMPS',
-    status: 'Completed',
-    notes: 'Green maize delivery settlement',
+    status: 'Simulated',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Green maize delivery settlement',
   },
   {
     id: 'PAY-307',
@@ -1660,8 +1660,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 28500.0,
     paymentDate: '2026-10-06 11:00 AM',
     paymentMethod: 'NEFT',
-    status: 'Completed',
-    notes: '3-ply pouch polyfilm rolls invoice #8812',
+    status: 'Simulated',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. 3-ply pouch polyfilm rolls invoice #8812',
   },
   {
     id: 'PAY-308',
@@ -1672,8 +1672,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 4132.5,
     paymentDate: '2026-10-06 11:30 AM',
     paymentMethod: 'Direct Bank IMPS',
-    status: 'Completed',
-    notes: 'Morning high-fat delivery settlement',
+    status: 'Simulated',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Morning high-fat delivery settlement',
   },
   {
     id: 'PAY-309',
@@ -1683,8 +1683,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 14400.0,
     paymentDate: '2026-10-06 12:15 PM',
     paymentMethod: 'Direct Bank IMPS',
-    status: 'Completed',
-    notes: 'Curd commercial invoice SO-2026-1004 collection',
+    status: 'Simulated',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Curd commercial invoice SO-2026-1004 collection',
   },
   {
     id: 'PAY-310',
@@ -1696,7 +1696,7 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     paymentDate: '2026-10-06 01:00 PM',
     paymentMethod: 'Direct Bank IMPS',
     status: 'Pending',
-    notes: 'Bank payout pending authorization',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Bank payout pending authorization',
   },
   {
     id: 'PAY-311',
@@ -1708,7 +1708,7 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     paymentDate: '2026-10-06 01:15 PM',
     paymentMethod: 'Direct Bank IMPS',
     status: 'Pending',
-    notes: 'Shift payout queued for batch release',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Shift payout queued for batch release',
   },
   {
     id: 'PAY-312',
@@ -1718,8 +1718,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 16500.0,
     paymentDate: '2026-10-06 02:00 PM',
     paymentMethod: 'NEFT',
-    status: 'Completed',
-    notes: 'Cold chain reefer transport diesel & driver fee',
+    status: 'Simulated',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. Cold chain reefer transport diesel & driver fee',
   },
   {
     id: 'PAY-313',
@@ -1729,8 +1729,8 @@ export const INITIAL_PAYMENTS: PaymentTransaction[] = [
     amount: 19800.0,
     paymentDate: '2026-10-06 02:45 PM',
     paymentMethod: 'NEFT',
-    status: 'Processing',
-    notes: '400g curd injection cups invoice #4491',
+    status: 'Pending',
+    notes: 'DEMO SIMULATION ONLY — no bank settlement confirmed. 400g curd injection cups invoice #4491',
   },
 ];
 

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Farmer, MilkCollectionRecord } from '../../types/dairy';
+import { Farmer, MilkCollectionRecord, NewMilkCollection } from '../../types/dairy';
+import { useDairyERP } from '../../context/DairyERPContext';
+import { translate } from '../../i18n';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -16,7 +18,7 @@ import {
 
 interface MobileFieldViewProps {
   farmers: Farmer[];
-  onSaveCollection: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => void;
+  onSaveCollection: (record: NewMilkCollection) => Promise<MilkCollectionRecord>;
   onClose?: () => void;
 }
 
@@ -25,6 +27,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
   onSaveCollection,
   onClose,
 }) => {
+  const { language } = useDairyERP();
   const [selectedFarmerId, setSelectedFarmerId] = useState(farmers[0]?.id || '');
   const [shift, setShift] = useState<'Morning' | 'Evening'>('Morning');
   const [litres, setLitres] = useState<string>('45.0');
@@ -33,6 +36,8 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
   const [temperature, setTemperature] = useState<string>('18.2');
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('Collection Saved! Receipt TXN generated.');
+  const [toastType, setToastType] = useState<'success' | 'warning' | 'error'>('success');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Offline / Connectivity State
   const [isSimulatedOffline, setIsSimulatedOffline] = useState(false);
@@ -77,11 +82,12 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
     : Math.max(0, +(34.5 + (numFat - 4.0) * 4.5 + (numSnf - 8.5) * 2.5).toFixed(2));
   const calculatedPayable = Math.round(numLitres * calculatedRate);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFarmer || numLitres <= 0) return;
 
-    const recordPayload = {
+    const recordPayload: NewMilkCollection = {
+      requestId: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `mobile-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       date: new Date().toISOString().split('T')[0],
       shift,
@@ -101,12 +107,24 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
     if (isSimulatedOffline) {
       const queuedItem = { ...recordPayload, queuedAt: new Date().toISOString() };
       setOfflineQueue((prev) => [...prev, queuedItem]);
-      setToastMessage(`Stored in Offline Cache! (${offlineQueue.length + 1} pending sync)`);
+      setToastType('warning');
+      setToastMessage(`Offline simulation only: saved in this browser, not on the server (${offlineQueue.length + 1} queued).`);
       setShowSuccessToast(true);
     } else {
-      onSaveCollection(recordPayload);
-      setToastMessage('Collection Synced Online! Receipt TXN generated.');
-      setShowSuccessToast(true);
+      setIsSaving(true);
+      try {
+        const saved = await onSaveCollection(recordPayload);
+        setToastType('success');
+        setToastMessage(`Server saved ${saved.quantityLitres} L (${saved.collectionCode}); quality ${saved.quality}.`);
+        setShowSuccessToast(true);
+      } catch (error) {
+        setToastType('error');
+        setToastMessage(error instanceof Error ? error.message : 'Collection was not saved. Please retry.');
+        setShowSuccessToast(true);
+        return;
+      } finally {
+        setIsSaving(false);
+      }
     }
 
     setTimeout(() => {
@@ -115,21 +133,35 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
     }, 2000);
   };
 
-  const handleSyncOfflineQueue = () => {
+  const handleSyncOfflineQueue = async () => {
     if (offlineQueue.length === 0) return;
     setIsSyncing(true);
-
-    setTimeout(() => {
-      offlineQueue.forEach((rec) => {
-        onSaveCollection(rec);
-      });
-      const count = offlineQueue.length;
-      setOfflineQueue([]);
-      setIsSyncing(false);
-      setToastMessage(`Synced ${count} offline records to central database!`);
+    let syncedCount = 0;
+    const failedRecords: any[] = [];
+    const recordsWithIds = offlineQueue.map((record) => ({
+      ...record,
+      requestId: record.requestId || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `mobile-${Date.now()}-${Math.random().toString(36).slice(2)}`),
+    }));
+    setOfflineQueue(recordsWithIds);
+    try {
+      for (const record of recordsWithIds) {
+        try {
+          await onSaveCollection(record);
+          syncedCount += 1;
+        } catch {
+          failedRecords.push(record);
+        }
+      }
+      setOfflineQueue(failedRecords);
+      setToastType(failedRecords.length ? 'warning' : 'success');
+      setToastMessage(failedRecords.length
+        ? `${syncedCount} saved by server; ${failedRecords.length} remain queued for retry.`
+        : `${syncedCount} queued collection(s) confirmed by server.`);
       setShowSuccessToast(true);
+    } finally {
+      setIsSyncing(false);
       setTimeout(() => setShowSuccessToast(false), 2500);
-    }, 800);
+    }
   };
 
   return (
@@ -185,12 +217,12 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
           {isSimulatedOffline ? (
             <span className="flex items-center gap-1.5 text-amber-800 font-bold font-mono">
               <WifiOff className="w-3.5 h-3.5 text-amber-600" />
-              <span>Offline Mode ({offlineQueue.length} queued)</span>
+              <span>{translate(language, 'Offline simulation')} ({offlineQueue.length} local only)</span>
             </span>
           ) : (
             <span className="flex items-center gap-1.5 text-emerald-800 font-bold font-mono">
               <Wifi className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Online Direct Sync</span>
+              <span>{translate(language, 'Online · server required')}</span>
             </span>
           )}
         </div>
@@ -224,8 +256,12 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
       </div>
 
       {showSuccessToast && (
-        <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-2 text-xs font-semibold shadow-2xs animate-in fade-in duration-200">
-          <Check className="w-4 h-4 text-emerald-700" />
+        <div role={toastType === 'error' ? 'alert' : 'status'} className={`mb-4 p-3.5 rounded-xl flex items-center gap-2 text-xs font-semibold shadow-2xs animate-in fade-in duration-200 ${toastType === 'error' ? 'bg-rose-50 border border-rose-200 text-rose-800' : toastType === 'warning' ? 'bg-amber-50 border border-amber-200 text-amber-900' : 'bg-emerald-50 border border-emerald-200 text-emerald-800'}`}>
+          {toastType === 'error'
+            ? <XCircle className="w-4 h-4 text-rose-700" />
+            : toastType === 'warning'
+              ? <AlertTriangle className="w-4 h-4 text-amber-700" />
+              : <Check className="w-4 h-4 text-emerald-700" />}
           <span>{toastMessage}</span>
         </div>
       )}
@@ -234,7 +270,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
         {/* Step 1: Select Farmer */}
         <div>
           <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider font-mono">
-            1. Farmer Supplier
+            1. {translate(language, 'Farmer Supplier')}
           </label>
           <select
             value={selectedFarmerId}
@@ -258,7 +294,7 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
         {/* Step 2: Litres (Large Touch Input) */}
         <div>
           <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider font-mono">
-            2. Quantity (Litres)
+            2. {translate(language, 'Quantity (Litres)')}
           </label>
           <div className="relative">
             <input
@@ -356,11 +392,11 @@ export const MobileFieldView: React.FC<MobileFieldViewProps> = ({
         {/* Big Action Button */}
         <button
           type="submit"
-          disabled={numLitres <= 0}
+          disabled={numLitres <= 0 || isSaving || !selectedFarmer}
           className="w-full py-3.5 bg-forest-900 hover:bg-forest-800 disabled:opacity-40 text-white font-bold rounded-xl text-sm shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Confirm & Record Collection</span>
+          <span>{isSaving ? translate(language, 'Saving…') : translate(language, 'Confirm & Record Collection')}</span>
         </button>
       </form>
     </div>

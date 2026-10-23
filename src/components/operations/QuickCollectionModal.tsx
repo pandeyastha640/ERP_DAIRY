@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
-import { Farmer, MilkCollectionRecord } from '../../types/dairy';
+import React, { useRef, useState } from 'react';
+import { Farmer, MilkCollectionRecord, NewMilkCollection } from '../../types/dairy';
 import { Modal } from '../common/Modal';
-import { Plus } from 'lucide-react';
+import { AlertCircle, Loader2, Plus } from 'lucide-react';
+import { useDairyERP } from '../../context/DairyERPContext';
+import { translate } from '../../i18n';
 
 interface QuickCollectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   farmers: Farmer[];
-  onSave: (record: Omit<MilkCollectionRecord, 'id' | 'collectionCode'>) => void;
+  onSave: (record: NewMilkCollection) => Promise<MilkCollectionRecord>;
 }
+
+const newRequestId = () => typeof crypto !== 'undefined' && crypto.randomUUID
+  ? crypto.randomUUID()
+  : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
   isOpen,
@@ -16,6 +22,7 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
   farmers,
   onSave,
 }) => {
+  const { language } = useDairyERP();
   const [farmerId, setFarmerId] = useState(farmers[0]?.id || '');
   const [shift, setShift] = useState<'Morning' | 'Evening'>('Morning');
   const [centre, setCentre] = useState('Anand Collection Centre');
@@ -23,6 +30,10 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
   const [fat, setFat] = useState('4.4');
   const [snf, setSnf] = useState('8.6');
   const [temp, setTemp] = useState('18.0');
+  const [collectionDate, setCollectionDate] = useState(new Date().toISOString().slice(0, 10));
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const requestId = useRef(newRequestId());
 
   const selectedFarmer = farmers.find((f) => f.id === farmerId) || farmers[0];
 
@@ -38,40 +49,69 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
   const rate = isFail ? 0 : Math.max(0, +(34.5 + (f - 4.0) * 4.5 + (s - 8.5) * 2.5).toFixed(2));
   const payable = Math.round(q * rate);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFarmer || q <= 0) return;
+    if (!selectedFarmer || !Number.isFinite(q) || q <= 0 || !Number.isFinite(f) || !Number.isFinite(s) || !Number.isFinite(t)) {
+      setSaveError('Choose a farmer and enter valid milk readings.');
+      return;
+    }
 
-    onSave({
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      date: new Date().toISOString().split('T')[0],
-      shift,
-      farmerId: selectedFarmer.id,
-      farmerName: selectedFarmer.name,
-      centre,
-      quantityLitres: q,
-      fat: f,
-      snf: s,
-      temperatureC: t,
-      quality,
-      ratePerLitre: rate,
-      payableAmount: payable,
-      testedBy: 'QC Lab Desk',
-    });
-
-    onClose();
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      await onSave({
+        requestId: requestId.current,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        date: collectionDate,
+        shift,
+        farmerId: selectedFarmer.id,
+        farmerName: selectedFarmer.name,
+        centre,
+        quantityLitres: q,
+        fat: f,
+        snf: s,
+        temperatureC: t,
+        quality,
+        ratePerLitre: rate,
+        payableAmount: payable,
+        testedBy: 'QC Lab Desk',
+      });
+      requestId.current = newRequestId();
+      onClose();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Collection was not saved. Please retry.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Record Milk Collection"
-      subtitle="Instantly register farmer inward milk with real-time quality & pricing calculation"
+      title={translate(language, 'Record Milk Collection')}
+      subtitle="Review the estimate. The server confirms quality, rate, and payable when you save."
       maxWidth="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4 font-sans">
+        {saveError && (
+          <div role="alert" className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{saveError}</span>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-3.5">
+          <div>
+            <label htmlFor="collection-date" className="block text-xs font-semibold text-stone-700 mb-1">{translate(language, 'Collection Date')}</label>
+            <input
+              id="collection-date"
+              type="date"
+              required
+              value={collectionDate}
+              onChange={(e) => setCollectionDate(e.target.value)}
+              className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-xs text-forest-950 outline-none shadow-2xs font-sans"
+            />
+          </div>
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1">Shift</label>
             <select
@@ -100,7 +140,7 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stone-700 mb-1">Select Farmer</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">{translate(language, 'Select Farmer')}</label>
           <select
             value={farmerId}
             onChange={(e) => setFarmerId(e.target.value)}
@@ -114,11 +154,13 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
           </select>
         </div>
 
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1">Litres</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">{translate(language, 'Litres')}</label>
             <input
               type="number"
+              min="0.5"
+              max="10000"
               step="0.5"
               required
               value={quantity}
@@ -127,30 +169,39 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1">Fat %</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">{translate(language, 'Fat %')}</label>
             <input
               type="number"
+              min="0"
+              max="15"
               step="0.1"
+              required
               value={fat}
               onChange={(e) => setFat(e.target.value)}
               className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-sm font-mono font-bold text-forest-950 outline-none shadow-2xs"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1">SNF %</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">{translate(language, 'SNF %')}</label>
             <input
               type="number"
+              min="0"
+              max="15"
               step="0.1"
+              required
               value={snf}
               onChange={(e) => setSnf(e.target.value)}
               className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-sm font-mono font-bold text-forest-950 outline-none shadow-2xs"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1">Temp (°C)</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">{translate(language, 'Temp (°C)')}</label>
             <input
               type="number"
+              min="-5"
+              max="60"
               step="0.1"
+              required
               value={temp}
               onChange={(e) => setTemp(e.target.value)}
               className="w-full bg-[#fdfcfb] border border-[#ede8df] focus:border-forest-600 rounded-xl px-3 py-2 text-sm font-mono font-bold text-forest-950 outline-none shadow-2xs"
@@ -198,14 +249,15 @@ export const QuickCollectionModal: React.FC<QuickCollectionModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-700 bg-cream-100 hover:bg-cream-200 transition-colors cursor-pointer"
           >
-            Cancel
+            {translate(language, 'Cancel')}
           </button>
           <button
             type="submit"
-            className="px-5 py-2 bg-forest-900 hover:bg-forest-800 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            disabled={isSaving || !selectedFarmer}
+            className="px-5 py-2 bg-forest-900 hover:bg-forest-800 disabled:opacity-60 text-white rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
-            <span>Save Collection</span>
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            <span>{translate(language, isSaving ? 'Saving…' : 'Save Collection')}</span>
           </button>
         </div>
       </form>

@@ -9,6 +9,8 @@ DairyOS is a React and TypeScript dairy ERP prototype with an Express API and Pr
 - [Security and data integrity findings](docs/modernization/SECURITY_AND_DATA_INTEGRITY.md)
 - [UI/UX blueprint](docs/modernization/UI_UX_BLUEPRINT.md)
 - [Incremental release roadmap](docs/modernization/IMPLEMENTATION_ROADMAP.md)
+- [Emergency demo runbook](docs/modernization/DEMO_RUNBOOK.md)
+- [Emergency demo acceptance checklist](docs/modernization/DEMO_ACCEPTANCE_CHECKLIST.md)
 - [Developer handover](DEVELOPER_HANDOVER_AND_FUTURE_ROADMAP.md)
 
 ## Local development
@@ -58,13 +60,15 @@ DairyOS is a React and TypeScript dairy ERP prototype with an Express API and Pr
 - `npm run lint` — TypeScript check
 - `npm run build` — Vite production build
 - `npm run test:security` — authentication/authorization regression checks; requires an isolated SQLite test DB and seeded test account
+- `npm run test:demo-workflow` — isolated server workflow regression for auth, farmer, collection pricing/idempotency, receipt and payout simulation
+- `npm run test:demo-browser` — Playwright/Chromium flow for login, farmer, collection, receipt, dashboard refresh, Hindi navigation and mobile width; requires running API/Vite and an isolated seeded test DB
 - `npm run test:phases` — mutating API smoke suite; requires a running API on port 5000, test credentials, and an isolated SQLite file named `test.db` or `r0-*.db`
 - `npm run launch:check` — read-only database/API/build preflight; results do not certify launch readiness
 - `npm audit --omit=dev` — production dependency audit
 
 Do not point integration checks at `prisma/dev.db` or a production database. The phase suite writes collection, dispatch, telemetry, payout, quality and audit records. Its pass result means only that the scripted response checks passed.
 
-Legacy Playwright QA scripts under `scripts/` also perform operational mutations and may attempt notification or payout interactions. They were not run in R0; use only with a disposable local database and test-mode integrations.
+Legacy Playwright QA scripts under `scripts/` also perform operational mutations and may attempt notification or payout interactions. They were not run in R0; use only with a disposable local database and test-mode integrations. The focused `test:demo-browser` script is separate and cleans its synthetic farmer/collection records on normal completion.
 
 ## Deployment status
 

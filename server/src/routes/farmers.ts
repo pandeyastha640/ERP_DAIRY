@@ -21,6 +21,7 @@ farmersRouter.get('/', async (req: Request, res: Response) => {
       where.OR = [
         { name: { contains: search } },
         { farmerCode: { contains: search } },
+        { contactNumber: { contains: search } },
         { village: { contains: search } },
       ];
     }
@@ -68,28 +69,44 @@ farmersRouter.post('/', async (req: Request, res: Response) => {
   try {
     const { name, village, contactNumber, cattleCount, bankAccount, ifscCode } = req.body;
 
-    if (!name || !village) {
-      return res.status(400).json({ success: false, message: 'Name and village are required' });
+    if (typeof name !== 'string' || !name.trim() || typeof village !== 'string' || !village.trim()) {
+      return res.status(400).json({ success: false, message: 'Farmer name and village are required.' });
+    }
+    if (contactNumber !== undefined && typeof contactNumber !== 'string') {
+      return res.status(400).json({ success: false, message: 'Phone number must be text.' });
+    }
+    const parsedCattleCount = cattleCount === undefined || cattleCount === '' ? 0 : Number(cattleCount);
+    if (!Number.isInteger(parsedCattleCount) || parsedCattleCount < 0 || parsedCattleCount > 500) {
+      return res.status(400).json({ success: false, message: 'Cattle count must be a whole number from 0 to 500.' });
     }
 
-    const totalFarmers = await prisma.farmer.count();
-    const farmerCode = `FARM-${String(totalFarmers + 1).padStart(3, '0')}`;
+    // Preserve the established FARM-NNN format while skipping occupied codes
+    // (a deleted record or imported data can make count + 1 collide).
+    let nextCode = (await prisma.farmer.count()) + 1;
+    let farmerCode = `FARM-${String(nextCode).padStart(3, '0')}`;
+    while (await prisma.farmer.findUnique({ where: { farmerCode } })) {
+      nextCode += 1;
+      farmerCode = `FARM-${String(nextCode).padStart(3, '0')}`;
+    }
 
     const newFarmer = await prisma.farmer.create({
       data: {
         farmerCode,
-        name,
-        village,
-        contactNumber: contactNumber || '9876500000',
-        cattleCount: parseInt(cattleCount) || 1,
-        bankAccount: bankAccount || '',
-        ifscCode: ifscCode || 'BARB0ANANDX',
+        name: name.trim(),
+        village: village.trim(),
+        contactNumber: contactNumber?.trim() || '',
+        cattleCount: parsedCattleCount,
+        bankAccount: typeof bankAccount === 'string' ? bankAccount.trim() : '',
+        ifscCode: typeof ifscCode === 'string' ? ifscCode.trim() : '',
         status: 'Active',
       },
     });
 
     res.status(201).json({ success: true, data: newFarmer });
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    if (error?.code === 'P2002') {
+      return res.status(409).json({ success: false, message: 'A farmer with this identifier already exists. Refresh and retry.' });
+    }
+    res.status(500).json({ success: false, message: 'Could not save farmer. Please retry.' });
   }
 });

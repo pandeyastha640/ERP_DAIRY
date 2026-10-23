@@ -79,10 +79,10 @@ export const Topbar: React.FC<TopbarProps> = ({
   return (
     <header className="h-16 bg-white/80 backdrop-blur-2xl border-b border-white/70 px-4 sm:px-6 flex items-center justify-between gap-4 sticky top-0 z-20 select-none shadow-[0_4px_20px_rgba(27,67,50,0.03)]">
       {/* Left: Global Search & Facility Breadcrumb */}
-      <div className="flex items-center gap-3 flex-1 max-w-xl">
+      <div className="flex items-center gap-3 flex-1 min-w-0 max-w-xl">
         <button
           onClick={onOpenSearch}
-          className="flex-1 flex items-center gap-2.5 px-3.5 py-2 bg-white/60 hover:bg-white/95 backdrop-blur-md border border-white/80 hover:border-[#52b788]/50 rounded-xl text-xs text-stone-500 transition-all text-left cursor-pointer shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_2px_6px_rgba(27,67,50,0.02)] group hover:-translate-y-0.5"
+          className="flex-1 min-w-0 flex items-center gap-2.5 px-3.5 py-2 bg-white/60 hover:bg-white/95 backdrop-blur-md border border-white/80 hover:border-[#52b788]/50 rounded-xl text-xs text-stone-500 transition-all text-left cursor-pointer shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_2px_6px_rgba(27,67,50,0.02)] group hover:-translate-y-0.5"
         >
           <Search className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#1b4332] shrink-0 transition-colors" />
           <span className="truncate">Search cattle, farmers, batches, SKU, routes...</span>

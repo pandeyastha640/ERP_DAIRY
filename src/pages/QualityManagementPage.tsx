@@ -5,6 +5,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
 import { TankerClearanceModal } from '../components/quality/TankerClearanceModal';
 import { useDairyERP } from '../context/DairyERPContext';
+import { translate } from '../i18n';
 import {
   FlaskConical,
   Plus,
@@ -25,7 +26,7 @@ interface QualityManagementPageProps {
 }
 
 export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ tests, onAddTest }) => {
-  const { setCurrentModule, setSelectedItemId } = useDairyERP();
+  const { setCurrentModule, setSelectedItemId, collectionsList, language } = useDairyERP();
   const [activeRecord, setActiveRecord] = useState<QualityTestRecord | null>(null);
   const [filterResult, setFilterResult] = useState<'All' | 'PASS' | 'WARNING' | 'FAIL'>('All');
   const [sourceFilter, setSourceFilter] = useState('All');
@@ -65,6 +66,7 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
       t.tester.toLowerCase().includes(search.toLowerCase());
     return matchesResult && matchesSource && matchesSearch;
   });
+  const recentCollectionChecks = collectionsList.slice(0, 8);
 
   const handleSaveQuality = (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,6 +190,43 @@ export const QualityManagementPage: React.FC<QualityManagementPageProps> = ({ te
           onClick={() => setCurrentModule('chilling')}
         />
       </div>
+
+      <section aria-labelledby="intake-quality-heading" className="overflow-hidden rounded-2xl border border-[#ede8df] bg-[#fdfcfb] shadow-xs">
+        <div className="border-b border-[#ede8df] bg-cream-50/70 px-4 py-3">
+          <h2 id="intake-quality-heading" className="text-sm font-bold text-forest-950">{translate(language, 'Saved milk intake quality')}</h2>
+          <p className="mt-1 text-[11px] text-stone-600">Server decision for each persisted collection. FAIL: FAT &lt; 3.2, SNF &lt; 7.8, or temperature &gt; 24°C. WARNING: temperature &gt; 20°C or FAT &lt; 3.8.</p>
+        </div>
+        {recentCollectionChecks.length === 0 ? (
+          <p className="px-4 py-6 text-center text-xs text-stone-500">No saved collection quality results yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-[#ede8df] text-[11px] uppercase tracking-wide text-stone-600">
+                <tr>
+                  <th className="px-4 py-2.5">Collection</th>
+                  <th className="px-4 py-2.5">Farmer</th>
+                  <th className="px-4 py-2.5">Volume</th>
+                  <th className="px-4 py-2.5">FAT / SNF</th>
+                  <th className="px-4 py-2.5">Temp</th>
+                  <th className="px-4 py-2.5">Saved decision</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#ede8df] text-stone-700">
+                {recentCollectionChecks.map((collection) => (
+                  <tr key={collection.id} className="hover:bg-cream-50/70">
+                    <td className="px-4 py-2.5 font-mono font-semibold text-forest-900">{collection.collectionCode}</td>
+                    <td className="px-4 py-2.5">{collection.farmerName} ({collection.farmerId})</td>
+                    <td className="px-4 py-2.5">{collection.quantityLitres.toLocaleString()} L</td>
+                    <td className="px-4 py-2.5">{collection.fat.toFixed(2)}% / {collection.snf.toFixed(2)}%</td>
+                    <td className="px-4 py-2.5">{collection.temperatureC.toFixed(1)}°C</td>
+                    <td className="px-4 py-2.5"><StatusBadge status={collection.quality} size="sm" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* Comprehensive Quality Filter and Search Bar */}
       <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl p-4 space-y-3.5 shadow-xs">

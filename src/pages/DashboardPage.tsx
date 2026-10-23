@@ -31,6 +31,7 @@ import {
   Layers,
   Coins,
 } from 'lucide-react';
+import { translate } from '../i18n';
 
 interface DashboardPageProps {
   onNavigate: (module: string) => void;
@@ -39,6 +40,7 @@ interface DashboardPageProps {
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpenTracer }) => {
   const {
+    language,
     currentFacility,
     currentDateFilter,
     reconciliation,
@@ -152,11 +154,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
     <PageContainer>
       {/* 1. Header with Actions */}
       <PageHeader
-        title="Dairy Operations Control Tower"
-        subtitle="Continuous mass-balance volume reconciliation and real-time margin tracking across cattle herd, procurement, processing, and outbound distribution."
+        title={translate(language, 'Dairy Operations Control Tower')}
+        subtitle="Operational summary from loaded records. Historical trend points include illustrative demo data."
         facility={currentFacility}
         dateFilter={currentDateFilter}
-        statusBadge="Continuous Mass Balance Active"
+        statusBadge="Loaded records · demo trends"
         actions={
           <>
             {onOpenTracer && (

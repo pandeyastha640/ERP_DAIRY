@@ -240,7 +240,7 @@ model PaymentTransaction {
   amount         Float
   paymentDate    String
   paymentMethod  String   @default("Direct Bank IMPS")
-  status         String   @default("Completed")
+  status         String   @default("Pending")
   notes          String   @default("")
   createdAt      DateTime @default(now())
 }

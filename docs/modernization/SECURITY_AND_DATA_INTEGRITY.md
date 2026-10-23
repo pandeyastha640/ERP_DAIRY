@@ -73,7 +73,7 @@ Target invariants: opening + measured inflows − measured processing/dispatch/l
 ### Farmer payables, payments, tax and audit
 
 - Collection route creates a `Pending` payment in the same transaction as the collection, but payment is not relationally keyed to the collection. Client context separately creates a local pending payment.
-- Payment APIs can accept client amount/status and can create a `Completed` payment. Batch payout route is explicitly a simulation, nevertheless writes completed rows and an audit entry without external provider confirmation. Name substring matching and aggregation can over/under-match.
+- Emergency demo changes make ordinary payment entries `Pending`; the server rejects client attempts to write `Completed`. Batch payout previews persist with `Simulated` status and do not reduce the pending balance. Provider settlement is still not implemented. Payment matching and aggregation still need cooperative/period/farmer scoping.
 - Payment pending summary subtracts all farmer `Completed` payments from all collection payables without cooperative/period/farmer allocation.
 - Invoice route can create a missing order with fixed example facts; seller GST/FSSAI and tax treatment are hard-coded. GST invoice output is not verified for tax compliance.
 - Some audit records are created in transactions, others after mutation, and client audit entries are local-only with placeholder actors. They are not a reliable immutable ledger.
@@ -86,7 +86,16 @@ R0 verifies raw request bytes against configured HMAC-SHA256 with constant-time 
 
 ## Browser storage and offline data
 
-`DairyERPContext` persists multiple business datasets in localStorage. The PWA service worker caches static/navigation responses but bypasses API routes. `MobileFieldView` stores an offline array in localStorage and simulates syncing by calling context callbacks after a timer; it clears the array without server acknowledgement. There are no operation IDs, durable transactional queue, safe retry state, conflict resolution, or access-scoped cache. Farmer, contact and bank information may be present in cached browser data. Logout should clear sensitive local caches once data ownership is migrated.
+`DairyERPContext` persists multiple business datasets in localStorage. The API client now requests fresh responses rather than accepting stale conditional 304 responses for server-backed state. The PWA service worker caches static/navigation responses but bypasses API routes. `MobileFieldView` still stores a manual offline simulation in localStorage; online saves wait for server confirmation and failed queue retries remain queued. There are no durable transactional queue, conflict resolution, or access-scoped cache. Farmer, contact and bank information may be present in cached browser data. Logout should clear sensitive local caches once data ownership is migrated.
+
+## Emergency demo hardening
+
+- Collection UI now submits only measured values plus a request ID; server-calculated quality, rate and rounded payable are returned before UI success. Duplicate retries return the original row; a request ID reused for different values is rejected.
+- Receipt lookup returns 404 for a missing collection rather than substituting a different/latest collection. Receipt fields come from the saved record; demo FSSAI/weight/analyzer and direct-settlement claims were removed.
+- Non-production notification calls are explicitly simulated and do not call Twilio/WhatsApp even if credentials are present. A simulation is labeled as not sent. Production provider delivery semantics still require provider-specific work and approval.
+- Browser localStorage is no longer authoritative for login. API calls use `cache: 'no-store'` so reloads retrieve fresh backend records rather than stale 304 responses.
+
+See the targeted tests in `scripts/test_demo_workflow.ts` and `scripts/test_demo_browser.ts`; broader limitations remain listed in the feature matrix and demo checklist.
 
 Future offline protocol: encrypted device database; minimal role/facility-scoped cache; UUID operation ID and schema version; server idempotency record; client retains command until acknowledgement; retry only transient failures with backoff; explicit rejected/conflict state for supervisor resolution; logout/account switch cache purge; queue audit and tests covering crash/restart, clock skew, duplicate sync and revoked access.
 

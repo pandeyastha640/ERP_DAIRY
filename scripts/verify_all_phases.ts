@@ -217,8 +217,8 @@ async function verifyPhase5() {
       headers: { 'Content-Type': 'application/json' },
     });
     const disburseData = await disburseRes.json();
-    record('Phase 5', 'Batch IMPS Payout Execution', disburseRes.ok && disburseData.success, 
-      `${disburseData.message || 'Settlement processed'}: ${disburseData.disbursedCount} transactions cleared`);
+    record('Phase 5', 'Payout Simulation (No Bank Transfer)', disburseRes.ok && disburseData.success && disburseData.simulationOnly === true,
+      `${disburseData.message || 'Simulation processed'}: ${disburseData.simulatedCount ?? 0} preview entries saved; no funds moved`);
   } catch (err: any) {
     record('Phase 5', 'Banking Payout Gateway', false, `Error: ${err.message}`);
   }
@@ -310,31 +310,30 @@ async function verifyPhase9() {
   console.log('\n--- VERIFYING PHASE 9: FARMER SMS/WHATSAPP & POS THERMAL SLIP ENGINE ---');
   try {
     // 1. Dispatch SMS/WhatsApp Receipt
+    const savedCollection = await prisma.milkCollectionRecord.findFirst({ orderBy: { createdAt: 'desc' } });
+    if (!savedCollection) {
+      record('Phase 9', 'Farmer SMS/WhatsApp Receipt Gateway', false, 'No persisted collection is available for a receipt preview.');
+      return;
+    }
     const smsRes = await apiFetch(`${BASE_URL}/notifications/receipt-sms`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        farmerCode: 'FARM-001',
-        farmerName: 'Rameshwar Patel',
-        volumeLitres: 45.0,
-        fat: 4.4,
-        snf: 8.6,
-        ratePerLitre: 39.10,
-        payableAmount: 1759.50,
-        channel: 'ALL',
-      }),
+      body: JSON.stringify({ collectionCode: savedCollection.collectionCode, channel: 'ALL' }),
     });
     const smsData = await smsRes.json();
-    const smsOk = smsRes.ok && smsData.success && smsData.messageId;
+    const smsOk = smsRes.ok && smsData.success && smsData.messageId
+      && smsData.simulationOnly === true && smsData.deliveryStatus === 'SIMULATED';
     record('Phase 9', 'Farmer SMS/WhatsApp Receipt Gateway', Boolean(smsOk), 
-      `Dispatched bilingual receipt (${smsData.channels?.join('/') || 'SMS/WhatsApp'}): ID #${smsData.messageId} (Status: ${smsData.deliveryStatus})`);
+      `Simulation-only preview (${smsData.channels?.join('/') || 'SMS/WhatsApp'}): ID #${smsData.messageId}; no message sent (Status: ${smsData.deliveryStatus})`);
 
     // 2. 58mm/80mm POS Thermal Receipt Slip
-    const slipRes = await apiFetch(`${BASE_URL}/notifications/collections/COL-001/slip`);
+    const slipRes = await apiFetch(`${BASE_URL}/notifications/collections/${savedCollection.collectionCode}/slip`);
     const slipData = await slipRes.json();
-    const slipOk = slipRes.ok && slipData.data?.slipNumber && slipData.data?.intake?.fatPct;
-    record('Phase 9', '58mm/80mm POS Thermal Slip Generator', Boolean(slipOk), 
-      `Receipt #${slipData.data?.slipNumber} generated for ${slipData.data?.intake?.farmerName} (${slipData.data?.intake?.volumeLitres}L @ ₹${slipData.data?.pricing?.effectiveRatePerL}/L)`);
+    const slipOk = slipRes.ok && slipData.data?.intake?.collectionCode === savedCollection.collectionCode
+      && slipData.data?.intake?.fatPct === savedCollection.fat
+      && slipData.data?.pricing?.effectiveRatePerL === savedCollection.ratePerLitre;
+    record('Phase 9', '58mm/80mm POS Thermal Slip Generator', Boolean(slipOk),
+      `Saved receipt #${slipData.data?.slipNumber} for ${slipData.data?.intake?.farmerName} (${slipData.data?.intake?.volumeLitres}L @ ₹${slipData.data?.pricing?.effectiveRatePerL}/L)`);
   } catch (err: any) {
     record('Phase 9', 'Notifications Verification', false, `Error: ${err.message}`);
   }

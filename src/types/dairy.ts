@@ -109,6 +109,11 @@ export interface MilkCollectionRecord {
   testedBy: string;
 }
 
+export type NewMilkCollection = Omit<MilkCollectionRecord, 'id' | 'collectionCode'> & {
+  /** Stable across retries so a timed-out client can safely resubmit once. */
+  requestId?: string;
+};
+
 export interface QualityTestRecord {
   id: string;
   batchNumber: string;
@@ -270,7 +275,7 @@ export interface PaymentTransaction {
   amount: number;
   paymentDate: string;
   paymentMethod: 'UPI' | 'Direct Bank IMPS' | 'NEFT' | 'Cash' | 'Cheque';
-  status: 'Completed' | 'Pending' | 'Processing' | 'Failed';
+  status: 'Completed' | 'Pending' | 'Processing' | 'Failed' | 'Simulated';
   notes: string;
 }
 

@@ -40,43 +40,42 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
   const loadSlipData = async () => {
     setLoadingSlip(true);
     try {
-      const colId = collection?.collectionCode || collection?.id || 'sample';
+      const colId = collection?.collectionCode || collection?.id;
+      if (!colId) throw new Error('Saved collection reference is missing.');
       const res = await api.notifications.getThermalSlip(colId);
-      if (res.data) {
+      if (res.success && res.data) {
         setSlipData(res.data);
+        return;
       }
+      throw new Error('Saved receipt details could not be loaded.');
     } catch {
-      // Offline fallback
+      // This fallback uses only values from the saved collection row. It does
+      // not invent weights, analyzer readings, compliance IDs, or settlement.
       setSlipData({
-        slipNumber: `SLIP-${collection?.collectionCode || 'COL-001'}`,
+        slipNumber: `SLIP-${collection?.collectionCode || 'Not recorded'}`,
         society: {
-          name: 'ANAND DISTRICT MILK COOPERATIVE UNION',
-          unitName: collection?.centre || 'Anand Village Collection Centre #04',
-          fssaiRegNo: '10018021003456',
-          posTerminalId: 'POS-MCC-01',
+          name: 'DairyOS Cooperative Demo',
+          unitName: collection?.centre || 'Collection centre not recorded',
         },
         intake: {
-          collectionCode: collection?.collectionCode || 'COL-001',
-          date: collection?.date || new Date().toISOString().split('T')[0],
-          time: collection?.time || '07:15 AM',
-          shift: collection?.shift || 'Morning',
-          farmerCode: collection?.farmerId || 'FARM-001',
-          farmerName: collection?.farmerName || 'Rameshwar Patel',
-          milkType: Number(collection?.fat || 4.4) >= 5.5 ? 'Buffalo Milk' : 'Cow Milk (Grade A)',
-          volumeLitres: collection?.quantityLitres || 45.0,
-          fatPct: collection?.fat || 4.4,
-          snfPct: collection?.snf || 8.6,
-          clrReading: 28.5,
-          tempCelsius: collection?.temperatureC || 6.5,
-          qualityGrade: collection?.quality || 'PASS',
+          collectionCode: collection?.collectionCode || 'Not recorded',
+          date: collection?.date || 'Not recorded',
+          time: collection?.time || 'Not recorded',
+          shift: collection?.shift || 'Not recorded',
+          farmerCode: collection?.farmerId || 'Not recorded',
+          farmerName: collection?.farmerName || 'Not recorded',
+          volumeLitres: collection?.quantityLitres,
+          fatPct: collection?.fat,
+          snfPct: collection?.snf,
+          tempCelsius: collection?.temperatureC,
+          qualityGrade: collection?.quality,
         },
         pricing: {
-          baseRatePerL: 34.50,
-          effectiveRatePerL: collection?.ratePerLitre || 39.10,
-          netPayableINR: collection?.payableAmount || 1759.50,
+          effectiveRatePerL: collection?.ratePerLitre,
+          netPayableINR: collection?.payableAmount,
         },
         footer: {
-          testedBy: collection?.testedBy || 'Milkotronic Lactoscan MCC Station',
+          testedBy: collection?.testedBy || 'Not recorded',
           qrData: `DAIRYOS:${collection?.collectionCode}:${collection?.farmerId}:${collection?.quantityLitres}`,
           printedAt: new Date().toISOString(),
         },
@@ -94,22 +93,17 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
     setSendingSms(true);
     setSmsStatus(null);
     try {
+      if (!collection?.collectionCode) throw new Error('A saved collection is required to preview its receipt.');
       const payload = {
-        farmerCode: slipData?.intake?.farmerCode || collection?.farmerId || 'FARM-001',
-        farmerName: slipData?.intake?.farmerName || collection?.farmerName || 'Rameshwar Patel',
-        volumeLitres: slipData?.intake?.volumeLitres || collection?.quantityLitres || 45.0,
-        fat: slipData?.intake?.fatPct || collection?.fat || 4.4,
-        snf: slipData?.intake?.snfPct || collection?.snf || 8.6,
-        ratePerLitre: slipData?.pricing?.effectiveRatePerL || collection?.ratePerLitre || 39.10,
-        payableAmount: slipData?.pricing?.netPayableINR || collection?.payableAmount || 1759.50,
-        shift: slipData?.intake?.shift || collection?.shift || 'Morning',
-        centre: slipData?.society?.unitName || collection?.centre || 'Anand Collection Centre',
+        collectionCode: collection.collectionCode,
         channel,
       };
 
       const res = await api.notifications.sendReceiptSms(payload);
       if (res.success) {
-        setSmsStatus(`Receipt dispatched via ${res.channels.join(' & ')}! (Ref: ${res.messageId})`);
+        setSmsStatus(res.simulationOnly
+          ? `Simulation only: no SMS/WhatsApp was sent. Preview ref ${res.messageId}.`
+          : `Provider accepted the request; delivery is not verified. Ref: ${res.messageId}`);
       }
     } catch (err: any) {
       setSmsStatus(`Notice: ${err.message || 'SMS service queued locally'}`);
@@ -119,7 +113,7 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
   };
 
   const handleCopySms = () => {
-    const text = `[DairyOS] Namaste ${slipData?.intake?.farmerName}, received ${slipData?.intake?.volumeLitres}L at ${slipData?.society?.unitName}. Fat: ${slipData?.intake?.fatPct}%, SNF: ${slipData?.intake?.snfPct}%, Rate: Rs ${slipData?.pricing?.effectiveRatePerL}/L. Amount: Rs ${slipData?.pricing?.netPayableINR}. Direct Bank IMPS queued.`;
+    const text = `[DairyOS] Namaste ${slipData?.intake?.farmerName}, received ${slipData?.intake?.volumeLitres}L at ${slipData?.society?.unitName}. Fat: ${slipData?.intake?.fatPct}%, SNF: ${slipData?.intake?.snfPct}%, Rate: Rs ${slipData?.pricing?.effectiveRatePerL}/L. Payable: Rs ${slipData?.pricing?.netPayableINR}. No bank transfer is confirmed.`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -136,7 +130,7 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="POS Thermal Receipt & Farmer Mobile Dispatch"
-      subtitle="Milkotronic / Mettler Toledo 58mm & 80mm Field Slip Printer"
+      subtitle="Receipt from the saved collection record. No printer or messaging provider is connected in demo mode."
       maxWidth="md"
     >
       <div className="space-y-4">
@@ -169,7 +163,7 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
               className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded flex items-center gap-1 cursor-pointer transition-colors"
             >
               {sendingSms ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Smartphone className="w-3.5 h-3.5" />}
-              <span>Send SMS / WhatsApp</span>
+              <span>Preview SMS / WhatsApp</span>
             </button>
             <button
               onClick={handlePrint}
@@ -207,10 +201,10 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
           >
             {/* Header */}
             <div className="text-center border-b border-dashed border-slate-400 pb-2 mb-2">
-              <div className="font-bold text-xs uppercase tracking-tight">{society.name || 'ANAND MILK COOPERATIVE UNION'}</div>
-              <div className="text-[10px] text-slate-600">{society.unitName || 'Anand Center #04'}</div>
-              <div className="text-[9px] text-slate-500">FSSAI: {society.fssaiRegNo || '10018021003456'} · POS-01</div>
-              <div className="text-[10px] font-bold text-emerald-800 mt-1">★ MILK INWARD RECEIPT ★</div>
+              <div className="font-bold text-xs uppercase tracking-tight">{society.name || 'DairyOS Cooperative Demo'}</div>
+              <div className="text-[10px] text-slate-600">{society.unitName || 'Collection centre not recorded'}</div>
+              <div className="text-[9px] text-slate-500">DEMO RECEIPT · NO PROVIDER SETTLEMENT</div>
+              <div className="text-[10px] font-bold text-emerald-800 mt-1">MILK INWARD RECEIPT</div>
             </div>
 
             {/* Inward Details */}
@@ -237,7 +231,7 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
               </div>
               <div className="flex justify-between">
                 <span>CATEGORY:</span>
-                <span>{intake.milkType || 'Cow Milk'}</span>
+                <span>{intake.milkType || 'Not classified'}</span>
               </div>
             </div>
 
@@ -247,10 +241,10 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
                 <span>NET VOLUME:</span>
                 <span>{intake.volumeLitres} LITRES</span>
               </div>
-              <div className="flex justify-between">
+              {intake.netWeightKg !== undefined && <div className="flex justify-between">
                 <span>NET WEIGHT:</span>
-                <span>{intake.netWeightKg || (intake.volumeLitres * 1.030).toFixed(1)} KG</span>
-              </div>
+                <span>{intake.netWeightKg} KG</span>
+              </div>}
               <div className="flex justify-between">
                 <span>FAT %:</span>
                 <span className="font-bold">{intake.fatPct}%</span>
@@ -260,8 +254,8 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
                 <span className="font-bold">{intake.snfPct}%</span>
               </div>
               <div className="flex justify-between">
-                <span>CLR / TEMP:</span>
-                <span>{intake.clrReading || 28.5} / {intake.tempCelsius || 6.5}°C</span>
+                <span>TEMPERATURE:</span>
+                <span>{intake.tempCelsius ?? 'Not recorded'}{intake.tempCelsius !== undefined ? '°C' : ''}</span>
               </div>
               <div className="flex justify-between">
                 <span>QC GRADE:</span>
@@ -273,13 +267,13 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
             <div className="space-y-1 border-b border-dashed border-slate-400 pb-2 mb-2">
               <div className="flex justify-between">
                 <span>RATE / LITRE:</span>
-                <span className="font-bold">₹{Number(pricing.effectiveRatePerL || 39.10).toFixed(2)}</span>
+                <span className="font-bold">₹{Number(pricing.effectiveRatePerL ?? 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm font-bold pt-1 border-t border-dotted border-slate-400 text-emerald-900">
                 <span>NET PAYABLE:</span>
-                <span>₹{Number(pricing.netPayableINR || 1759.50).toLocaleString('en-IN')}</span>
+                <span>₹{Number(pricing.netPayableINR ?? 0).toLocaleString('en-IN')}</span>
               </div>
-              <div className="text-[9px] text-slate-500 text-right">Direct IMPS settlement queued</div>
+              <div className="text-[9px] text-slate-500 text-right">{Number(pricing.netPayableINR ?? 0) > 0 ? 'Pending payable; no bank transfer confirmed' : 'No payable amount recorded'}</div>
             </div>
 
             {/* Footer QR & Verification */}
@@ -289,7 +283,7 @@ export const ThermalReceiptModal: React.FC<ThermalReceiptModalProps> = ({
               </div>
               <div className="text-[9px] text-slate-600 font-bold tracking-widest">{intake.collectionCode}</div>
               <div className="text-[8px] text-slate-500 leading-none">
-                Tested by: {slipData?.footer?.testedBy || 'Lactoscan IoT (COM3)'}
+                Tested by: {slipData?.footer?.testedBy || 'Not recorded'}
               </div>
               <div className="text-[8px] text-slate-400 pt-1">
                 Thank you for cooperative dairy excellence!

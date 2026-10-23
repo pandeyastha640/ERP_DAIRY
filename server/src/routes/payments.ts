@@ -29,18 +29,25 @@ paymentsRouter.post('/', async (req: Request, res: Response) => {
       amount,
       paymentDate = new Date().toISOString().split('T')[0],
       paymentMethod = 'Direct Bank IMPS',
-      status = 'Completed',
+      status = 'Pending',
       notes = '',
     } = req.body;
 
-    if (!recipientName || !amount) {
+    const parsedAmount = Number(amount);
+    if (typeof recipientName !== 'string' || !recipientName.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({
         success: false,
-        message: 'recipientName and amount are required',
+        message: 'Recipient and a positive amount are required.',
+      });
+    }
+    if (status !== 'Pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'New payment entries must remain Pending until a verified provider confirmation is received.',
       });
     }
 
-    const assignedRef = transactionRef || `PAY-${Date.now().toString().slice(-6)}`;
+    const assignedRef = transactionRef || `PAY-${crypto.randomUUID()}`;
 
     const payment = await prisma.paymentTransaction.create({
       data: {
@@ -48,7 +55,7 @@ paymentsRouter.post('/', async (req: Request, res: Response) => {
         recipientName,
         partyType,
         milkLitres: milkLitres ? Number(milkLitres) : null,
-        amount: Number(amount),
+        amount: parsedAmount,
         paymentDate,
         paymentMethod,
         status,
@@ -64,7 +71,10 @@ paymentsRouter.post('/', async (req: Request, res: Response) => {
       data: payment,
     });
   } catch (error: any) {
-    return res.status(500).json({ success: false, message: error.message });
+    if (error?.code === 'P2002') {
+      return res.status(409).json({ success: false, message: 'This payment reference already exists.' });
+    }
+    return res.status(500).json({ success: false, message: 'Could not record payment entry.' });
   }
 });
 
@@ -104,7 +114,7 @@ paymentsRouter.get('/pending-summary', async (req: Request, res: Response) => {
 });
 
 // POST /api/v1/payments/disburse-all-pending
-// Automated Batch Banking Disbursement Gateway Simulation (IMPS/UPI)
+// Demonstration only: create ledger simulation records without settling funds.
 paymentsRouter.post('/disburse-all-pending', async (req: Request, res: Response) => {
   try {
     const farmers = await prisma.farmer.findMany();
@@ -113,68 +123,73 @@ paymentsRouter.post('/disburse-all-pending', async (req: Request, res: Response)
       where: { partyType: 'Farmer' },
     });
 
-    const disbursements: any[] = [];
     const dateStr = new Date().toISOString().split('T')[0];
+    const simulations: any[] = [];
 
     await prisma.$transaction(async (tx) => {
       for (const f of farmers) {
         const farmerCollections = collections.filter((c) => c.farmerId === f.farmerCode || c.farmerId === f.id);
         const totalEarned = farmerCollections.reduce((acc, c) => acc + c.payableAmount, 0);
         const totalPaid = existingPayments
-          .filter((p) => p.recipientName.includes(f.name) || p.recipientName.includes(f.farmerCode))
+          .filter((p) => p.status === 'Completed' && (p.recipientName.includes(f.name) || p.recipientName.includes(f.farmerCode)))
           .reduce((acc, p) => acc + p.amount, 0);
 
         const netDue = Math.max(0, +(totalEarned - totalPaid).toFixed(2));
-        if (netDue > 0) {
-          const utrNumber = `UTR-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const alreadySimulatedToday = existingPayments.some((p) =>
+          p.status === 'Simulated'
+          && p.paymentDate === dateStr
+          && (p.recipientName.includes(f.name) || p.recipientName.includes(f.farmerCode))
+        );
+        if (netDue > 0 && !alreadySimulatedToday) {
           const totalLitres = farmerCollections.reduce((acc, c) => acc + c.quantityLitres, 0);
 
           const txn = await tx.paymentTransaction.create({
             data: {
-              transactionRef: utrNumber,
+              transactionRef: `SIM-PAYOUT-${dateStr}-${f.farmerCode}`,
               recipientName: `${f.name} (${f.farmerCode})`,
               partyType: 'Farmer',
               milkLitres: totalLitres,
               amount: netDue,
               paymentDate: dateStr,
               paymentMethod: 'Direct Bank IMPS',
-              status: 'Completed',
-              notes: `Automated IMPS settlement to A/C ${f.bankAccount || 'XXXX1209'} (${f.ifscCode || 'BARB0ANANDX'})`,
+              status: 'Simulated',
+              notes: 'DEMO SIMULATION ONLY: no bank transfer, UTR, or notification was sent.',
             },
           });
-          disbursements.push(txn);
+          simulations.push(txn);
         }
       }
 
-      if (disbursements.length > 0) {
-        const totalSettled = disbursements.reduce((acc, d) => acc + d.amount, 0);
+      if (simulations.length > 0) {
+        const totalAmountSimulated = simulations.reduce((acc, d) => acc + d.amount, 0);
         await tx.auditLogEntry.create({
           data: {
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            userName: 'Finance Manager',
-            userRole: 'Finance Manager',
+            userName: 'Authenticated Finance Operator',
+            userRole: 'Authorized Finance Role',
             module: 'Banking & Payouts',
-            action: 'BATCH_DISBURSEMENT',
-            recordId: `BATCH-IMPS-${Date.now().toString().slice(-4)}`,
-            description: `Automated IMPS banking clearance disbursed to ${disbursements.length} producers. Total cleared: ₹${totalSettled.toLocaleString('en-IN')}`,
-            financialImpact: `-₹${totalSettled.toLocaleString('en-IN')} paid out`,
+            action: 'BATCH_PAYOUT_SIMULATION',
+            recordId: `BATCH-SIM-${dateStr}`,
+            description: `Created ${simulations.length} synthetic payout preview(s). No bank settlement occurred. Total preview: ₹${totalAmountSimulated.toLocaleString('en-IN')}`,
+            financialImpact: `₹${totalAmountSimulated.toLocaleString('en-IN')} simulated; no funds moved`,
             severity: 'info',
           },
         });
       }
     });
 
-    broadcastSSE('BATCH_PAYOUT_COMPLETED', {
-      count: disbursements.length,
-      totalAmount: disbursements.reduce((acc, d) => acc + d.amount, 0),
+    broadcastSSE('BATCH_PAYOUT_SIMULATED', {
+      count: simulations.length,
+      totalAmount: simulations.reduce((acc, d) => acc + d.amount, 0),
     });
 
     return res.json({
       success: true,
-      message: `Batch settlement complete. Disbursed payments to ${disbursements.length} farmers.`,
-      disbursedCount: disbursements.length,
-      totalAmountDisbursed: disbursements.reduce((acc, d) => acc + d.amount, 0),
-      disbursements,
+      simulationOnly: true,
+      message: 'Payout simulation recorded. No bank transfer, UTR, or notification was sent.',
+      simulatedCount: simulations.length,
+      totalAmountSimulated: simulations.reduce((acc, d) => acc + d.amount, 0),
+      simulations,
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });

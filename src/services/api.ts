@@ -15,6 +15,7 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
+      cache: options.cache || 'no-store',
       credentials: 'same-origin',
     });
 
@@ -205,7 +206,7 @@ class ApiService {
       return this.request<{ success: boolean; data: any }>('/payments/pending-summary');
     },
     disburseAllPending: async () => {
-      return this.request<{ success: boolean; message: string; disbursedCount: number; totalAmountDisbursed: number; disbursements: any[] }>('/payments/disburse-all-pending', {
+      return this.request<{ success: boolean; simulationOnly: true; message: string; simulatedCount: number; totalAmountSimulated: number; simulations: any[] }>('/payments/disburse-all-pending', {
         method: 'POST',
       });
     },
@@ -253,8 +254,8 @@ class ApiService {
 
   // Notifications & POS Receipt Slips (Phase 9)
   notifications = {
-    sendReceiptSms: async (data: any) => {
-      return this.request<{ success: boolean; messageId: string; channels: string[]; content: any }>('/notifications/receipt-sms', {
+    sendReceiptSms: async (data: { collectionCode: string; channel?: 'SMS' | 'WHATSAPP' | 'ALL' }) => {
+      return this.request<{ success: boolean; simulationOnly: boolean; deliveryStatus: string; messageId: string; channels: string[]; content: any }>('/notifications/receipt-sms', {
         method: 'POST',
         body: JSON.stringify(data),
       });
