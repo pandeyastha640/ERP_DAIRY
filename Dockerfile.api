@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # Production Dockerfile for DairyOS Express & Prisma API Server
 # ------------------------------------------------------------------------------
-FROM node:20-alpine AS api-builder
+FROM node:20.19-alpine AS api-builder
 
 WORKDIR /app
 
@@ -22,7 +22,7 @@ COPY tsconfig.json ./
 # ------------------------------------------------------------------------------
 # Production Runner
 # ------------------------------------------------------------------------------
-FROM node:20-alpine AS runner
+FROM node:20.19-alpine AS runner
 
 WORKDIR /app
 

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -68,11 +69,30 @@ async function runPreflight() {
       record('API', 'Readiness Probe (/ready)', 'FAIL', `Returned ${readyRes.status}`);
     }
 
-    const metricsRes = await fetch(`${BASE_URL}/api/v1/metrics/summary`);
-    if (metricsRes.ok) {
-      record('API', 'Control Tower Metrics Endpoint', 'PASS', 'Aggregates mass balance & financial ledgers cleanly');
+    const authEmail = process.env.TEST_AUTH_EMAIL || 'operations.manager@dairyos.enterprise';
+    const authPassword = process.env.TEST_AUTH_PASSWORD || process.env.SEED_DEMO_PASSWORD;
+    if (!authPassword) {
+      record('API', 'Control Tower Metrics Endpoint', 'WARN', 'Skipped protected-route check; provide TEST_AUTH_PASSWORD for a test account');
     } else {
-      record('API', 'Control Tower Metrics Endpoint', 'WARN', `HTTP ${metricsRes.status}`);
+      const loginRes = await fetch(`${BASE_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: authEmail, password: authPassword }),
+      });
+      const cookieHeader = loginRes.headers.get('set-cookie');
+      if (!loginRes.ok || !cookieHeader) {
+        record('API', 'Protected Metrics Session', 'FAIL', `Login returned HTTP ${loginRes.status}`);
+      } else {
+        record('API', 'Protected Metrics Session', 'PASS', 'Server-issued session cookie established');
+        const metricsRes = await fetch(`${BASE_URL}/api/v1/metrics/summary`, {
+          headers: { Cookie: cookieHeader.split(';')[0] },
+        });
+        if (metricsRes.ok) {
+          record('API', 'Control Tower Metrics Endpoint', 'PASS', 'Authenticated aggregate request succeeded');
+        } else {
+          record('API', 'Control Tower Metrics Endpoint', 'WARN', `HTTP ${metricsRes.status}`);
+        }
+      }
     }
   } catch (err: any) {
     record('API', 'API Connectivity', 'FAIL', `Unable to connect to ${BASE_URL}: ${err.message}`);
@@ -150,7 +170,7 @@ async function runPreflight() {
   console.log(`Failed Critical Checks          : ${failed}`);
 
   if (failed === 0) {
-    console.log('\n🚀 SYSTEM VERDICT: FULLY GREEN — CLEARED FOR ENTERPRISE LAUNCH!');
+    console.log('\n✅ PREFLIGHT RESULT: Listed checks passed. Review the repository audit before any production rollout.');
   } else {
     console.log('\n⚠️ SYSTEM VERDICT: REMEDIATION REQUIRED BEFORE PRODUCTION LAUNCH.');
     process.exit(1);

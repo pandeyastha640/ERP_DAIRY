@@ -17,6 +17,7 @@
     "db:mongo:import": "tsx scripts/import_to_mongodb.ts",
     "db:mongo:view": "tsx scripts/inspect_mongodb.ts",
     "test:phases": "tsx scripts/verify_all_phases.ts",
+    "test:security": "tsx scripts/test_auth_security.ts",
     "launch:check": "tsx scripts/preflight_launch_check.ts"
   },
 

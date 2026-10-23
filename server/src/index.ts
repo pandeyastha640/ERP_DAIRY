@@ -19,16 +19,33 @@ import { notificationsRouter } from './routes/notifications';
 import { federationRouter } from './routes/federation';
 import { prisma } from './prisma';
 import { connectMongo, disconnectMongo, isMongoConnected } from './mongodb';
+import { authenticate, authorizeApiRequest, AuthenticatedRequest, validateAuthConfiguration } from './middleware/auth';
 
 dotenv.config();
+validateAuthConfiguration();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const configuredCorsOrigins = new Set(
+  (process.env.CORS_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean)
+);
 
 // Security & Utility Middleware
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(cors({
+  credentials: true,
+  origin: (origin, callback) => {
+    const localDevelopmentOrigin = process.env.NODE_ENV !== 'production' &&
+      Boolean(origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
+    callback(null, !origin || configuredCorsOrigins.has(origin) || localDevelopmentOrigin);
+  },
+}));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, _res, buffer) => {
+    (req as AuthenticatedRequest).rawBody = Buffer.from(buffer);
+  },
+}));
 
 // Lightweight production request performance logger
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -72,6 +89,16 @@ app.get('/ready', async (_req: Request, res: Response) => {
 // API Routes
 app.use('/api/v1/health', healthRouter);
 app.use('/api/v1/auth', authRouter);
+
+// Every business API requires a valid server-issued session and a server-side role policy.
+// The payment callback is exempt from browser sessions and verifies its provider HMAC itself.
+app.use('/api/v1', (req, res, next) => {
+  if (req.method === 'POST' && req.path === '/payments/webhook') return next();
+  return authenticate(req as AuthenticatedRequest, res, () =>
+    authorizeApiRequest(req as AuthenticatedRequest, res, next)
+  );
+});
+
 app.use('/api/v1/farmers', farmersRouter);
 app.use('/api/v1/cattle', cattleRouter);
 app.use('/api/v1/collections', collectionsRouter);

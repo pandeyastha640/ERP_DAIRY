@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # Stage 1: Build the React 19 Frontend
 # ------------------------------------------------------------------------------
-FROM node:20-alpine AS builder
+FROM node:20.19-alpine AS builder
 
 WORKDIR /app
 

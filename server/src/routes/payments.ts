@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { prisma } from '../prisma';
 import { broadcastSSE } from './iot';
+import { AuthenticatedRequest } from '../middleware/auth';
 
 export const paymentsRouter = Router();
 
@@ -184,20 +185,25 @@ paymentsRouter.post('/disburse-all-pending', async (req: Request, res: Response)
 // Webhook endpoint for RazorpayX, Cashfree Payouts, or Banking API Callbacks
 paymentsRouter.post('/webhook', async (req: Request, res: Response) => {
   try {
-    const signature = req.headers['x-webhook-signature'] as string || req.headers['x-razorpay-signature'] as string || 'verified';
+    const signatureHeader = req.headers['x-webhook-signature'] || req.headers['x-razorpay-signature'];
+    const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
+    const secret = process.env.PAYMENT_WEBHOOK_SECRET;
+    if (!secret) {
+      return res.status(503).json({ success: false, message: 'Payment webhook verification is not configured.' });
+    }
+    if (!signature || !/^[a-f0-9]{64}$/i.test(signature)) {
+      return res.status(401).json({ success: false, message: 'A valid HMAC-SHA256 signature is required.' });
+    }
+
     const payload = req.body || {};
     const eventType = payload.event || payload.type || 'payout.processed';
     const eventId = payload.id || `EVT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    const secret = process.env.PAYMENT_WEBHOOK_SECRET || 'dairyos_webhook_secret_2026';
-    let signatureVerified = true;
-
-    if (req.headers['x-razorpay-signature'] && process.env.PAYMENT_WEBHOOK_SECRET) {
-      const expectedSignature = crypto
-        .createHmac('sha256', secret)
-        .update(JSON.stringify(payload))
-        .digest('hex');
-      signatureVerified = (signature === expectedSignature);
+    const rawBody = (req as AuthenticatedRequest).rawBody || Buffer.from(JSON.stringify(payload));
+    const expectedSignature = crypto.createHmac('sha256', secret).update(rawBody).digest();
+    const providedSignature = Buffer.from(signature, 'hex');
+    if (providedSignature.length !== expectedSignature.length || !crypto.timingSafeEqual(providedSignature, expectedSignature)) {
+      return res.status(401).json({ success: false, message: 'Payment webhook signature verification failed.' });
     }
 
     // Save webhook audit record
@@ -209,8 +215,8 @@ paymentsRouter.post('/webhook', async (req: Request, res: Response) => {
         gateway: payload.gateway || 'RazorpayX',
         eventType,
         payloadJson: JSON.stringify(payload),
-        signatureVerified,
-        status: signatureVerified ? 'Processed' : 'Failed Verification',
+        signatureVerified: true,
+        status: 'Processed',
       },
     });
 
@@ -223,7 +229,7 @@ paymentsRouter.post('/webhook', async (req: Request, res: Response) => {
       });
     }
 
-    broadcastSSE('PAYMENT_WEBHOOK', { eventType, eventId, signatureVerified });
+    broadcastSSE('PAYMENT_WEBHOOK', { eventType, eventId, signatureVerified: true });
 
     return res.status(200).json({ success: true, message: 'Webhook received & processed', eventId });
   } catch (error: any) {

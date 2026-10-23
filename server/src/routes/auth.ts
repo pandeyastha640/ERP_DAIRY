@@ -1,8 +1,14 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { prisma } from '../prisma';
-import { authenticate, AuthenticatedRequest, JWT_SECRET } from '../middleware/auth';
+import {
+  authenticate,
+  AuthenticatedRequest,
+  clearSessionCookie,
+  isDemoAuthEnabled,
+  setSessionCookie,
+} from '../middleware/auth';
 
 export const authRouter = Router();
 
@@ -25,39 +31,34 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials. User not found.',
+        message: 'Invalid email or password.',
       });
     }
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch && password !== 'password123') { // Allow demo password fallback
+    if (user.email.endsWith('@dairyos.enterprise') && !isDemoAuthEnabled()) {
+      return res.status(403).json({ success: false, message: 'Sample accounts are disabled. Use an organization-provisioned account.' });
+    }
+
+    const isMatch = user.passwordHash ? await bcrypt.compare(password, user.passwordHash) : false;
+    if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials. Incorrect password.',
+        message: 'Invalid email or password.',
       });
     }
 
-    const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const sessionUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
+    setSessionCookie(res, sessionUser);
 
     return res.json({
       success: true,
       message: 'Login successful',
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      user: sessionUser,
     });
   } catch (error: any) {
     console.error('Login error:', error);
@@ -72,9 +73,14 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 // POST /api/v1/auth/demo-switch
 // Instant switch for demo/evaluation mode
 authRouter.post('/demo-switch', async (req: Request, res: Response) => {
+  if (!isDemoAuthEnabled()) {
+    return res.status(404).json({ success: false, message: 'Demo authentication is disabled.' });
+  }
+
   try {
     const { role } = req.body;
-    if (!role) {
+    const demoRoles = ['CEO', 'COO', 'Operations Manager', 'Admin', 'Plant Manager', 'Procurement Manager', 'Finance Manager', 'Field Staff'];
+    if (typeof role !== 'string' || !demoRoles.includes(role)) {
       return res.status(400).json({ success: false, message: 'Role parameter required' });
     }
 
@@ -84,31 +90,21 @@ authRouter.post('/demo-switch', async (req: Request, res: Response) => {
 
     if (!user) {
       // Create user if not yet present
-      const defaultHash = await bcrypt.hash('password123', 10);
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const randomPasswordHash = await bcrypt.hash(randomPassword, 10);
       user = await prisma.user.create({
         data: {
           email: `${role.toLowerCase().replace(/\s+/g, '.')}@dairyos.enterprise`,
           name: `${role} Officer`,
           role,
-          passwordHash: defaultHash,
+          passwordHash: randomPasswordHash,
         },
       });
     }
 
-    const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
+    setSessionCookie(res, { id: user.id, email: user.email, name: user.name, role: user.role });
     return res.json({
       success: true,
-      token,
       user: {
         id: user.id,
         email: user.email,
@@ -123,6 +119,11 @@ authRouter.post('/demo-switch', async (req: Request, res: Response) => {
       error: error.message,
     });
   }
+});
+
+authRouter.post('/logout', (_req: Request, res: Response) => {
+  clearSessionCookie(res);
+  return res.json({ success: true, message: 'Session cleared.' });
 });
 
 // GET /api/v1/auth/me

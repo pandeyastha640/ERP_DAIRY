@@ -8,8 +8,8 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('operations.manager@dairyos.enterprise');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -29,15 +29,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     try {
       const res = await api.auth.login(email, password);
       if (res.success && res.user) {
-        onLogin(res.user.role as Role);
+        const session = await api.auth.getMe();
+        if (!session.success || !session.user || session.user.id !== res.user.id) {
+          throw new Error('The server could not validate the new session. Please try again.');
+        }
+        onLogin(session.user.role as Role);
       } else {
-        const matched = demoRoles.find((r) => r.email === email);
-        onLogin(matched ? matched.role : 'Operations Manager');
+        setErrorMsg('The server did not establish a valid session. Please check your credentials.');
       }
     } catch (err: any) {
-      console.warn('Backend login fallback to offline demo:', err.message);
-      const matched = demoRoles.find((r) => r.email === email);
-      onLogin(matched ? matched.role : 'Operations Manager');
+      setErrorMsg(err.message || 'Unable to sign in. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -47,12 +48,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      await api.auth.demoSwitch(dr.role);
-    } catch (err) {
-      console.warn('Demo switch API offline fallback:', err);
+      const result = await api.auth.demoSwitch(dr.role);
+      if (!result.success || !result.user) throw new Error('Demo session was not created by the server.');
+      onLogin(result.user.role as Role);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Demo sign-in is unavailable.');
     } finally {
       setLoading(false);
-      onLogin(dr.role);
     }
   };
 
@@ -80,13 +82,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           </p>
         </div>
 
-        {/* Demo Environment Badge */}
+        {/* Session Status */}
         <div className="mb-5 p-3 bg-cream-50/80 rounded-xl border border-[#ede8df] flex items-center justify-between text-xs font-mono text-stone-600">
           <span className="flex items-center gap-1.5 text-forest-900 font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-            <span>ENTERPRISE BACKEND ACTIVE</span>
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>SERVER-VERIFIED SIGN-IN</span>
           </span>
-          <span className="text-stone-400">PORT 5000</span>
+          <span className="text-stone-400">SESSION REQUIRED</span>
         </div>
 
         {errorMsg && (
@@ -103,6 +105,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               Enterprise Email
             </label>
             <input
+              required
+              autoComplete="username"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -115,6 +119,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               Security Credential
             </label>
             <input
+              required
+              autoComplete="current-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -141,7 +147,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           </button>
         </form>
 
-        {/* Quick Role One-Click Switcher */}
+        {/* Explicitly opted-in development demo sign-in. */}
+        {import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_AUTH === 'true' && (
         <div className="mt-6 pt-5 border-t border-[#ede8df]">
           <div className="text-[11px] font-mono uppercase tracking-wider text-stone-500 mb-2.5 flex items-center gap-1.5 font-semibold">
             <UserCheck className="w-3.5 h-3.5 text-forest-700" />
@@ -167,6 +174,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             ))}
           </div>
         </div>
+        )}
       </div>
 
       <div className="mt-5 text-center text-xs text-stone-500 font-mono">

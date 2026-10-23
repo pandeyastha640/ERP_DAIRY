@@ -35,7 +35,7 @@ DairyOS enforces strict **Role-Based Access Control (RBAC)** to comply with food
 | **Finance Manager** | `finance.manager@dairyos.enterprise` | Payments, Finance, Sales, Reports, Farmers | P&L Ledger, Cost-per-Litre, Banking Disbursements |
 | **Field Staff / Collection Agent** | `field.staff@dairyos.enterprise` | Milk Collection, Farmers, Quality | Touch Field Mode, Lactoscan Intake, POS Slips |
 
-*Default credential for local demo sessions:* `password123` (or use the instant 1-click Role Switcher on the login screen).
+*Local sample accounts require an explicit `SEED_DEMO_PASSWORD` value and are disabled by default. Role switching requires `DEMO_AUTH_ENABLED=true` and `VITE_ENABLE_DEMO_AUTH=true` in development. Never use sample accounts or credentials in production.*
 
 ---
 

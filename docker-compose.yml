@@ -30,9 +30,11 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=5000
-      - DATABASE_URL=postgresql://dairy_admin:secure_dairy_pass_2026@postgres:5432/dairyos_prod?schema=public
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-dairy_admin}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the deployment environment}@postgres:5432/${POSTGRES_DB:-dairyos_prod}?schema=public
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=dairyos_enterprise_jwt_secret_key_production_2026
+      - JWT_SECRET=${JWT_SECRET:?Set a unique JWT_SECRET in the deployment environment}
+      - PAYMENT_WEBHOOK_SECRET=${PAYMENT_WEBHOOK_SECRET:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     ports:
       - "5000:5000"
@@ -58,15 +60,15 @@ services:
     container_name: dairyos_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: dairyos_prod
-      POSTGRES_USER: dairy_admin
-      POSTGRES_PASSWORD: secure_dairy_pass_2026
+      POSTGRES_DB: ${POSTGRES_DB:-dairyos_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-dairy_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the deployment environment}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dairy_admin -d dairyos_prod"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dairy_admin} -d ${POSTGRES_DB:-dairyos_prod}"]
       interval: 10s
       timeout: 5s
       retries: 5
