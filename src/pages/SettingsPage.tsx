@@ -62,7 +62,7 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-700 shadow-xs">
             <Settings className="w-5 h-5 text-forest-700" />
@@ -102,7 +102,7 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {savedNotice && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-semibold flex items-center gap-2.5 shadow-xs animate-in fade-in duration-200">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2.5 shadow-xs animate-in fade-in duration-200">
           <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
           <span>Configuration saved successfully! (Demo environment state)</span>
         </div>
@@ -154,7 +154,7 @@ export const SettingsPage: React.FC = () => {
 
       {/* Tab 1: Organization */}
       {activeTab === 'Org' && (
-        <div className="bg-white border border-[#ede8df] rounded-2xl p-6 max-w-3xl space-y-4 text-xs shadow-xs font-sans">
+        <div className="bg-white border border-[#ede8df] rounded-xl p-6 max-w-3xl space-y-4 text-xs shadow-xs font-sans">
           <div className="border-b border-[#ede8df] pb-3">
             <h2 className="text-sm font-bold text-forest-950">{IS_STATIC_DEMO_MODE ? 'Sample Cooperative Settings' : 'Enterprise Legal Entity'}</h2>
             <p className="text-[11px] text-stone-500">{IS_STATIC_DEMO_MODE ? 'Sample settings only. No real registrations are included.' : 'Master corporate registration and food safety licenses'}</p>
@@ -204,7 +204,7 @@ export const SettingsPage: React.FC = () => {
 
       {/* Tab 2: Facilities */}
       {activeTab === 'Facilities' && (
-        <div className="bg-white border border-[#ede8df] rounded-2xl p-6 space-y-4 shadow-xs">
+        <div className="bg-white border border-[#ede8df] rounded-xl p-6 space-y-4 shadow-xs">
           <div className="border-b border-[#ede8df] pb-3">
             <h2 className="text-sm font-bold text-forest-950 font-sans">Registered Operating Facilities & Plants</h2>
             <p className="text-[11px] text-stone-500 font-sans">Plant locations, chilling centers and milk reception points</p>
@@ -236,7 +236,7 @@ export const SettingsPage: React.FC = () => {
 
       {/* Tab 3: Pricing Rules */}
       {activeTab === 'Pricing' && (
-        <div className="bg-white border border-[#ede8df] rounded-2xl p-6 max-w-3xl space-y-4 text-xs shadow-xs font-sans">
+        <div className="bg-white border border-[#ede8df] rounded-xl p-6 max-w-3xl space-y-4 text-xs shadow-xs font-sans">
           <div className="border-b border-[#ede8df] pb-3">
             <h2 className="text-sm font-bold text-forest-950">Two-Axis Procurement Pricing Formula</h2>
             <p className="text-stone-500 mt-0.5">
@@ -285,7 +285,7 @@ export const SettingsPage: React.FC = () => {
 
       {/* Tab 4: Quality Rules */}
       {activeTab === 'Quality' && (
-        <div className="bg-white border border-[#ede8df] rounded-2xl p-6 max-w-3xl space-y-4 text-xs shadow-xs font-sans">
+        <div className="bg-white border border-[#ede8df] rounded-xl p-6 max-w-3xl space-y-4 text-xs shadow-xs font-sans">
           <div className="border-b border-[#ede8df] pb-3">
             <h2 className="text-sm font-bold text-forest-950">Quality Tolerance & Rejection Thresholds</h2>
             <p className="text-[11px] text-stone-500">Automatic rejection protocols applied at collection weighbridge desks</p>
@@ -336,7 +336,7 @@ export const SettingsPage: React.FC = () => {
 
       {/* Tab 5: Hardware Integrations */}
       {activeTab === 'Integrations' && (
-        <div className="bg-white border border-[#ede8df] rounded-2xl p-6 space-y-4 text-xs shadow-xs font-sans">
+        <div className="bg-white border border-[#ede8df] rounded-xl p-6 space-y-4 text-xs shadow-xs font-sans">
           <div className="border-b border-[#ede8df] pb-3">
             <h2 className="text-sm font-bold text-forest-950">{IS_STATIC_DEMO_MODE ? 'Hardware and Payment Demo Status' : 'Hardware, IoT & Payment Integrations'}</h2>
             <p className="text-[11px] text-stone-500">{IS_STATIC_DEMO_MODE ? 'No hardware or financial gateway is connected in the browser demo.' : 'Configured integrations for milk analyzers, scales, and payment services'}</p>
