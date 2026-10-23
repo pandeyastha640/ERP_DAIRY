@@ -34,7 +34,7 @@ export interface PageContainerProps {
 }
 
 export const PageContainer: React.FC<PageContainerProps> = ({ children, className = '' }) => {
-  return <div className={`space-y-6 sm:space-y-8 animate-in fade-in duration-300 ${className}`}>{children}</div>;
+  return <div className={`space-y-6 ${className}`}>{children}</div>;
 };
 
 export interface PageHeaderProps {
@@ -52,7 +52,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   subtitle,
   facility: propFacility,
   dateFilter: propDateFilter,
-  statusBadge = 'Live Operations',
+  statusBadge = 'Operations',
   actions,
   breadcrumbs,
 }) => {
@@ -80,7 +80,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   const datePresets: DateFilter[] = ['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days'];
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#ede8df] bg-transparent">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#d9e3dd] bg-transparent">
       <div>
         {breadcrumbs && breadcrumbs.length > 0 && (
           <nav className="flex items-center gap-1.5 text-xs text-stone-500 mb-2 font-medium">

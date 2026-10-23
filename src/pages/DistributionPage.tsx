@@ -63,7 +63,7 @@ export const DistributionPage: React.FC<DistributionPageProps> = ({ routes, onAd
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-700 shadow-xs">
             <Truck className="w-5 h-5 text-forest-700" />
@@ -111,7 +111,7 @@ export const DistributionPage: React.FC<DistributionPageProps> = ({ routes, onAd
 
       {/* DELAY ALERT */}
       {delayedRoutes > 0 && (
-        <div className="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-4 bg-amber-50/70 border border-amber-200/80 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-800 shrink-0">
               <AlertTriangle className="w-5 h-5 text-amber-800" />
@@ -127,7 +127,7 @@ export const DistributionPage: React.FC<DistributionPageProps> = ({ routes, onAd
       )}
 
       {/* Comprehensive Logistics Filter and Search Bar */}
-      <div className="bg-white border border-[#ede8df] rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="bg-white border border-[#ede8df] rounded-xl p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-2.5" />
           <input
@@ -203,7 +203,7 @@ export const DistributionPage: React.FC<DistributionPageProps> = ({ routes, onAd
           return (
             <div
               key={route.id}
-              className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-forest-200 transition-all"
+              className="bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-forest-200 transition-all"
             >
               <div>
                 <div className="flex items-center justify-between text-xs mb-1.5">

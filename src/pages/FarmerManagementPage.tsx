@@ -124,7 +124,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
     <PageContainer>
       {/* 1. Header */}
       <PageHeader
-        title={translate(language, 'Farmer & Procurement Directory')}
+        title={translate(language, 'Farmer Directory')}
         subtitle={IS_STATIC_DEMO_MODE ? 'Browse synthetic farmer records and add a sample profile saved in this browser.' : 'Producer registry, village milk pourer logs, automated fat/SNF pricing rates, and payment records.'}
         statusBadge={IS_STATIC_DEMO_MODE ? 'Sample data · browser only' : 'Farmer records saved to server'}
         actions={
@@ -139,7 +139,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
       />
 
       {/* 2. KPI Dashboard */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-3">
         <MetricCard
           label="Total Farmers"
           value={totalFarmers}
@@ -185,7 +185,7 @@ export const FarmerManagementPage: React.FC<FarmerManagementPageProps> = ({
         />
         <MetricCard
           label="Avg Rate"
-          value="₹38.2"
+          value="Illustrative"
           unit="/Litre"
           trend="neutral"
           changeText="Two-axis pricing"

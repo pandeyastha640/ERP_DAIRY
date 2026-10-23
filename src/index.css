@@ -190,3 +190,52 @@
   background: rgba(27, 67, 50, 0.4);
 }
 
+
+
+/* DairyOS Enterprise: balanced-density foundation.
+   Keeps existing utility classes functional while reducing decorative chrome. */
+:root {
+  --erp-primary: #163d2b;
+  --erp-action: #27835c;
+  --erp-canvas: #f5f7f6;
+  --erp-surface: #ffffff;
+  --erp-border: #d9e3dd;
+  --erp-radius: 12px;
+  --erp-focus: #27835c;
+}
+html { color-scheme: light; }
+body { background-color: var(--erp-canvas); color: #172b20; }
+button, input, select, textarea { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--erp-focus);
+  outline-offset: 2px;
+}
+.dairy-card, .dairy-card-interactive, .glass-panel, .glass-panel-elevated {
+  background: var(--erp-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--erp-border);
+  border-radius: var(--erp-radius);
+  box-shadow: 0 1px 3px rgba(22,61,43,.045);
+}
+.dairy-card:hover, .dairy-card-interactive:hover {
+  transform: none;
+  border-color: #abc9b8;
+  box-shadow: 0 2px 8px rgba(22,61,43,.07);
+}
+.icon-3d, .icon-3d:hover {
+  transform: none;
+  box-shadow: none;
+  border-radius: 10px;
+}
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+  min-height: 42px;
+}
+button { touch-action: manipulation; }
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dairy-card, .dairy-card-interactive, .icon-3d { transition: none; }
+}

@@ -426,7 +426,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
             </span>
           </FilterBar>
 
-          <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#faf8f5] border-b border-[#ede8df] text-stone-600 font-semibold uppercase tracking-wider text-[11px]">
@@ -516,7 +516,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
       {activeView === 'Breeding' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs">
+            <div className="p-4 bg-[#fdfcfb] border border-[#ede8df] rounded-xl shadow-xs">
               <div className="flex items-center gap-2 text-forest-900 font-bold text-xs uppercase tracking-wide">
                 <span className="p-1 rounded-md bg-sage-50 text-forest-700">
                   <Clock className="w-4 h-4" />
@@ -528,7 +528,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               </p>
             </div>
 
-            <div className="p-4 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs">
+            <div className="p-4 bg-[#fdfcfb] border border-[#ede8df] rounded-xl shadow-xs">
               <div className="flex items-center gap-2 text-forest-900 font-bold text-xs uppercase tracking-wide">
                 <span className="p-1 rounded-md bg-sage-50 text-forest-700">
                   <CheckCircle2 className="w-4 h-4" />
@@ -540,7 +540,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               </p>
             </div>
 
-            <div className="p-4 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs">
+            <div className="p-4 bg-[#fdfcfb] border border-[#ede8df] rounded-xl shadow-xs">
               <div className="flex items-center gap-2 text-forest-900 font-bold text-xs uppercase tracking-wide">
                 <span className="p-1 rounded-md bg-gold-50 text-gold-700">
                   <AlertCircle className="w-4 h-4" />
@@ -553,7 +553,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
             </div>
           </div>
 
-          <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-[#fdfcfb] border border-[#ede8df] rounded-xl overflow-hidden shadow-xs">
             <div className="p-4 bg-cream-50/50 border-b border-[#ede8df] flex items-center justify-between">
               <span className="font-bold text-xs text-forest-950">
                 Active Bovine Gestation & Artificial Insemination Ledger
@@ -632,7 +632,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {vaccinationProtocols.map((vac) => (
-              <div key={vac.disease} className="p-5 bg-[#fdfcfb] border border-[#ede8df] rounded-2xl shadow-xs space-y-3.5 transition-shadow duration-150 hover:shadow-sm">
+              <div key={vac.disease} className="p-5 bg-[#fdfcfb] border border-[#ede8df] rounded-xl shadow-xs space-y-3.5 transition-shadow duration-150 hover:shadow-sm">
                 <div className="flex items-start justify-between">
                   <div className="w-9 h-9 rounded-xl bg-sage-50 border border-sage-200 text-forest-800 flex items-center justify-center">
                     <Syringe className="w-4 h-4 text-forest-700" />
@@ -706,7 +706,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
               </div>
             </div>
 
-            <div className="p-4 bg-[#fdfcfb] rounded-2xl border border-[#ede8df] shadow-xs">
+            <div className="p-4 bg-[#fdfcfb] rounded-xl border border-[#ede8df] shadow-xs">
               <div className="flex items-center justify-between mb-3">
                 <span className="font-bold text-forest-950">7-Day Milk Production History</span>
                 <div className="flex items-center gap-2">
@@ -734,7 +734,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
             </div>
 
             {/* Reproduction & Gestation Card */}
-            <div className="p-4 bg-cream-50/80 rounded-2xl border border-[#ede8df]">
+            <div className="p-4 bg-cream-50/80 rounded-xl border border-[#ede8df]">
               <div className="flex items-center gap-2 font-bold text-forest-950 mb-2.5">
                 <Calendar className="w-4 h-4 text-forest-700" />
                 <span>Bovine Gestation & Calving Milestones</span>
@@ -756,7 +756,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-[#fdfcfb] rounded-2xl border border-[#ede8df]">
+              <div className="p-4 bg-[#fdfcfb] rounded-xl border border-[#ede8df]">
                 <div className="flex items-center gap-2 font-bold text-forest-950 mb-2">
                   <Syringe className="w-4 h-4 text-forest-700" />
                   <span>Vaccination Protocol</span>
@@ -771,7 +771,7 @@ export const CattleManagementPage: React.FC<CattleManagementPageProps> = ({
                 </div>
               </div>
 
-              <div className="p-4 bg-[#fdfcfb] rounded-2xl border border-[#ede8df]">
+              <div className="p-4 bg-[#fdfcfb] rounded-xl border border-[#ede8df]">
                 <div className="flex items-center gap-2 font-bold text-forest-950 mb-2">
                   <HeartPulse className="w-4 h-4 text-rose-700" />
                   <span>Veterinary & Clinical Notes</span>

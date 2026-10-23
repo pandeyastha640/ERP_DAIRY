@@ -155,7 +155,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
     <PageContainer>
       {/* 1. Header with Actions */}
       <PageHeader
-        title={translate(language, 'Dairy Operations Control Tower')}
+        title={translate(language, 'Executive Overview')}
         subtitle="Operational summary from loaded records. Historical trend points include illustrative demo data."
         facility={currentFacility}
         dateFilter={currentDateFilter}
@@ -202,9 +202,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate, onOpen
       />
 
       {/* 3. Centralized Mass Balance Milk Reconciliation Strip */}
-      <div className="relative overflow-hidden bg-white/80 backdrop-blur-xl border border-white/85 rounded-2xl p-5 shadow-[0_8px_24px_-4px_rgba(27,67,50,0.06),inset_0_1px_1px_rgba(255,255,255,0.95)] transition-all duration-300 hover:shadow-[0_16px_36px_-6px_rgba(27,67,50,0.1)]">
+      <div className="relative overflow-hidden bg-white border border-[#d9e3dd] rounded-xl p-5 shadow-sm">
         {/* Specular highlight */}
-        <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/70 to-transparent pointer-events-none rounded-t-2xl" />
+        
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 pb-3 border-b border-stone-200/60 relative z-10">
           <div className="flex items-center gap-3">

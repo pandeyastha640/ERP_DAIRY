@@ -81,10 +81,10 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-[#ede8df] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-[#d9e3dd] pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-forest-950 font-sans">
-            Milk Collection Desk
+          <h1 className="text-2xl sm:text-[26px] font-semibold tracking-tight text-forest-950 font-sans">
+            Milk Collection
           </h1>
           <p className="text-xs text-stone-500 mt-1 font-medium">
             {IS_STATIC_DEMO_MODE ? 'Record sample milk intake. The browser demo applies the DairyOS pricing formula and keeps changes on this device.' : 'Record farmer milk intake. The server confirms quality, rate, and payable before saving.'}
@@ -97,7 +97,7 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
             className="px-3 py-2 bg-cream-50 hover:bg-cream-100 border border-[#ede8df] text-xs font-semibold text-stone-700 rounded-xl transition-all duration-150 cursor-pointer shadow-xs active:scale-98 hidden md:flex items-center gap-1.5"
             title="Jump to Central Mass Balance Reconciliation (Tab 02)"
           >
-            <span>&larr; Tab 02 Milk Ops</span>
+            <span>&larr; Milk Operations</span>
           </button>
           <button
             onClick={() => setIsIotBridgeOpen(true)}
@@ -118,14 +118,14 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
             className="px-4 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-xl text-xs font-semibold shadow-xs transition-all duration-150 flex items-center gap-2 cursor-pointer shadow-forest-950/20 active:scale-98"
           >
             <Plus className="w-4 h-4" />
-            <span>Manual Entry</span>
+            <span>New Collection</span>
           </button>
           <button
             onClick={() => setCurrentModule('payments')}
             className="px-3 py-2 bg-[#faf8f5] hover:bg-cream-100 border border-[#ede8df] text-xs font-semibold text-forest-900 rounded-xl transition-all duration-150 cursor-pointer shadow-xs active:scale-98 hidden sm:flex items-center gap-1.5"
             title="Jump to Farmer Payables (Tab 15)"
           >
-            <span>Tab 15 Payables &rarr;</span>
+            <span>Farmer Payables &rarr;</span>
           </button>
         </div>
       </div>
@@ -135,7 +135,7 @@ export const MilkCollectionPage: React.FC<MilkCollectionPageProps> = ({
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-forest-600 animate-pulse" />
-            <span className="font-bold text-forest-950">BMC Anand Intake Station (demo):</span>
+            <span className="font-bold text-forest-950">Collection station (sample):</span>
           </div>
           <div className="flex items-center gap-1.5 font-mono text-stone-600 bg-cream-50 px-2.5 py-1 rounded-lg border border-[#ede8df]">
             <span className="w-1.5 h-1.5 rounded-full bg-forest-600" />

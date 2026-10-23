@@ -173,7 +173,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
       {activeTab === 'Overview' && (
         <div className="space-y-6">
           {/* Unit Cost Formula Callout */}
-          <div className="p-5 bg-white border border-[#ede8df] rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 font-mono shadow-xs">
+          <div className="p-5 bg-white border border-[#ede8df] rounded-xl flex flex-col md:flex-row items-center justify-between gap-4 font-mono shadow-xs">
             <div>
               <div className="text-xs text-stone-500 font-sans font-semibold uppercase tracking-wider">
                 TRANSPARENT UNIT COST FORMULA (RECONCILED)
@@ -198,7 +198,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
 
           {/* Cost Allocation Donut & Stream Comparison */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs">
+            <div className="bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs">
               <h3 className="text-sm font-bold text-forest-950 font-sans mb-1">
                 Operating Cost Composition
               </h3>
@@ -214,7 +214,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
             </div>
 
             {/* Stream 1 vs Stream 2 Economics Summary */}
-            <div className="bg-white border border-[#ede8df] rounded-2xl p-5 space-y-4 shadow-xs">
+            <div className="bg-white border border-[#ede8df] rounded-xl p-5 space-y-4 shadow-xs">
               <div>
                 <h3 className="text-sm font-bold text-forest-950 font-sans">
                   Own Herd vs Farmer Procurement Economics
@@ -306,7 +306,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
 
       {/* 5. COST PER LITRE DECOMPOSITION */}
       {activeTab === 'Cost Per Litre' && (
-        <div className="bg-white border border-[#ede8df] rounded-2xl p-5 space-y-4 shadow-xs">
+        <div className="bg-white border border-[#ede8df] rounded-xl p-5 space-y-4 shadow-xs">
           <div className="border-b border-[#ede8df] pb-3">
             <h3 className="text-base font-bold text-forest-950 font-sans">
               Unit Cost Decomposition (₹ / Litre)
@@ -476,7 +476,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
 
       {/* 6. PROFITABILITY BY PRODUCT */}
       {activeTab === 'By Product' && (
-        <div className="bg-white border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
+        <div className="bg-white border border-[#ede8df] rounded-xl overflow-hidden shadow-xs">
           <div className="px-5 py-3.5 border-b border-[#ede8df] flex items-center justify-between bg-cream-50/50">
             <div>
               <h3 className="text-sm font-bold text-forest-950 font-sans">
@@ -541,7 +541,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
 
       {/* 7. PROFITABILITY BY ROUTE */}
       {activeTab === 'By Route' && (
-        <div className="bg-white border border-[#ede8df] rounded-2xl overflow-hidden shadow-xs">
+        <div className="bg-white border border-[#ede8df] rounded-xl overflow-hidden shadow-xs">
           <div className="px-5 py-3.5 border-b border-[#ede8df] flex items-center justify-between bg-cream-50/50">
             <div>
               <h3 className="text-sm font-bold text-forest-950 font-sans">
@@ -599,7 +599,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
       {/* 8. STREAM ECONOMICS */}
       {activeTab === 'Stream Economics' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white border border-[#ede8df] rounded-2xl p-5 space-y-4 shadow-xs">
+          <div className="bg-white border border-[#ede8df] rounded-xl p-5 space-y-4 shadow-xs">
             <h3 className="text-sm font-bold text-forest-950 font-sans">Own Herd Production Economics</h3>
             <div className="space-y-2.5 text-xs font-mono">
               <div className="flex justify-between p-3 bg-cream-50/70 rounded-xl border border-[#ede8df]">
@@ -645,7 +645,7 @@ export const FinanceProfitabilityPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white border border-[#ede8df] rounded-2xl p-5 space-y-4 shadow-xs">
+          <div className="bg-white border border-[#ede8df] rounded-xl p-5 space-y-4 shadow-xs">
             <h3 className="text-sm font-bold text-forest-950 font-sans">Farmer Procurement Economics</h3>
             <div className="space-y-2.5 text-xs font-mono">
               <div className="flex justify-between p-3 bg-cream-50/70 rounded-xl border border-[#ede8df]">
