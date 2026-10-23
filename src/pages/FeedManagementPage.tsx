@@ -102,7 +102,7 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-forest-50 border border-forest-100 flex items-center justify-center text-forest-700 shadow-xs">
             <Wheat className="w-5 h-5 text-forest-700" />
@@ -216,7 +216,7 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       {activeTab === 'Inventory' && (
         <div className="space-y-4">
           {/* Feed Filter and Search Bar */}
-          <div className="bg-white border border-[#ede8df] rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="bg-white border border-[#ede8df] rounded-xl p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="relative flex-1 max-w-sm">
               <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-2.5" />
               <input
@@ -280,7 +280,7 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
           </div>
 
           {/* Feed Inventory Table */}
-          <div className="bg-white border border-[#ede8df] rounded-2xl shadow-xs overflow-hidden">
+          <div className="bg-white border border-[#ede8df] rounded-xl shadow-xs overflow-hidden">
             <div className="px-5 py-3.5 border-b border-[#ede8df] bg-cream-50/50 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-forest-950 font-sans">Feed Inventory Ledger</h3>
@@ -357,7 +357,7 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
       {activeTab === 'Formulation' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Form: Parameters */}
-          <div className="lg:col-span-2 bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs space-y-4">
+          <div className="lg:col-span-2 bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-[#ede8df] pb-3">
               <div>
                 <h3 className="text-sm font-bold text-forest-950 font-sans">Ration Balancing Formulation</h3>
@@ -486,7 +486,7 @@ export const FeedManagementPage: React.FC<FeedManagementPageProps> = ({
           </div>
 
           {/* Right Summary Card */}
-          <div className="bg-white border border-[#ede8df] rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+          <div className="bg-white border border-[#ede8df] rounded-xl p-5 shadow-xs flex flex-col justify-between space-y-4">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-forest-950 font-sans">Ration Economic Summary</h3>
