@@ -1,9 +1,8 @@
-version: '3.8'
-
+# Single-instance Docker deployment for evaluation/staging.
+# The Prisma schema currently uses SQLite. Do not scale the API to multiple
+# replicas or treat this as a production deployment until a reviewed
+# PostgreSQL migration history and backup/restore plan exist.
 services:
-  # ----------------------------------------------------------------------------
-  # 1. Frontend Web & Nginx Reverse Proxy
-  # ----------------------------------------------------------------------------
   web:
     build:
       context: .
@@ -11,16 +10,13 @@ services:
     container_name: dairyos_web
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "${WEB_PORT:-8080}:80"
     depends_on:
       api:
         condition: service_healthy
     networks:
       - dairyos_network
 
-  # ----------------------------------------------------------------------------
-  # 2. Node.js Express & Prisma API Server
-  # ----------------------------------------------------------------------------
   api:
     build:
       context: .
@@ -28,21 +24,20 @@ services:
     container_name: dairyos_api
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
-      - PORT=5000
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-dairy_admin}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the deployment environment}@postgres:5432/${POSTGRES_DB:-dairyos_prod}?schema=public
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=${JWT_SECRET:?Set a unique JWT_SECRET in the deployment environment}
-      - PAYMENT_WEBHOOK_SECRET=${PAYMENT_WEBHOOK_SECRET:-}
-      - CORS_ORIGINS=${CORS_ORIGINS:-}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-    ports:
-      - "5000:5000"
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: file:/app/data/dairyos.db
+      JWT_SECRET: ${JWT_SECRET:?Set a unique JWT_SECRET in the deployment environment}
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    volumes:
+      - dairyos_data:/app/data
+    expose:
+      - "5000"
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/healthz"]
       interval: 15s
@@ -52,58 +47,27 @@ services:
     networks:
       - dairyos_network
 
-  # ----------------------------------------------------------------------------
-  # 3. PostgreSQL 16 Enterprise Relational Database
-  # ----------------------------------------------------------------------------
-  postgres:
-    image: postgres:16-alpine
-    container_name: dairyos_postgres
-    restart: unless-stopped
+  # Initial schema bootstrap for this single-instance SQLite staging setup.
+  # For production, replace this with reviewed, versioned Prisma migrations.
+  db-init:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: dairyos_db_init
+    restart: "no"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-dairyos_prod}
-      POSTGRES_USER: ${POSTGRES_USER:-dairy_admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the deployment environment}
-    ports:
-      - "5432:5432"
+      DATABASE_URL: file:/app/data/dairyos.db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dairy_admin} -d ${POSTGRES_DB:-dairyos_prod}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - dairyos_data:/app/data
+    command: ["npx", "prisma", "db", "push", "--skip-generate"]
     networks:
       - dairyos_network
 
-  # ----------------------------------------------------------------------------
-  # 4. Redis 7 High-Speed Session & IoT Cache
-  # ----------------------------------------------------------------------------
-  redis:
-    image: redis:7-alpine
-    container_name: dairyos_redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    networks:
-      - dairyos_network
-
-# ------------------------------------------------------------------------------
-# Persistent Storage Volumes & Private Network
-# ------------------------------------------------------------------------------
 volumes:
-  postgres_data:
-    name: dairyos_postgres_volume
-  redis_data:
-    name: dairyos_redis_volume
+  dairyos_data:
+    name: dairyos_data
 
 networks:
   dairyos_network:
-    name: dairyos_enterprise_network
+    name: dairyos_network
     driver: bridge
