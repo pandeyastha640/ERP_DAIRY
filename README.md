@@ -70,8 +70,15 @@ Do not point integration checks at `prisma/dev.db` or a production database. The
 
 Legacy Playwright QA scripts under `scripts/` also perform operational mutations and may attempt notification or payout interactions. They were not run in R0; use only with a disposable local database and test-mode integrations. The focused `test:demo-browser` script is separate and cleans its synthetic farmer/collection records on normal completion.
 
-## Deployment status
+## Docker staging deployment
 
-The Docker Compose file currently supplies PostgreSQL while `prisma/schema.prisma` is configured for SQLite. There is no Prisma migration history. Do not use the current Compose configuration for production until the database provider, migration plan, backup/restore process and deployment wiring have been reconciled and reviewed. R0 does not migrate the production database.
+The Compose setup is a **single-instance staging/evaluation deployment**, aligned with the current SQLite Prisma schema. It persists the database in the `dairyos_data` Docker volume and initializes the schema before starting the API. It is not a horizontally scalable production database setup.
+
+1. Create a deployment-only `.env` file with a unique `JWT_SECRET` (generate with `openssl rand -hex 32`). Add other secrets only if the relevant integration is enabled.
+2. Start the stack with `docker compose up --build -d`.
+3. Check `docker compose ps` and `docker compose logs api db-init`; open `http://localhost:8080` by default. Set `WEB_PORT` to change the host port.
+4. Preserve the `dairyos_data` volume. Do not run `docker compose down -v` unless intentionally deleting the database.
+
+This Compose configuration is for staging only. Before production use, implement and review versioned Prisma migrations, automated backup/restore drills, database access restrictions, TLS and secret management. A PostgreSQL migration must be designed and tested separately; do not simply change the connection string. The deployment must not be considered production-ready until these controls and live workflows are independently verified.
 
 The PWA manifest and service worker are present, but durable offline synchronization is not implemented. The Android/Capacitor app and Farmer Portal are not implemented. Payments, notifications, tax calculations, hardware integrations and AI fallback behavior require the limitations described in the audit before operational use.
